@@ -42,6 +42,12 @@ or to maximize (\code{minimize = FALSE}) the function \code{f}.}
 
 \item{...}{Arguments that get passed on to \link[stats]{nlm} (except for \code{iterlim}).}
 }
+\value{
+A list containing the following components:
+\item{optimum}{The optimal value of \code{f}.}
+\item{estimate}{The parameter vector at which the optimum of \code{f} is obtained.}
+\item{time}{The total optimization time.}
+}
 \description{
 This function performs alternating optimization on the function \code{f}.
 }
