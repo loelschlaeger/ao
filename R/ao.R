@@ -27,8 +27,11 @@
 #' A boolean, determining whether progress should be printed.
 #' @param ...
 #' Arguments that get passed on to \link[stats]{nlm} (except for \code{iterlim}).
-#' @value
-#' The point at which the optimum of \code{f} is obtained.
+#' @return
+#' A list containing the following components:
+#' \item{optimum}{The optimal value of \code{f}.}
+#' \item{estimate}{The parameter vector at which the optimum of \code{f} is obtained.}
+#' \item{time}{The total optimization time.}
 #' @export
 #' @examples
 #' ao(f = function(x) 3*x[1]^2 + 2*x[1]*x[2] + x[2]^2 - 5*x[1] + 2,
@@ -96,6 +99,9 @@ ao = function(f, npar, groups, sequence, iterlims, initial, minimize = TRUE, pro
   if(missing(initial)) initial = rnorm(npar)
   estimate = initial
 
+  ### start timer
+  t_start = Sys.time()
+
   for(run in 1:length(sequence)){
 
     ### print progress
@@ -140,9 +146,20 @@ ao = function(f, npar, groups, sequence, iterlims, initial, minimize = TRUE, pro
 
   }
 
+  ### end timer
+  t_end = Sys.time()
+
+  ### compute optimal function value
+  optimum = f(estimate)
+
   ### name estimates
   names(estimate) = paste("x",seq_len(npar),sep="_")
 
-  ### return estimate
-  return(estimate)
+  ### prepare output
+  output = list("optimum" = optimum,
+                "estimate" = estimate,
+                "time" = difftime(t_end,t_start))
+
+  ### return output
+  return(output)
 }
