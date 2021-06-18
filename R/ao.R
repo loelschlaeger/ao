@@ -27,6 +27,8 @@
 #' A boolean, determining whether progress should be printed.
 #' @param ...
 #' Arguments that get passed on to \link[stats]{nlm} (except for \code{iterlim}).
+#' @value
+#' The point at which the optimum of \code{f} is obtained.
 #' @export
 #' @examples
 #' ao(f = function(x) 3*x[1]^2 + 2*x[1]*x[2] + x[2]^2 - 5*x[1] + 2,
