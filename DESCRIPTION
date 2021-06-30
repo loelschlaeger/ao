@@ -1,14 +1,14 @@
 Package: ao
 Title: Alternating Optimization
-Version: 0.1.0
-Date: 2021-06-18
+Version: 0.1.1
+Date: 2021-06-30
 Authors@R: 
     person(given = "Lennart",
            family = "Oelschl\U00E4ger",
            role = c("aut", "cre"),
            email = "lennart.oelschlaeger@uni-bielefeld.de",
            comment = c(ORCID = "0000-0001-5421-9313"))
-Description: Alternating optimization of high-dimensional functions is an iterative procedure for minimizing (or maximizing) jointly over all parameters by alternately optimizing for parameter subsets. See Bezdek and Hathaway (2002) "Some Notes on Alternating Optimization" <doi:10.1007/3-540-45631-7_39>. 
+Description: Alternating optimization of high-dimensional functions is an iterative procedure for minimizing (or maximizing) jointly over all parameters by alternately optimizing for parameter subsets. For a reference, see Bezdek and Hathaway (2002) "Some Notes on Alternating Optimization" <doi:10.1007/3-540-45631-7_39>. 
 License: GPL-3
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)

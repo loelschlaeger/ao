@@ -19,15 +19,13 @@
 
 4. Define the vector `sequence`, which determines the sequence in which the parameter groups get optimized.
 
-5. Optionally define the vector `iterlims` with iteration limits for the numerical search of each optimization in `sequence`. If not supplied, the default [nlm](https://stat.ethz.ch/R-manual/R-devel/library/stats/html/nlm.html) setting is used.
+5. Optionally define the vector `initial` of initial parameter values. If not supplied, they are randomly drawn.
 
-6. Optionally define the vector `initial` of initial parameter values. If not supplied, they are randomly drawn.
+6. Set `minimize = TRUE` for minimizing `f` (the default) or `minimize = FALSE` for maximizing `f`.
 
-7. Set `minimize = TRUE` for minimizing `f` (the default) or `minimize = FALSE` for maximizing `f`.
+7. Set `progress = TRUE` for showing optimization progress. Per default, `progress = FALSE`. 
 
-8. Set `progress = TRUE` for showing optimization progress. Per default, `progress = FALSE`. 
-
-9. Call `ao` with the parameters defined above.
+8. Call `ao` with the parameters defined above.
 
 ## Example
 ```r

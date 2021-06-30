@@ -4,17 +4,7 @@
 \alias{ao}
 \title{Alternating Optimization}
 \usage{
-ao(
-  f,
-  npar,
-  groups,
-  sequence,
-  iterlims,
-  initial,
-  minimize = TRUE,
-  progress = FALSE,
-  ...
-)
+ao(f, npar, groups, sequence, initial, minimize = TRUE, progress = FALSE, ...)
 }
 \arguments{
 \item{f}{A function of \eqn{n} variables to be optimized.}
@@ -23,14 +13,11 @@ ao(
 
 \item{groups}{A list of vectors of parameter indices \eqn{1,...,n} of \code{f}.
 This determines the grouping of parameters.
-Indices can be present in multiple groups.}
+Indices can be present in multiple groups.
+If one group equals \eqn{1,...,n}, full estimation is carried out.}
 
 \item{sequence}{A vector of indices of the list \code{groups}.
 This determines the sequence in which parameter groups get optimized.}
-
-\item{iterlims}{A vector of iteration limits for the different optimization.
-Must have the same length as \code{sequence}.
-If not supplied, the default \link[stats]{nlm} setting is used.}
 
 \item{initial}{A vector of length \eqn{n} of initial parameter values.
 If not supplied, they are randomly drawn.}
@@ -40,7 +27,7 @@ or to maximize (\code{minimize = FALSE}) the function \code{f}.}
 
 \item{progress}{A boolean, determining whether progress should be printed.}
 
-\item{...}{Arguments that get passed on to \link[stats]{nlm} (except for \code{iterlim}).}
+\item{...}{Arguments that get passed on to \link[stats]{nlm}.}
 }
 \value{
 A list containing the following components:
@@ -52,8 +39,9 @@ A list containing the following components:
 This function performs alternating optimization on the function \code{f}.
 }
 \examples{
-ao(f = function(x) 3*x[1]^2 + 2*x[1]*x[2] + x[2]^2 - 5*x[1] + 2,
-   npar = 2,
-   groups = list(1,2),
-   sequence = rep(c(1,2),10))
+f = function(x) 3*x[1]^2 + 2*x[1]*x[2] + x[2]^2 - 5*x[1] + 2
+npar = 2
+sequence = rep(c(1,2),10)
+groups = list(1,2)
+ao(f = f, npar = npar, sequence = sequence, groups = groups)
 }
