@@ -42,7 +42,7 @@
 ao = function(f, npar, groups, sequence, iterlims, initial, minimize = TRUE, progress = FALSE, ...){
 
   ### read additional inputs and remove 'iterlim' (if submitted)
-  nlm_parameters = as.list(substitute(list(...)))[-1L]
+  nlm_parameters = list(...)
   nlm_parameters[["iterlim"]] = NULL
 
   ### function that checks if value is an integer
@@ -102,7 +102,7 @@ ao = function(f, npar, groups, sequence, iterlims, initial, minimize = TRUE, pro
   ### start timer
   t_start = Sys.time()
 
-  for(run in 1:length(sequence)){
+  for(run in sequence){
 
     ### print progress
     if(progress) cat(sprintf("%.0f%% \r",(run-1)/length(sequence)*100))
@@ -111,11 +111,11 @@ ao = function(f, npar, groups, sequence, iterlims, initial, minimize = TRUE, pro
     selected = sequence[run]
 
     ### save fixed values
-    fixed_values = estimate[unlist(groups[-selected])]
+    fixed_values = estimate[-groups[[selected]]]
 
     ### divide estimation problem
     divide = function(theta_small) {
-      theta = numeric(length(unlist(groups)))
+      theta = numeric(npar)
       theta[groups[[selected]]] = theta_small
       theta[-groups[[selected]]] = fixed_values
       out = f(theta)
@@ -131,7 +131,7 @@ ao = function(f, npar, groups, sequence, iterlims, initial, minimize = TRUE, pro
     ### (try to) solve divided estimation problem
     conquer = suppressWarnings(try(
       {
-        p = runif(length(groups[[selected]]))
+        p = estimate[groups[[selected]]]
         args = list(f = divide, p = p)
         if(!missing(iterlims))
           if(!is.na(iterlims[run]))
