@@ -11,7 +11,7 @@
 
 ## How to get started?
 
-1. Define a function `f` that you want to get optimized.
+1. Define a function `f` that you want to optimize.
 
 2. Set `npar` equal to the number of parameters of `f`.
 
@@ -19,7 +19,7 @@
 
 4. Define the vector `sequence`, which determines the sequence in which the parameter groups get optimized.
 
-5. Optionally define the vector `initial` of initial parameter values. If not supplied, they are randomly drawn.
+5. Optionally define the vector `initial` of initial parameter values. If not supplied, they get drawn from a standard normal distribution.
 
 6. Set `minimize = TRUE` for minimizing `f` (the default) or `minimize = FALSE` for maximizing `f`.
 
