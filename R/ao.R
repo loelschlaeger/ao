@@ -28,7 +28,7 @@
 #' A list containing the following components:
 #' \item{optimum}{The optimal value of \code{f}.}
 #' \item{estimate}{The parameter vector at which the optimum of \code{f} is obtained.}
-#' \item{time}{The total optimization time.}
+#' \item{time}{The total optimization time in seconds.}
 #' @examples
 #' f = function(x) 3*x[1]^2 + 2*x[1]*x[2] + x[2]^2 - 5*x[1] + 2
 #' npar = 2
@@ -145,7 +145,7 @@ ao = function(f, npar, groups, sequence, initial, minimize = TRUE, progress = FA
   ### prepare output
   output = list("optimum" = optimum,
                 "estimate" = estimate,
-                "time" = difftime(t_end,t_start))
+                "time" = difftime(t_end,t_start,units="secs"))
 
   ### return output
   return(output)
