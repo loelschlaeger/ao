@@ -101,6 +101,9 @@ ao = function(f, npar, groups, sequence, initial, minimize = TRUE, progress = FA
     ### select group
     selected = sequence[i]
 
+    ### skip step if selected group is empty
+    if(length(groups[[selected]])==0) next
+
     ### save fixed values
     fixed_values = estimate[-groups[[selected]]]
 
