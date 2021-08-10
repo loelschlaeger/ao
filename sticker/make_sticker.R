@@ -1,28 +1,45 @@
 ### install package 'hexSticker'
 remotes::install_github("GuangchuangYu/hexSticker")
 library(hexSticker)
+library(showtext)   # Using Fonts More Easily in R Graphs
+
+## Loading Google fonts (http://www.google.com/fonts)
+font_add_google("Inconsolata", "incon")
+
+### color palette (1. background, 2. border and pkgname, 3. plot)
+cp = c("#C2F9BB","#2E3532","#2E3532")
+
+### create subplot
 library(ggplot2)
+p = ggplot() +
+  xlim(-1, 2.5) +
+  geom_function(fun = ~ sin(10*pi*.x) / (2*.x) + (.x-1)^4, colour = cp[3]) +
+  theme_void() +
+  theme_transparent()
 
-### graphic
-p <- ggplot(aes(x = mpg, y = wt), data = mtcars) + geom_point()
-p <- p + theme_void() + theme_transparent()
-
-### produce sticker
-s = sticker(subplot = p,
-            s_x=.8,
-            s_y=.65,
-            s_width=2.2,
-            s_height=1.3,
-            package="ao",
-            p_color="darkblue",
-            p_size=10,
-            p_y = 1.45,
-            h_fill="cornflowerblue",
-            h_color="darkblue",
-            url="alternating optimization",
-            u_color="darkblue",
-            u_size=2,
-            filename="sticker/sticker.pdf")
-
-### restart R session (necessary for some unknown reason)
-.rs.restartR()
+### create sticker
+sticker(
+  # Subplot (image)
+  subplot = p,
+  s_y = 1.05,                          # Position of the sub plot (y)
+  s_x = 1,                       # Position of the sub plot (x)
+  s_width = 2,                    # Width of the sub plot
+  s_height = 1.5,                   # Height of the sub plot
+  # Font
+  package = "ao",
+  p_size = 70,                      # Font size of the text
+  p_y = 1.2,                        # Position of the font (y)
+  p_x = 1.2,                        # Position of the font (x)
+  p_family = "incon",               # Defines font
+  p_color = cp[2],
+  # Spotlight
+  spotlight = TRUE,                 # Enables spotlight
+  l_y = 1.2,                        # Position of spotlight (y)
+  l_x = 1.2,                        # Position of spotlight (x)
+  # Sticker colors
+  h_fill = cp[1],               # Color for background
+  h_color = cp[2],              # Color for border
+  # Save
+  white_around_sticker=TRUE,        # Puts white triangles in the corners
+  filename="man/figures/logo.png"   # Sets file name and location where to store the sticker
+)

@@ -32,8 +32,12 @@ or to maximize (\code{minimize = FALSE}) the function \code{f}.}
 \value{
 A list containing the following components:
 \item{optimum}{The optimal value of \code{f}.}
-\item{estimate}{The parameter vector at which the optimum of \code{f} is obtained.}
-\item{time}{The total optimization time.}
+\item{estimate}{The parameter vector at which the optimum of \code{f}
+is obtained.}
+\item{time}{The total optimization time in seconds.}
+\item{nlm_outputs}{A list of \link[stats]{nlm} outputs in each
+\code{sequence}.}
+\item{minimize}{The input \code{minimize}.}
 }
 \description{
 This function performs alternating optimization on the function \code{f}.
