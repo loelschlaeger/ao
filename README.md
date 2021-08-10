@@ -1,4 +1,4 @@
-# ao -- alternating optimization <img src="man/figures/logo.png" align="right" height=136 />
+# ao <img src="man/figures/logo.png" align="right" height=136 />
 
 [![R-CMD-check](https://github.com/loelschlaeger/ao/workflows/R-CMD-check/badge.svg)](https://github.com/loelschlaeger/ao/actions)
 [![CRAN status](https://www.r-pkg.org/badges/version-last-release/ao)](https://www.r-pkg.org/badges/version-last-release/ao)
