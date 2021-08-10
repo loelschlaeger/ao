@@ -1,4 +1,3 @@
-#' @title
 #' Alternating Optimization
 #' @description
 #' This function performs alternating optimization on the function \code{f}.
@@ -27,8 +26,12 @@
 #' @return
 #' A list containing the following components:
 #' \item{optimum}{The optimal value of \code{f}.}
-#' \item{estimate}{The parameter vector at which the optimum of \code{f} is obtained.}
+#' \item{estimate}{The parameter vector at which the optimum of \code{f}
+#' is obtained.}
 #' \item{time}{The total optimization time in seconds.}
+#' \item{nlm_outputs}{A list of \link[stats]{nlm} outputs in each
+#' \code{sequence}.}
+#' \item{minimize}{The input \code{minimize}.}
 #' @examples
 #' f = function(x) 3*x[1]^2 + 2*x[1]*x[2] + x[2]^2 - 5*x[1] + 2
 #' npar = 2
@@ -37,7 +40,8 @@
 #' ao(f = f, npar = npar, sequence = sequence, groups = groups)
 #' @export
 
-ao = function(f, npar, groups, sequence, initial, minimize = TRUE, progress = FALSE, ...){
+ao = function(f, npar, groups, sequence, initial, minimize = TRUE,
+              progress = FALSE, ...){
 
   ### read additional parameters for nlm
   nlm_parameters = list(...)
@@ -90,10 +94,13 @@ ao = function(f, npar, groups, sequence, initial, minimize = TRUE, progress = FA
   if(missing(initial)) initial = rnorm(npar)
   estimate = initial
 
+  ### storage for nlm outputs
+  nlm_outputs = list()
+
   ### start timer
   t_start = Sys.time()
 
-  for(i in 1:length(sequence)){
+  for(i in seq_len(length(sequence))){
 
     ### print progress
     if(progress) cat(sprintf("%.0f%% \r",(i-1)/length(sequence)*100))
@@ -134,6 +141,9 @@ ao = function(f, npar, groups, sequence, initial, minimize = TRUE, progress = FA
     ### save estimate
     estimate[groups[[selected]]] = conquer$estimate
 
+    ### save nlm output
+    nlm_outputs[[i]] = conquer
+
   }
 
   ### end timer
@@ -148,7 +158,11 @@ ao = function(f, npar, groups, sequence, initial, minimize = TRUE, progress = FA
   ### prepare output
   output = list("optimum" = optimum,
                 "estimate" = estimate,
-                "time" = difftime(t_end,t_start,units="secs"))
+                "time" = difftime(t_end,t_start,units="secs"),
+                "nlm_outputs" = nlm_outputs,
+                "minimize" = minimize)
+
+  class(output) = "ao"
 
   ### return output
   return(output)
