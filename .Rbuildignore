@@ -1,5 +1,9 @@
 ^ao\.Rproj$
 ^\.Rproj\.user$
-sandbox.R
 LICENSE
 sticker/
+.github
+^_pkgdown\.yml$
+^docs$
+^pkgdown$
+^\.github$
