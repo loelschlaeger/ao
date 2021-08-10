@@ -1,6 +1,8 @@
-## ao 0.1.1.9000
+## ao 0.1.2
 * Skip ao step if a group is empty.
 * Estimation times always in seconds.
+* Return nlm outputs.
+* Implemented print method.
 
 ## ao 0.1.1
 * Fixed minor bugs.
