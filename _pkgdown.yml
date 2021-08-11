@@ -1,0 +1,18 @@
+url: https://loelschlaeger.github.io/ao/
+
+template:
+  params:
+    bootswatch: sketchy
+
+navbar:
+  type: default
+  left:
+  - icon: fa-clipboard
+    text: Reference
+    href: reference/index.html
+  - icon: fa-wrench
+    text: Changelog
+    href: news/index.html
+  - text: GitHub Repository
+    icon: fa-github fa-lg
+    href: https://github.com/loelschlaeger/RprobitB
