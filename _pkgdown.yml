@@ -2,7 +2,7 @@ url: https://loelschlaeger.github.io/ao/
 
 template:
   params:
-    bootswatch: sketchy
+    bootswatch: simplex
 
 navbar:
   type: default
