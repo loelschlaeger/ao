@@ -8,6 +8,8 @@
 
 💬 Found a bug? Request a feature? Please [tell us](https://github.com/loelschlaeger/ao/issues)!
 
+🌟 You like the package? Please give it a [star](https://github.com/loelschlaeger/ao).
+
 📝 In R, type `citation("ao")` for citing this package in publications.
 
 ## How to get started?
