@@ -13,7 +13,9 @@ cp = c("#C2F9BB","#2E3532","#2E3532")
 library(ggplot2)
 p = ggplot() +
   xlim(-1, 2.5) +
-  geom_function(fun = ~ sin(10*pi*.x) / (2*.x) + (.x-1)^4, colour = cp[3]) +
+  geom_function(fun = ~ sin(10*pi*.x) / (2*.x) + (.x-1)^4, colour = cp[3], n = 1e4) +
+  geom_point(aes(x=0.14, y=-2.8), colour="black", size = 2) +
+  geom_point(aes(x=0, y=16.7), colour="black", size = 2) +
   theme_void() +
   theme_transparent()
 
@@ -21,15 +23,15 @@ p = ggplot() +
 sticker(
   # Subplot (image)
   subplot = p,
-  s_y = 1.05,                          # Position of the sub plot (y)
+  s_y = 1,                          # Position of the sub plot (y)
   s_x = 1,                       # Position of the sub plot (x)
   s_width = 2,                    # Width of the sub plot
-  s_height = 1.5,                   # Height of the sub plot
+  s_height = 1.2,                   # Height of the sub plot
   # Font
   package = "ao",
   p_size = 70,                      # Font size of the text
   p_y = 1.2,                        # Position of the font (y)
-  p_x = 1.2,                        # Position of the font (x)
+  p_x = 1.3,                        # Position of the font (x)
   p_family = "incon",               # Defines font
   p_color = cp[2],
   # Spotlight
