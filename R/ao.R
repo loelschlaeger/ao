@@ -1,4 +1,4 @@
-#' Alternating Optimization
+#' Alternating Optimization.
 #' @description
 #' This function performs alternating optimization on the function \code{f}.
 #' @param f
