@@ -1,9 +1,10 @@
 .onAttach = function(lib, pkg) {
   # startup message
   msg = c(paste0(
-    "Thanks for installing ao version ",packageVersion("ao")),".",
-    "\nType 'citation(\"ao\")' for citing this R package in your publications.",
-    "\nHappy alternating optimization!")
+    "Thanks for using ao version ", packageVersion("ao")),
+    ", happy alternating optimization!\n",
+    "See https://loelschlaeger.github.io/ao for help.\n",
+    "Type 'citation(\"ao\")' for citing this R package.")
   packageStartupMessage(msg)
   invisible()
 }
