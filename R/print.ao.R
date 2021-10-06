@@ -1,5 +1,5 @@
 #' Print method for an object of class \code{ao}.
-#' @param description
+#' @description
 #' This function is the print method for an object of class \code{ao}.
 #' @param x
 #' The output of \code{\link{ao}}, which is an object of class \code{ao}.

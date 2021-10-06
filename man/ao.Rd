@@ -2,7 +2,7 @@
 % Please edit documentation in R/ao.R
 \name{ao}
 \alias{ao}
-\title{Alternating Optimization}
+\title{Alternating Optimization.}
 \usage{
 ao(f, npar, groups, sequence, initial, minimize = TRUE, progress = FALSE, ...)
 }

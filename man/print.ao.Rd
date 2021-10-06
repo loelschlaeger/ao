@@ -2,15 +2,15 @@
 % Please edit documentation in R/print.ao.R
 \name{print.ao}
 \alias{print.ao}
-\title{Print method for \code{ao}}
+\title{Print method for an object of class \code{ao}.}
 \usage{
 \method{print}{ao}(x, ...)
 }
 \arguments{
 \item{x}{The output of \code{\link{ao}}, which is an object of class \code{ao}.}
 
-\item{...}{ignored}
+\item{...}{Ignored.}
 }
 \description{
-Print method for \code{ao}
+This function is the print method for an object of class \code{ao}.
 }
