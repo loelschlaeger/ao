@@ -91,7 +91,7 @@ ao = function(f, npar, groups, sequence, initial, minimize = TRUE,
   no_groups = length(groups)
 
   ### build initial values
-  if(missing(initial)) initial = rnorm(npar)
+  if(missing(initial)) initial = stats::rnorm(npar)
   estimate = initial
 
   ### storage for nlm outputs
@@ -133,7 +133,7 @@ ao = function(f, npar, groups, sequence, initial, minimize = TRUE,
     conquer = suppressWarnings(try(
       {
         p = estimate[groups[[selected]]]
-        do.call(what = nlm, args = c(list(f = divide, p = p), nlm_parameters))
+        do.call(what = stats::nlm, args = c(list(f = divide, p = p), nlm_parameters))
       }
       ,silent = TRUE))
     if(class(conquer) == "try-error") next
