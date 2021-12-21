@@ -31,3 +31,19 @@ set_f <- function(f, npar) {
   class(out) <- "ao_f"
   return(out)
 }
+
+#' Print method for \code{ao_f}.
+#'
+#' This function is the print method for an object of class \code{ao_f}.
+#'
+#' @param x
+#' An object of class \code{ao_f}.
+#'
+#' @param ...
+#' Ignored.
+#'
+#' @noRd
+
+print.ao_f <- function(x, ...) {
+  cat("<ao_f>")
+}
