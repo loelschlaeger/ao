@@ -12,10 +12,9 @@
 #' @export
 #'
 #' @examples
-#' is.number(c(0,1,1.5))
-
+#' is.number(c(0, 1, 1.5))
 is.number <- function(x) {
-  sapply(x, function(x) is.numeric(x) && x>0 && x%%1==0, USE.NAMES = FALSE)
+  sapply(x, function(x) is.numeric(x) && x > 0 && x %% 1 == 0, USE.NAMES = FALSE)
 }
 
 #' Try an expression silently.
@@ -38,12 +37,11 @@ is.number <- function(x) {
 #' @examples
 #' try_silent(log(1))
 #' try_silent(log("1"))
-
 try_silent <- function(expr) {
   out <- suppressWarnings(try(expr, silent = TRUE))
-  if(class(out) == "try-error"){
+  if (class(out) == "try-error") {
     out <- out[1]
-    class(out) = "ao_fail"
+    class(out) <- "ao_fail"
   }
   return(out)
 }
@@ -88,9 +86,8 @@ print.ao_fail <- function(x, ...) {
 #'
 #' @examples
 #' timed(Sys.sleep(1.1), 1)
-
 timed <- function(expr, secs) {
-  if(!(length(secs) == 1 && is.number(secs))) {
+  if (!(length(secs) == 1 && is.number(secs))) {
     stop("'secs' must be a number.")
   }
   R.utils::withTimeout(expr, timeout = secs, onTimeout = "silent")

@@ -33,136 +33,159 @@
 #' \code{sequence}.}
 #' \item{minimize}{The input \code{minimize}.}
 #' @examples
-#' f = function(x) 3*x[1]^2 + 2*x[1]*x[2] + x[2]^2 - 5*x[1] + 2
-#' npar = 2
-#' sequence = rep(c(1,2),10)
-#' groups = list(1,2)
+#' f <- function(x) 3 * x[1]^2 + 2 * x[1] * x[2] + x[2]^2 - 5 * x[1] + 2
+#' npar <- 2
+#' sequence <- rep(c(1, 2), 10)
+#' groups <- list(1, 2)
 #' ao(f = f, npar = npar, sequence = sequence, groups = groups)
 #' @export
 
-ao = function(f, npar, groups, sequence, initial, minimize = TRUE,
-              progress = FALSE, ...){
+ao <- function(f, npar, groups, sequence, initial, minimize = TRUE,
+               progress = FALSE, ...) {
 
   ### read additional parameters for nlm
-  nlm_parameters = list(...)
+  nlm_parameters <- list(...)
 
   ### function that checks if value is an integer
-  is.integer = function(x) all(is.numeric(x)) && all(x>0) && all(x%%1==0)
+  is.integer <- function(x) all(is.numeric(x)) && all(x > 0) && all(x %% 1 == 0)
 
   ### check inputs
-  if(missing(f))
+  if (missing(f)) {
     stop("Please set 'f'.")
-  if(!is.function(f))
-    stop("'f' must be a function.")
-  if(missing(npar))
-    stop("Please set 'npar'.")
-  if(!is.integer(npar))
-    stop("'npar' must be an integer.")
-  if(missing(groups))
-    stop("Please set 'groups'.")
-  if(!is.list(groups))
-    stop("'groups' must be a list.")
-  if(!is.integer(unlist(groups)))
-    stop("'groups' must be a list of integers.")
-  if(any(!unlist(groups) %in% seq_len(npar)))
-    stop("'groups' contains values that are not parameter indices of 'f'.")
-  if(missing(sequence))
-    stop("Please set 'sequence'.")
-  if(!is.integer(sequence))
-    stop("'sequence' must be a vector of integers.")
-  if(any(!sequence %in% seq_len(length(groups))))
-    stop("'sequence' contains values that or not indices of 'groups.'")
-  if(any(!seq_len(npar) %in% unlist(groups[unique(sequence)])))
-    warning(paste("Parameter(s)",
-                  paste(setdiff(seq_len(npar),unlist(groups[unique(sequence)])),collapse=", "),
-                  "do not get optimized."))
-  if(!missing(initial)){
-    if(!is.numeric(initial))
-      stop("'initial' must be a numeric vector.")
-    if(length(initial) != npar)
-      stop("'initial' must be a numeric vector of length 'npar.'")
   }
-  if(!is.logical(minimize))
+  if (!is.function(f)) {
+    stop("'f' must be a function.")
+  }
+  if (missing(npar)) {
+    stop("Please set 'npar'.")
+  }
+  if (!is.integer(npar)) {
+    stop("'npar' must be an integer.")
+  }
+  if (missing(groups)) {
+    stop("Please set 'groups'.")
+  }
+  if (!is.list(groups)) {
+    stop("'groups' must be a list.")
+  }
+  if (!is.integer(unlist(groups))) {
+    stop("'groups' must be a list of integers.")
+  }
+  if (any(!unlist(groups) %in% seq_len(npar))) {
+    stop("'groups' contains values that are not parameter indices of 'f'.")
+  }
+  if (missing(sequence)) {
+    stop("Please set 'sequence'.")
+  }
+  if (!is.integer(sequence)) {
+    stop("'sequence' must be a vector of integers.")
+  }
+  if (any(!sequence %in% seq_len(length(groups)))) {
+    stop("'sequence' contains values that or not indices of 'groups.'")
+  }
+  if (any(!seq_len(npar) %in% unlist(groups[unique(sequence)]))) {
+    warning(paste(
+      "Parameter(s)",
+      paste(setdiff(seq_len(npar), unlist(groups[unique(sequence)])), collapse = ", "),
+      "do not get optimized."
+    ))
+  }
+  if (!missing(initial)) {
+    if (!is.numeric(initial)) {
+      stop("'initial' must be a numeric vector.")
+    }
+    if (length(initial) != npar) {
+      stop("'initial' must be a numeric vector of length 'npar.'")
+    }
+  }
+  if (!is.logical(minimize)) {
     stop("'minimize' must be a boolean.")
-  if(!is.logical(progress))
+  }
+  if (!is.logical(progress)) {
     stop("'progress' must be a boolean.")
+  }
 
   ### read inputs
-  no_groups = length(groups)
+  no_groups <- length(groups)
 
   ### build initial values
-  if(missing(initial)) initial = stats::rnorm(npar)
-  estimate = initial
+  if (missing(initial)) initial <- stats::rnorm(npar)
+  estimate <- initial
 
   ### storage for nlm outputs
-  nlm_outputs = list()
+  nlm_outputs <- list()
 
   ### start timer
-  t_start = Sys.time()
+  t_start <- Sys.time()
 
-  for(i in seq_len(length(sequence))){
+  for (i in seq_len(length(sequence))) {
 
     ### print progress
-    if(progress) cat(sprintf("%.0f%% \r",(i-1)/length(sequence)*100))
+    if (progress) cat(sprintf("%.0f%% \r", (i - 1) / length(sequence) * 100))
 
     ### select group
-    selected = sequence[i]
+    selected <- sequence[i]
 
     ### skip step if selected group is empty
-    if(length(groups[[selected]])==0) next
+    if (length(groups[[selected]]) == 0) next
 
     ### save fixed values
-    fixed_values = estimate[-groups[[selected]]]
+    fixed_values <- estimate[-groups[[selected]]]
 
     ### divide estimation problem
-    divide = function(theta_small) {
-      theta = numeric(npar)
-      theta[groups[[selected]]] = theta_small
-      theta[-groups[[selected]]] = fixed_values
-      out = f(theta)
-      if(!minimize)
-        out = -out
-      if(!is.null(attr(out,"gradient",exact=TRUE)))
-        attr(out,"gradient") = attr(out,"gradient",exact=TRUE)[groups[[selected]]]
-      if(!is.null(attr(out,"hessian",exact=TRUE)))
-        attr(out,"hessian") = attr(out,"hessian",exact=TRUE)[groups[[selected]],groups[[selected]]]
+    divide <- function(theta_small) {
+      theta <- numeric(npar)
+      theta[groups[[selected]]] <- theta_small
+      theta[-groups[[selected]]] <- fixed_values
+      out <- f(theta)
+      if (!minimize) {
+        out <- -out
+      }
+      if (!is.null(attr(out, "gradient", exact = TRUE))) {
+        attr(out, "gradient") <- attr(out, "gradient", exact = TRUE)[groups[[selected]]]
+      }
+      if (!is.null(attr(out, "hessian", exact = TRUE))) {
+        attr(out, "hessian") <- attr(out, "hessian", exact = TRUE)[groups[[selected]], groups[[selected]]]
+      }
       return(out)
     }
 
     ### (try to) solve divided estimation problem
-    conquer = suppressWarnings(try(
+    conquer <- suppressWarnings(try(
       {
-        p = estimate[groups[[selected]]]
+        p <- estimate[groups[[selected]]]
         do.call(what = stats::nlm, args = c(list(f = divide, p = p), nlm_parameters))
-      }
-      ,silent = TRUE))
-    if(class(conquer) == "try-error") next
+      },
+      silent = TRUE
+    ))
+    if (class(conquer) == "try-error") next
 
     ### save estimate
-    estimate[groups[[selected]]] = conquer$estimate
+    estimate[groups[[selected]]] <- conquer$estimate
 
     ### save nlm output
-    nlm_outputs[[i]] = conquer
-
+    nlm_outputs[[i]] <- conquer
   }
 
   ### end timer
-  t_end = Sys.time()
+  t_end <- Sys.time()
 
   ### compute optimal function value
-  optimum = f(estimate)
+  optimum <- f(estimate)
 
   ### name estimates
-  names(estimate) = paste("x",seq_len(npar),sep="_")
+  names(estimate) <- paste("x", seq_len(npar), sep = "_")
 
   ### prepare output
-  output = list("optimum" = optimum,
-                "estimate" = estimate,
-                "time" = difftime(t_end,t_start,units="secs"),
-                "nlm_outputs" = nlm_outputs,
-                "minimize" = minimize)
+  output <- list(
+    "optimum" = optimum,
+    "estimate" = estimate,
+    "time" = difftime(t_end, t_start, units = "secs"),
+    "nlm_outputs" = nlm_outputs,
+    "minimize" = minimize
+  )
 
-  class(output) = "ao"
+  class(output) <- "ao"
 
   ### return output
   return(output)
@@ -182,14 +205,17 @@ ao = function(f, npar, groups, sequence, initial, minimize = TRUE,
 #'
 #' @noRd
 
-print.ao = function(x, ...) {
+print.ao <- function(x, ...) {
   cat("Alternating optimization\n")
-  cat(if(x$minimize) "Minimum value:",
-      if(!x$minimize) "Maximum value:",
-      zapsmall(x$optimum),"\n")
-  cat(if(x$minimize) "Minimum at:",
-      if(!x$minimize) "Maximum at:",
-      zapsmall(x$estimate),"\n")
-  cat("computation time:",signif(x$time,digits=1),"seconds\n")
+  cat(
+    if (x$minimize) "Minimum value:",
+    if (!x$minimize) "Maximum value:",
+    zapsmall(x$optimum), "\n"
+  )
+  cat(
+    if (x$minimize) "Minimum at:",
+    if (!x$minimize) "Maximum at:",
+    zapsmall(x$estimate), "\n"
+  )
+  cat("computation time:", signif(x$time, digits = 1), "seconds\n")
 }
-

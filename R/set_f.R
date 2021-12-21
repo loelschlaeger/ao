@@ -13,21 +13,26 @@
 #'
 #' @examples
 #' set_f(f = function(x) -x^2, npar = 1)
-
 set_f <- function(f, npar) {
   ### input checks
-  if(missing(f))
+  if (missing(f)) {
     stop("Please set 'f'.")
-  if(!is.function(f))
+  }
+  if (!is.function(f)) {
     stop("'f' must be a function.")
-  if(missing(npar))
+  }
+  if (missing(npar)) {
     stop("Please set 'npar'.")
-  if(!(length(npar) == 1 && is.number(npar)))
+  }
+  if (!(length(npar) == 1 && is.number(npar))) {
     stop("'npar' must be a number.")
+  }
 
   ### output
-  out <- list(f = f,
-              npar = npar)
+  out <- list(
+    f = f,
+    npar = npar
+  )
   class(out) <- "ao_f"
   return(out)
 }
