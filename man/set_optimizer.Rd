@@ -7,8 +7,8 @@
 set_optimizer(
   f,
   optimizer = stats::nlm,
-  f_arg = 1,
-  p_arg = 2,
+  f_arg = "f",
+  p_arg = "p",
   ...,
   check = TRUE
 )
@@ -18,15 +18,16 @@ set_optimizer(
 
 \item{optimizer}{A function which can optimize \code{f}. The default is \code{\link[stats]{nlm}}.}
 
-\item{f_arg}{The position of the argument in \code{optimizer} that receives the function.
-The default is \code{1}.}
+\item{f_arg}{The name of the argument in \code{optimizer} that receives the function.
+The default is \code{"f"}.}
 
-\item{p_arg}{The position of the argument in \code{optimizer} that receives the initial
-parameter vector. The default is \code{2}.}
+\item{p_arg}{The name of the argument in \code{optimizer} that receives the initial
+parameter vector. The default is \code{"p"}.}
 
 \item{...}{Further arguments to be passed to \code{optimizer}.}
 
-\item{check}{If \code{TRUE} checks the configuration. This will take at most 10 seconds.
+\item{check}{If \code{TRUE} checks the configuration.
+This will take at most 10 seconds in most cases.
 Set to \code{FALSE} if you are confident about the configuration to save
 computation time.}
 }
@@ -38,5 +39,5 @@ This function specifies the optimization routine.
 }
 \examples{
 set_optimizer(f = set_f(f = function(x) x^2, npar = 1), optimizer = stats::optim,
-              f_arg = 2, p_arg = 1, lower = -2, upper = -1)
+              f_arg = "fn", p_arg = "par", lower = -2, upper = -1)
 }
