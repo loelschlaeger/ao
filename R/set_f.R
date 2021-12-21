@@ -42,6 +42,8 @@ set_f <- function(f, npar) {
 #' @param ...
 #' Ignored.
 #'
+#' @export
+#'
 #' @noRd
 
 print.ao_f <- function(x, ...) {

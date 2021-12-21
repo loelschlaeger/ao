@@ -58,6 +58,8 @@ try_silent <- function(expr) {
 #' @param ...
 #' Ignored.
 #'
+#' @export
+#'
 #' @noRd
 
 print.ao_fail <- function(x, ...) {

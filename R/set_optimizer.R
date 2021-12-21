@@ -59,7 +59,7 @@ set_optimizer <- function(f, optimizer = stats::nlm, f_arg = "f", p_arg = "p",
     optimizer_success <- 0
     first_fail <- NULL
     for(i in 1:check_runs) {
-      p <- rnorm(f$npar)
+      p <- stats::rnorm(f$npar)
       out_f <- timed(try_silent(f$f(p)),1)
       if(class(out_f) == "ao_fail") {
         if(is.null(first_fail)) {
@@ -105,6 +105,8 @@ set_optimizer <- function(f, optimizer = stats::nlm, f_arg = "f", p_arg = "p",
 #'
 #' @param ...
 #' Ignored.
+#'
+#' @export
 #'
 #' @noRd
 
