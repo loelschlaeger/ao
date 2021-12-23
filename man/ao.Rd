@@ -4,48 +4,57 @@
 \alias{ao}
 \title{Alternating Optimization.}
 \usage{
-ao(f, npar, groups, sequence, initial, minimize = TRUE, progress = FALSE, ...)
+ao(
+  f,
+  partition,
+  initial = rep(0, f$npar),
+  iterations = 1,
+  minimize = TRUE,
+  progress = FALSE
+)
 }
 \arguments{
-\item{f}{A function of \eqn{n} variables to be optimized.}
+\item{f}{An object of class \code{ao_f}, i.e. the output of \code{\link{set_f}}.}
 
-\item{npar}{An integer, the number \eqn{n} of variables of \code{f}.}
+\item{partition}{A list of vectors of parameter indices \eqn{1,...,n} of the function.}
 
-\item{groups}{A list of vectors of parameter indices \eqn{1,...,n} of \code{f}.
-This determines the grouping of parameters.
-Indices can be present in multiple groups.
-If one group equals \eqn{1,...,n}, full estimation is carried out.}
+\item{initial}{A vector of length \code{f$npar} of initial parameter values.}
 
-\item{sequence}{A vector of indices of the list \code{groups}.
-This determines the sequence in which parameter groups get optimized.}
+\item{iterations}{The number of iterations.}
 
-\item{initial}{A vector of length \eqn{n} of initial parameter values.
-If not supplied, they are randomly drawn.}
+\item{minimize}{If \code{TRUE}, minimization, if \code{FALSE}, maximization.}
 
-\item{minimize}{A boolean, determining whether to minimize (\code{minimize = TRUE})
-or to maximize (\code{minimize = FALSE}) the function \code{f}.}
-
-\item{progress}{A boolean, determining whether progress should be printed.}
-
-\item{...}{Arguments that get passed on to \link[stats]{nlm}.}
+\item{progress}{If \code{TRUE}, progress is printed.}
 }
 \value{
-A list containing the following components:
-\item{optimum}{The optimal value of \code{f}.}
-\item{estimate}{The parameter vector at which the optimum of \code{f}
-is obtained.}
-\item{time}{The total optimization time in seconds.}
-\item{nlm_outputs}{A list of \link[stats]{nlm} outputs in each
-\code{sequence}.}
-\item{minimize}{The input \code{minimize}.}
+An object of class \code{ao}, which is a list of
+\itemize{
+\item \code{optimum}, the optimal value,
+\item \code{estimate}, the parameter vector that yields the optimum,
+\item \code{sequence}, a data frame of the estimates in the single iterations,
+\item \code{time}, the total estimation time in seconds.
+}
 }
 \description{
 This function performs alternating optimization on the function \code{f}.
 }
+\details{
+This function depends on \code{\link[optimx]{optimx}}.
+}
 \examples{
-f = function(x) 3*x[1]^2 + 2*x[1]*x[2] + x[2]^2 - 5*x[1] + 2
-npar = 2
-sequence = rep(c(1,2),10)
-groups = list(1,2)
-ao(f = f, npar = npar, sequence = sequence, groups = groups)
+valley <- function(x) {
+  cons <- c(1.003344481605351, -3.344481605351171e-03)
+  n <- length(x)
+  f <- rep(0, n)
+  j <- 3 * (1:(n/3))
+  jm2 <- j - 2
+  jm1 <- j - 1
+  f[jm2] <- (cons[2]*x[jm2]^3 + cons[1]*x[jm2]) * exp(-(x[jm2]^2)/100) - 1
+  f[jm1] <- 10 * (sin(x[jm2]) - x[jm1])
+  f[j] <- 10 * (cos(x[jm2]) - x[j])
+  sum(f*f)
+}
+f <- set_f(f = valley, npar = 9, lower = 0, upper = 10, check = FALSE)
+ao(f = f, partition = list(1, 2, 3, 4, 5, 6, 7, 8, 9), iterations = 2)
+
 }

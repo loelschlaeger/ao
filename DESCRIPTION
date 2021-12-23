@@ -20,7 +20,8 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.2
 Imports:
-    R.utils
+    R.utils,
+    optimx
 Suggests: 
     testthat (>= 3.0.0),
     magrittr,

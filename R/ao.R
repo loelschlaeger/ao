@@ -1,188 +1,176 @@
 #' Alternating Optimization.
-#' @description
+#'
 #' This function performs alternating optimization on the function \code{f}.
+#'
+#' @details
+#' This function depends on \code{\link[optimx]{optimx}}.
+#'
 #' @param f
-#' A function of \eqn{n} variables to be optimized.
-#' @param npar
-#' An integer, the number \eqn{n} of variables of \code{f}.
-#' @param groups
-#' A list of vectors of parameter indices \eqn{1,...,n} of \code{f}.
-#' This determines the grouping of parameters.
-#' Indices can be present in multiple groups.
-#' If one group equals \eqn{1,...,n}, full estimation is carried out.
-#' @param sequence
-#' A vector of indices of the list \code{groups}.
-#' This determines the sequence in which parameter groups get optimized.
+#' An object of class \code{ao_f}, i.e. the output of \code{\link{set_f}}.
+#' @param partition
+#' A list of vectors of parameter indices \eqn{1,...,n} of the function.
 #' @param initial
-#' A vector of length \eqn{n} of initial parameter values.
-#' If not supplied, they are randomly drawn.
+#' A vector of length \code{f$npar} of initial parameter values.
+#' @param iterations
+#' The number of iterations.
 #' @param minimize
-#' A boolean, determining whether to minimize (\code{minimize = TRUE})
-#' or to maximize (\code{minimize = FALSE}) the function \code{f}.
+#' If \code{TRUE}, minimization, if \code{FALSE}, maximization.
 #' @param progress
-#' A boolean, determining whether progress should be printed.
-#' @param ...
-#' Arguments that get passed on to \link[stats]{nlm}.
+#' If \code{TRUE}, progress is printed.
+#'
 #' @return
-#' A list containing the following components:
-#' \item{optimum}{The optimal value of \code{f}.}
-#' \item{estimate}{The parameter vector at which the optimum of \code{f}
-#' is obtained.}
-#' \item{time}{The total optimization time in seconds.}
-#' \item{nlm_outputs}{A list of \link[stats]{nlm} outputs in each
-#' \code{sequence}.}
-#' \item{minimize}{The input \code{minimize}.}
+#' An object of class \code{ao}, which is a list of
+#' \itemize{
+#'   \item \code{optimum}, the optimal value,
+#'   \item \code{estimate}, the parameter vector that yields the optimum,
+#'   \item \code{sequence}, a data frame of the estimates in the single iterations,
+#'   \item \code{time}, the total estimation time in seconds.
+#' }
+#'
 #' @examples
-#' f <- function(x) 3 * x[1]^2 + 2 * x[1] * x[2] + x[2]^2 - 5 * x[1] + 2
-#' npar <- 2
-#' sequence <- rep(c(1, 2), 10)
-#' groups <- list(1, 2)
-#' ao(f = f, npar = npar, sequence = sequence, groups = groups)
+#' valley <- function(x) {
+#'   cons <- c(1.003344481605351, -3.344481605351171e-03)
+#'   n <- length(x)
+#'   f <- rep(0, n)
+#'   j <- 3 * (1:(n/3))
+#'   jm2 <- j - 2
+#'   jm1 <- j - 1
+#'   f[jm2] <- (cons[2]*x[jm2]^3 + cons[1]*x[jm2]) * exp(-(x[jm2]^2)/100) - 1
+#'   f[jm1] <- 10 * (sin(x[jm2]) - x[jm1])
+#'   f[j] <- 10 * (cos(x[jm2]) - x[j])
+#'   sum(f*f)
+#' }
+#' f <- set_f(f = valley, npar = 9, lower = 0, upper = 10, check = FALSE)
+#' ao(f = f, partition = list(1, 2, 3, 4, 5, 6, 7, 8, 9), iterations = 2)
+#'
 #' @export
 
-ao <- function(f, npar, groups, sequence, initial, minimize = TRUE,
-               progress = FALSE, ...) {
-
-  ### read additional parameters for nlm
-  nlm_parameters <- list(...)
-
-  ### function that checks if value is an integer
-  is.integer <- function(x) all(is.numeric(x)) && all(x > 0) && all(x %% 1 == 0)
+ao <- function(f, partition, initial = rep(0, f$npar),
+               iterations = 1, minimize = TRUE, progress = FALSE) {
 
   ### check inputs
   if (missing(f)) {
-    stop("Please set 'f'.")
+    stop("Please set 'f'.", call. = FALSE)
   }
-  if (!is.function(f)) {
-    stop("'f' must be a function.")
+  if (class(f) != "ao_f") {
+    stop("'f' must be of class 'ao_f'.", call. = FALSE)
   }
-  if (missing(npar)) {
-    stop("Please set 'npar'.")
+  if (missing(partition)) {
+    stop("Please set 'partition'.", call. = FALSE)
   }
-  if (!is.integer(npar)) {
-    stop("'npar' must be an integer.")
+  if (!is.list(partition)) {
+    stop("'partition' must be a list.", call. = FALSE)
   }
-  if (missing(groups)) {
-    stop("Please set 'groups'.")
+  if (any(!is_number(unlist(partition)))) {
+    stop("'partition' must be a list of numbers.", call. = FALSE)
   }
-  if (!is.list(groups)) {
-    stop("'groups' must be a list.")
+  if (any(!unlist(partition) %in% seq_len(f$npar))) {
+    stop("'partition' contains values that are not parameter indices.", call. = FALSE)
   }
-  if (!is.integer(unlist(groups))) {
-    stop("'groups' must be a list of integers.")
-  }
-  if (any(!unlist(groups) %in% seq_len(npar))) {
-    stop("'groups' contains values that are not parameter indices of 'f'.")
-  }
-  if (missing(sequence)) {
-    stop("Please set 'sequence'.")
-  }
-  if (!is.integer(sequence)) {
-    stop("'sequence' must be a vector of integers.")
-  }
-  if (any(!sequence %in% seq_len(length(groups)))) {
-    stop("'sequence' contains values that or not indices of 'groups.'")
-  }
-  if (any(!seq_len(npar) %in% unlist(groups[unique(sequence)]))) {
+  if (any(!seq_len(f$npar) %in% unlist(partition))) {
     warning(paste(
       "Parameter(s)",
-      paste(setdiff(seq_len(npar), unlist(groups[unique(sequence)])), collapse = ", "),
+      paste(setdiff(seq_len(f$npar), unlist(partition)), collapse = ", "),
       "do not get optimized."
-    ))
+    ), call. = FALSE)
   }
-  if (!missing(initial)) {
-    if (!is.numeric(initial)) {
-      stop("'initial' must be a numeric vector.")
-    }
-    if (length(initial) != npar) {
-      stop("'initial' must be a numeric vector of length 'npar.'")
-    }
+  if (!is.numeric(initial)) {
+    stop("'initial' must be a numeric vector.", call. = FALSE)
+  }
+  if (length(initial) != f$npar) {
+    stop("'initial' must be a numeric vector of length 'f$npar.'", call. = FALSE)
+  }
+  if(any(initial < f$lower) || any(initial > f$upper)) {
+    stop("'initial' does not fulfill 'lower' and 'upper' constraints of 'f'.", call. = FALSE)
+  }
+  if (!(length(iterations) == 1 && is_number(iterations))) {
+    stop("'iterations' must be a number.", call. = FALSE)
   }
   if (!is.logical(minimize)) {
-    stop("'minimize' must be a boolean.")
+    stop("'minimize' must be a boolean.", call. = FALSE)
   }
   if (!is.logical(progress)) {
-    stop("'progress' must be a boolean.")
+    stop("'progress' must be a boolean.", call. = FALSE)
   }
 
-  ### read inputs
-  no_groups <- length(groups)
-
-  ### build initial values
-  if (missing(initial)) initial <- stats::rnorm(npar)
+  ### setup
   estimate <- initial
-
-  ### storage for nlm outputs
-  nlm_outputs <- list()
-
-  ### start timer
+  sequence <- data.frame(t(c(0, 0, estimate)))
+  colnames(sequence) <- c("iteration", "partition", paste0("p", 1:f$npar))
   t_start <- Sys.time()
 
-  for (i in seq_len(length(sequence))) {
+  for (i in seq_len(iterations)) {
 
     ### print progress
-    if (progress) cat(sprintf("%.0f%% \r", (i - 1) / length(sequence) * 100))
-
-    ### select group
-    selected <- sequence[i]
-
-    ### skip step if selected group is empty
-    if (length(groups[[selected]]) == 0) next
-
-    ### save fixed values
-    fixed_values <- estimate[-groups[[selected]]]
-
-    ### divide estimation problem
-    divide <- function(theta_small) {
-      theta <- numeric(npar)
-      theta[groups[[selected]]] <- theta_small
-      theta[-groups[[selected]]] <- fixed_values
-      out <- f(theta)
-      if (!minimize) {
-        out <- -out
-      }
-      if (!is.null(attr(out, "gradient", exact = TRUE))) {
-        attr(out, "gradient") <- attr(out, "gradient", exact = TRUE)[groups[[selected]]]
-      }
-      if (!is.null(attr(out, "hessian", exact = TRUE))) {
-        attr(out, "hessian") <- attr(out, "hessian", exact = TRUE)[groups[[selected]], groups[[selected]]]
-      }
-      return(out)
+    if (progress) {
+      cat("iteration",i,"of",iterations,"\n")
     }
 
-    ### (try to) solve divided estimation problem
-    conquer <- suppressWarnings(try(
-      {
-        p <- estimate[groups[[selected]]]
-        do.call(what = stats::nlm, args = c(list(f = divide, p = p), nlm_parameters))
-      },
-      silent = TRUE
-    ))
-    if (class(conquer) == "try-error") next
+    for (p in seq_along(partition)) {
 
-    ### save estimate
-    estimate[groups[[selected]]] <- conquer$estimate
+      ### print progress
+      if (progress) {
+        cat("- partition",p,"of",length(partition),"\n")
+      }
 
-    ### save nlm output
-    nlm_outputs[[i]] <- conquer
+      ### indices of selected group
+      p_ind <- partition[[p]]
+
+      ### skip step if selected group is empty
+      if (length(p_ind) == 0) {
+        next
+      }
+
+      ### divide estimation problem
+      divide <- function(theta_small) {
+        theta <- numeric(f$npar)
+        theta[p_ind] <- theta_small
+        theta[-p_ind] <- estimate[-p_ind]
+        out <- f$f(theta)
+        if (!minimize) {
+          out <- -out
+        }
+        if (!is.null(attr(out, "gradient", exact = TRUE))) {
+          attr(out, "gradient") <- attr(out, "gradient", exact = TRUE)[p_ind]
+        }
+        if (!is.null(attr(out, "hessian", exact = TRUE))) {
+          attr(out, "hessian") <- attr(out, "hessian", exact = TRUE)[p_ind, p_ind]
+        }
+        return(out)
+      }
+
+      ### (try to) solve divided estimation problem
+      conquer <- try_silent({
+        do.call(what = optimx::optimx,
+                args = list(par = estimate[p_ind],
+                            fn = divide,
+                            lower = f$lower[p_ind],
+                            upper = f$upper[p_ind],
+                            method = f$method,
+                            itnmax = f$iterlim,
+                            if(length(f$f_par) != 0) f$f_par))
+      })
+
+      ### evaluate
+      if (!"ao_fail" %in% class(conquer)) {
+        estimate[p_ind] <- conquer[, paste0("p",seq_along(p_ind))]
+      }
+      sequence <- rbind(sequence, c(i, p, estimate))
+    }
   }
 
   ### end timer
   t_end <- Sys.time()
 
   ### compute optimal function value
-  optimum <- f(estimate)
-
-  ### name estimates
-  names(estimate) <- paste("x", seq_len(npar), sep = "_")
+  optimum <- f$f(estimate)
 
   ### prepare output
   output <- list(
     "optimum" = optimum,
     "estimate" = estimate,
-    "time" = difftime(t_end, t_start, units = "secs"),
-    "nlm_outputs" = nlm_outputs,
-    "minimize" = minimize
+    "sequence" = sequence,
+    "time" = difftime(t_end, t_start, units = "secs")
   )
 
   class(output) <- "ao"
@@ -196,7 +184,7 @@ ao <- function(f, npar, groups, sequence, initial, minimize = TRUE,
 #' This function is the print method for an object of class \code{ao}.
 #'
 #' @param x
-#' An object of class \code{ao}, i.e. the output of \code{\link{ao}}.
+#' An object of class \code{ao}.
 #'
 #' @param ...
 #' Ignored.
@@ -206,16 +194,7 @@ ao <- function(f, npar, groups, sequence, initial, minimize = TRUE,
 #' @noRd
 
 print.ao <- function(x, ...) {
-  cat("Alternating optimization\n")
-  cat(
-    if (x$minimize) "Minimum value:",
-    if (!x$minimize) "Maximum value:",
-    zapsmall(x$optimum), "\n"
-  )
-  cat(
-    if (x$minimize) "Minimum at:",
-    if (!x$minimize) "Maximum at:",
-    zapsmall(x$estimate), "\n"
-  )
-  cat("computation time:", signif(x$time, digits = 1), "seconds\n")
+  cat("Optimum value:", zapsmall(x$optimum), "\n")
+  cat("Optimum at:", zapsmall(x$estimate), "\n")
+  cat("Optimization time:", signif(x$time, digits = 1), "seconds\n")
 }

@@ -4,19 +4,49 @@
 \alias{set_f}
 \title{Specify function.}
 \usage{
-set_f(f, npar)
+set_f(f, ..., npar, lower = -Inf, upper = Inf, iterlim = NULL, check = TRUE)
 }
 \arguments{
-\item{f}{A function of \eqn{n} variables to be optimized.}
+\item{f}{A function to be optimized, returning a single numeric value.
+Its first argument should be a numeric vector of length \code{npar}.
+Additional arguments can be specified via the \code{...} argument.
+Gradient or Hessian of \code{f} can be specified via attributes
+\code{gradient} and \code{hessian} for the function value.}
 
-\item{npar}{The number \eqn{n} of variables of \code{f}.}
+\item{...}{Additional arguments to be passed to \code{f}.}
+
+\item{npar}{The number of variables of \code{f}.}
+
+\item{lower}{Lower bounds on the variables.}
+
+\item{upper}{Upper bounds on the variables.}
+
+\item{iterlim}{The maximum number of iterations for the numerical optimizer for each
+sub-problem.}
+
+\item{check}{If \code{TRUE} checks the configuration.
+This will take at most 10 seconds in most cases.
+Set to \code{FALSE} if you are confident about the configuration to save
+computation time.}
 }
 \value{
 An object of class \code{ao_f}.
 }
 \description{
-This function specifies the function that should be optimized.
+This function specifies the function to be optimized.
 }
 \examples{
-set_f(f = function(x) -x^2, npar = 1)
+valley <- function(x) {
+  cons <- c(1.003344481605351, -3.344481605351171e-03)
+  n <- length(x)
+  f <- rep(0, n)
+  j <- 3 * (1:(n/3))
+  jm2 <- j - 2
+  jm1 <- j - 1
+  f[jm2] <- (cons[2]*x[jm2]^3 + cons[1]*x[jm2]) * exp(-(x[jm2]^2)/100) - 1
+  f[jm1] <- 10 * (sin(x[jm2]) - x[jm1])
+  f[j] <- 10 * (cos(x[jm2]) - x[j])
+  sum(f*f)
+}
+set_f(f = valley, npar = 9, lower = 0, upper = 10, check = FALSE)
 }
