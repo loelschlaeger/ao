@@ -1,3 +1,13 @@
+# ao 0.1.4.9000
+
+* New function `set_f()` for specification of the optimization problem. Parameter constrains can now be imposed on the target function.
+
+* `ao()` now returns the sequence of estimates in the different iterations as a data frame.
+
+* Argument `groups` in `ao()` now is called `partition`, `sequence` is replaced by `iterations`.
+
+* New utils functions `is_number()`, `try_silent()` and `timed()`.
+
 # ao 0.1.4
 
 * Updated package metadata.
@@ -6,17 +16,17 @@
 
 # ao 0.1.3
 
-* Exported print.ao method.
+* Exported method `print.ao()`.
 
 # ao 0.1.2
 
-* Skip ao step if a group is empty.
+* Skip alternation optimization step if a group is empty.
 
-* Estimation times always in seconds.
+* Estimation times now is returned always in seconds.
 
 * Return nlm outputs.
 
-* Implemented print method.
+* Implemented method `print.ao()`.
 
 # ao 0.1.1
 
