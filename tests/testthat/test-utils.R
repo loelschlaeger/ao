@@ -11,6 +11,6 @@ test_that("try_silent works", {
 
 test_that("try_silent works", {
   f <- function(x, t) {Sys.sleep(t); x}
-  expect_null(timed(f(1, 1.1), 1))
-  expect_equal(timed(f(1, 0.9), 1), 1)
+  expect_null(timed(f(1, 1.5), 1))
+  expect_equal(timed(f(1, 0.5), 1), 1)
 })
