@@ -19,3 +19,41 @@ knitr::opts_chunk$set(
 ```{r setup}
 library(ao)
 ```
+
+## Theory
+
+### What is alternating optimization?
+
+informal definition
+
+### Where is alternating optimization applied?
+
+names + references
+
+When is alternating optimization a good choice? page 8
+
+### How is the alternating optimization algorithm defined?
+
+formal definition
+
+ingredients
+
+explicit vs implicit 
+
+two options: complete alternating or partly alternating
+
+### What are the properties of alternating optimization?
+
+existence and uniqueness of optima
+
+convergence speed
+
+convergence rate
+
+## Applications
+
+Example 1
+
+Example 2
+
+Example from Mail
