@@ -172,7 +172,7 @@ ao <- function(f, partition, initial = 0, iterations = 1, tolerance = 1e-6,
 
       ### evaluate
       if (!"ao_fail" %in% class(conquer)) {
-        estimate[p_ind] <- conquer[, paste0("p",seq_along(p_ind))]
+        estimate[p_ind] <- as.numeric(conquer[, paste0("p",seq_along(p_ind))])
       }
       sequence <- rbind(sequence, c(i, p, estimate))
 
