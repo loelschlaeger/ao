@@ -4,7 +4,7 @@
 \alias{set_f}
 \title{Specify function.}
 \usage{
-set_f(f, ..., npar, lower = -Inf, upper = Inf, iterlim = NULL, check = TRUE)
+set_f(f, ..., npar, lower = -Inf, upper = Inf, iterlim = NULL, check = FALSE)
 }
 \arguments{
 \item{f}{A function to be optimized, returning a single numeric value.

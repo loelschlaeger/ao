@@ -46,7 +46,7 @@
 #' set_f(f = valley, npar = 9, lower = 0, upper = 10, check = FALSE)
 
 set_f <- function(f, ..., npar, lower = -Inf, upper = Inf, iterlim = NULL,
-                  check = TRUE) {
+                  check = FALSE) {
 
   ### input checks
   if (missing(f)) {
