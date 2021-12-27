@@ -13,6 +13,10 @@
 #' A vector of length \code{f$npar} of initial parameter values.
 #' @param iterations
 #' The number of iterations.
+#' @param tolerance
+#' A non-negative numeric value. The function terminates prematurely if the
+#' euclidean distance between the current solution and the one from the last
+#' iteration is smaller than \code{tolerance}.
 #' @param minimize
 #' If \code{TRUE}, minimization, if \code{FALSE}, maximization.
 #' @param progress
@@ -41,12 +45,12 @@
 #'   sum(f*f)
 #' }
 #' f <- set_f(f = valley, npar = 9, lower = 0, upper = 10, check = FALSE)
-#' ao(f = f, partition = list(1, 2, 3, 4, 5, 6, 7, 8, 9), iterations = 2)
+#' ao(f = f, partition = list(1, 2, 3, 4, 5, 6, 7, 8, 9), initial = 0, iterations = 3)
 #'
 #' @export
 
-ao <- function(f, partition, initial = rep(0, f$npar),
-               iterations = 1, minimize = TRUE, progress = FALSE) {
+ao <- function(f, partition, initial = 0, iterations = 1, tolerance = 1e-6,
+               minimize = TRUE, progress = FALSE) {
 
   ### check inputs
   if (missing(f)) {
@@ -77,6 +81,9 @@ ao <- function(f, partition, initial = rep(0, f$npar),
   if (!is.numeric(initial)) {
     stop("'initial' must be a numeric vector.", call. = FALSE)
   }
+  if (length(initial) == 1) {
+    initial <- rep(initial, f$npar)
+  }
   if (length(initial) != f$npar) {
     stop("'initial' must be a numeric vector of length 'f$npar.'", call. = FALSE)
   }
@@ -86,6 +93,9 @@ ao <- function(f, partition, initial = rep(0, f$npar),
   if (!(length(iterations) == 1 && is_number(iterations))) {
     stop("'iterations' must be a number.", call. = FALSE)
   }
+  if (!(length(tolerance) == 1 && is.numeric(tolerance) && tolerance > 0)) {
+    stop("'tolerance' must be non-negative.", call. = FALSE)
+  }
   if (!is.logical(minimize)) {
     stop("'minimize' must be a boolean.", call. = FALSE)
   }
@@ -94,12 +104,21 @@ ao <- function(f, partition, initial = rep(0, f$npar),
   }
 
   ### setup
+  exit_flag <- FALSE
   estimate <- initial
   sequence <- data.frame(t(c(0, 0, estimate)))
   colnames(sequence) <- c("iteration", "partition", paste0("p", 1:f$npar))
   t_start <- Sys.time()
 
   for (i in seq_len(iterations)) {
+
+    ### premature interruption
+    if (exit_flag) {
+      if (progress) {
+        cat("premature interruption because 'tolerance' is reached\n")
+      }
+      break
+    }
 
     ### print progress
     if (progress) {
@@ -110,7 +129,7 @@ ao <- function(f, partition, initial = rep(0, f$npar),
 
       ### print progress
       if (progress) {
-        cat("- partition",p,"of",length(partition),"\n")
+        cat("- partition",p,"of",length(partition),":",f$f(estimate),"\n")
       }
 
       ### indices of selected group
@@ -156,6 +175,15 @@ ao <- function(f, partition, initial = rep(0, f$npar),
         estimate[p_ind] <- conquer[, paste0("p",seq_along(p_ind))]
       }
       sequence <- rbind(sequence, c(i, p, estimate))
+
+      ### check for premature interruption
+      if(nrow(sequence) > length(partition)) {
+        curr <- as.numeric(sequence[nrow(sequence) - length(partition), -(1:2)])
+        last <- as.numeric(sequence[nrow(sequence), -(1:2)])
+        if(euclidean(curr, last) < tolerance) {
+          exit_flag = TRUE
+        }
+      }
     }
   }
 
@@ -196,5 +224,5 @@ ao <- function(f, partition, initial = rep(0, f$npar),
 print.ao <- function(x, ...) {
   cat("Optimum value:", zapsmall(x$optimum), "\n")
   cat("Optimum at:", zapsmall(x$estimate), "\n")
-  cat("Optimization time:", signif(x$time, digits = 1), "seconds\n")
+  cat("Optimization time:", signif(x$time, digits = 2), "seconds\n")
 }

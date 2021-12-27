@@ -7,8 +7,9 @@
 ao(
   f,
   partition,
-  initial = rep(0, f$npar),
+  initial = 0,
   iterations = 1,
+  tolerance = 1e-06,
   minimize = TRUE,
   progress = FALSE
 )
@@ -21,6 +22,10 @@ ao(
 \item{initial}{A vector of length \code{f$npar} of initial parameter values.}
 
 \item{iterations}{The number of iterations.}
+
+\item{tolerance}{A non-negative numeric value. The function terminates prematurely if the
+euclidean distance between the current solution and the one from the last
+iteration is smaller than \code{tolerance}.}
 
 \item{minimize}{If \code{TRUE}, minimization, if \code{FALSE}, maximization.}
 
@@ -55,6 +60,6 @@ valley <- function(x) {
   sum(f*f)
 }
 f <- set_f(f = valley, npar = 9, lower = 0, upper = 10, check = FALSE)
-ao(f = f, partition = list(1, 2, 3, 4, 5, 6, 7, 8, 9), iterations = 2)
+ao(f = f, partition = list(1, 2, 3, 4, 5, 6, 7, 8, 9), initial = 0, iterations = 3)
 
 }
