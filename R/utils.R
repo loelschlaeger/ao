@@ -86,9 +86,33 @@ print.ao_fail <- function(x, ...) {
 #'
 #' @examples
 #' timed(Sys.sleep(1.1), 1)
+
 timed <- function(expr, secs) {
   if (!(length(secs) == 1 && is_number(secs))) {
     stop("'secs' must be a number.")
   }
   R.utils::withTimeout(expr, timeout = secs, onTimeout = "silent")
+}
+
+#' Euclidean distance.
+#'
+#' This function computes the euclidean distance between two numeric vectors.
+#'
+#' @param a
+#' A numeric (vector).
+#'
+#' @param b
+#' A numeric (vector).
+#'
+#' @return
+#' A numeric.
+#'
+#' @export
+#'
+#' @examples
+#' euclidean(c(0,0), c(1,1))
+
+euclidean <- function(a, b) {
+  stopifnot(is.numeric(a), is.numeric(b))
+  sqrt(sum((a - b)^2))
 }
