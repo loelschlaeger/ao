@@ -97,8 +97,13 @@ set_f <- function(f, ..., npar, lower = -Inf, upper = Inf, iterlim = NULL,
   ### define call to optimizer
   cto <- function(p) {
     do.call(what = optimx::optimx,
-            args = list(par = p, fn = f, lower = lower, upper = upper,
-                        method = method, itnmax = iterlim, f_par))
+            args = list(par = p,
+                        fn = f,
+                        lower = lower,
+                        upper = upper,
+                        method = method,
+                        itnmax = iterlim,
+                        if(length(f_par) != 0) f_par))
   }
 
   ### configuration checks
