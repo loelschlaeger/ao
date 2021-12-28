@@ -11,7 +11,8 @@ ao(
   iterations = 1,
   tolerance = 1e-06,
   minimize = TRUE,
-  progress = FALSE
+  progress = FALSE,
+  plot = TRUE
 )
 }
 \arguments{
@@ -30,6 +31,8 @@ iteration is smaller than \code{tolerance}.}
 \item{minimize}{If \code{TRUE}, minimization, if \code{FALSE}, maximization.}
 
 \item{progress}{If \code{TRUE}, progress is printed.}
+
+\item{plot}{If \code{TRUE}, the progress is plotted.}
 }
 \value{
 An object of class \code{ao}, which is a list of

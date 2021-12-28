@@ -21,7 +21,8 @@ Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.1.2
 Imports:
     R.utils,
-    optimx
+    optimx,
+    ggplot2
 Suggests: 
     testthat (>= 3.0.0),
     magrittr,

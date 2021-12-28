@@ -21,6 +21,8 @@
 #' If \code{TRUE}, minimization, if \code{FALSE}, maximization.
 #' @param progress
 #' If \code{TRUE}, progress is printed.
+#' @param plot
+#' If \code{TRUE}, the progress is plotted.
 #'
 #' @return
 #' An object of class \code{ao}, which is a list of
@@ -50,7 +52,7 @@
 #' @export
 
 ao <- function(f, partition, initial = 0, iterations = 1, tolerance = 1e-6,
-               minimize = TRUE, progress = FALSE) {
+               minimize = TRUE, progress = FALSE, plot = TRUE) {
 
   ### check inputs
   if (missing(f)) {
@@ -109,6 +111,15 @@ ao <- function(f, partition, initial = 0, iterations = 1, tolerance = 1e-6,
   sequence <- data.frame(t(c(0, 0, estimate)))
   colnames(sequence) <- c("iteration", "partition", paste0("p", 1:f$npar))
   t_start <- Sys.time()
+  if (plot) {
+    data <- data.frame(x = 1:f$npar, y = estimate)
+    x <- y <- NULL
+    vis <-  ggplot2::ggplot(data, ggplot2::aes(x, y)) +
+      ggplot2::geom_point() +
+      ggplot2::scale_x_discrete(limits = factor(data$x)) +
+      ggplot2::theme_minimal() +
+      ggplot2::labs(x = "Parameter index", y = "", title = "")
+  }
 
   for (i in seq_len(iterations)) {
 
@@ -127,9 +138,14 @@ ao <- function(f, partition, initial = 0, iterations = 1, tolerance = 1e-6,
 
     for (p in seq_along(partition)) {
 
-      ### print progress
+      ### print and plot progress
       if (progress) {
         cat("- partition",p,"of",length(partition),":",f$f(estimate),"\n")
+      }
+      if (plot) {
+        vis$data$y <- estimate
+        vis$labels$title <- paste("iteration",i,"partition",p)
+        print(vis)
       }
 
       ### indices of selected group
