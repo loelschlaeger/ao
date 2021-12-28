@@ -10,6 +10,8 @@
 
 * New utils functions `is_number()`, `try_silent()` and `timed()`.
 
+* New package sticker.
+
 # ao 0.1.4
 
 * Updated package metadata.
