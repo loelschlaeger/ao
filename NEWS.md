@@ -4,6 +4,8 @@
 
 * `ao()` now returns the sequence of estimates in the different iterations as a data frame.
 
+* Plot function in `ao()`.
+
 * Argument `groups` in `ao()` now is called `partition`, `sequence` is replaced by `iterations`.
 
 * New utils functions `is_number()`, `try_silent()` and `timed()`.
