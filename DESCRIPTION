@@ -27,6 +27,7 @@ Suggests:
     testthat (>= 3.0.0),
     magrittr,
     knitr,
-    rmarkdown
+    rmarkdown,
+    covr
 Config/testthat/edition: 3
 VignetteBuilder: knitr

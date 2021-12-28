@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# ao <img src="man/figures/logo.png" align="right" alt="" width="120" />
+# ao: alternating optimization <img src="man/figures/logo.png" align="right" alt="" width="120" />
 
 <!-- badges: start -->
 
@@ -10,10 +10,16 @@
 status](https://www.r-pkg.org/badges/version-last-release/ao)](https://www.r-pkg.org/badges/version-last-release/ao)
 [![CRAN
 downloads](https://cranlogs.r-pkg.org/badges/grand-total/ao)](https://cranlogs.r-pkg.org/badges/grand-total/ao)
+[![Codecov test
+coverage](https://codecov.io/gh/loelschlaeger/ao/branch/main/graph/badge.svg)](https://app.codecov.io/gh/loelschlaeger/ao?branch=main)
 <!-- badges: end -->
 
-The goal of ao is alternating optimization of (high-dimensional)
-functions.
+This package performs alternating optimization, which is an iterative
+procedure for optimizing some function jointly over all variables by
+alternating restricted optimization over individual variable subsets.
+
+See the [vignette](https://loelschlaeger.github.io/ao/articles/ao.html)
+for more details.
 
 ## Installation
 
@@ -31,42 +37,31 @@ And the development version from [GitHub](https://github.com/) with:
 devtools::install_github("loelschlaeger/ao")
 ```
 
-## How to get started?
-
-1.  Define a function `f` that you want to optimize.
-
-2.  Set `npar` equal to the number of parameters of `f`.
-
-3.  Group the parameter indices of `f` into the list `groups`, which
-    determines the groups in which parameters get optimized.
-
-4.  Define the vector `sequence`, which determines the sequence in which
-    the parameter groups get optimized.
-
-5.  Optionally define the vector `initial` of initial parameter values.
-    If not supplied, they get drawn from a standard normal distribution.
-
-6.  Set `minimize = TRUE` for minimizing `f` (the default) or
-    `minimize = FALSE` for maximizing `f`.
-
-7.  Set `progress = TRUE` for showing optimization progress. Per
-    default, `progress = FALSE`.
-
-8.  Call `ao` with the parameters defined above.
-
 ## Example
+
+This example is explained in detail in the
+[vignette](https://loelschlaeger.github.io/ao/articles/ao.html).
 
 ``` r
 library(ao)
-#> Thanks for using ao version 0.1.4, happy alternating optimization!
+#> Thanks for using ao version 0.1.4.9000, happy alternating optimization!
 #> See https://loelschlaeger.github.io/ao for help.
 #> Type 'citation("ao")' for citing this R package.
-ao(f = function(x) 3*x[1]^2 + 2*x[1]*x[2] + x[2]^2 - 5*x[1] + 2,
-   npar = 2,
-   groups = list(1,2),
-   sequence = rep(c(1,2),10))
-#> Alternating optimization
-#> Minimum value: -1.125 
-#> Minimum at: 1.249965 -1.249965 
-#> computation time: 0.04 seconds
+valley <- function(x) {
+  cons <- c(1.003344481605351, -3.344481605351171e-03)
+  n <- length(x)
+  f <- rep(0, n)
+  j <- 3 * (1:(n/3))
+  jm2 <- j - 2
+  jm1 <- j - 1
+  f[jm2] <- (cons[2]*x[jm2]^3 + cons[1]*x[jm2]) * exp(-(x[jm2]^2)/100) - 1
+  f[jm1] <- 10 * (sin(x[jm2]) - x[jm1])
+  f[j] <- 10 * (cos(x[jm2]) - x[j])
+  sum(f*f)
+}
+f <- set_f(f = valley, npar = 9, lower = 0, upper = 10)
+ao(f = f, partition = list(1, 2, 3, 4, 5, 6, 7, 8, 9), initial = 0, iterations = 1e10, plot = FALSE)
+#> Optimum value: 5.315569e-12 
+#> Optimum at: 1.010331 0.8470081 0.53158 1.010331 0.8470081 0.53158 1.010331 0.8470081 0.53158 
+#> Optimization time: 0.7 seconds
 ```
