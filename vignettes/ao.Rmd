@@ -7,6 +7,8 @@ vignette: >
   %\VignetteIndexEntry{ao}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
+bibliography: ref.bib
+link-citations: true
 ---
 
 ```{r, include = FALSE}
@@ -24,33 +26,41 @@ library(ao)
 
 ### What is alternating optimization?
 
-informal definition
+Alternating optimization is an iterative procedure for optimizing some function jointly over all variables by alternating restricted optimization over individual variable subsets.
 
-### Where is alternating optimization applied?
+More precisely, consider minimizing or maximizing $f:\mathbb{R}^n \to \mathbb{R}$ over the set of feasible points $x \in X \subseteq \mathbb{R}^n$. The underlying algorithm of alternating optimization is as follows:
 
-names + references
+1. Assign an initial value for $x$.
 
-When is alternating optimization a good choice? page 8
+2. Optimize $f$ with respect to a subset of parameters $\tilde{x}$ while holding the other parameters constant. This can be done explicitly or implicitly (by numerical optimization, which is the implemented method in this package).
 
-### How is the alternating optimization algorithm defined?
+3. Replace the values in $x$ by the optimal values for $\tilde{x}$ found in step 2.
 
-formal definition
+4. Repeat from step 2 with another parameter subset.
 
-ingredients
+5. Stop when the process has converged or reached an iteration limit.
 
-explicit vs implicit 
+Note that alternating optimization is a generalization of joint optimization, where the only parameter subset would be the whole set of parameters.
 
-two options: complete alternating or partly alternating
+### When is alternating optimization a good idea?
+
+- When the joint optimization is (numerically) difficult (or not feasible).
+
+- When there is a natural division of parameters in subsets. That is the case e.g. for likelihood functions, where the parameter space naturally divides into parameter subsets corresponding to linear effects, variances and covariances with different influence on the likelihood value.
+
+- To improve optimization time in some cases, see [@hu2002] for an example.
+
+- Compared to joint optimization, alternating optimization may be better in bypassing local optima, see [@bezdek2002].
 
 ### What are the properties of alternating optimization?
 
-existence and uniqueness of optima
+Alternating optimization, under certain conditions on $f$, can convergence to the global optimum. However, the set of possible solutions also contains saddle points of $f$, see for example [@bezdek1987].
 
-convergence speed
+[@bezdek2003] shows, that alternating optimization under reasonable assumptions is locally q-linearly convergent.
 
-convergence rate
+## Application
 
-## Applications
+How are the functions and arguments defined?
 
 Example 1
 
@@ -88,3 +98,5 @@ valley <- function(x) {
 f <- set_f(f = valley, npar = 9, lower = 0, upper = 10, check = FALSE)
 ao(f = f, partition = list(1, 2, 3, 4, 5, 6, 7, 8, 9), initial = 0, iterations = 3)
 ```
+
+## References
