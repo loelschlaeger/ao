@@ -19,7 +19,7 @@ procedure for optimizing some function jointly over all variables by
 alternating restricted optimization over individual variable subsets.
 
 See the [vignette](https://loelschlaeger.github.io/ao/articles/ao.html)
-for more details.
+for more details on the method.
 
 ## Installation
 
@@ -40,7 +40,7 @@ devtools::install_github("loelschlaeger/ao")
 ## Example
 
 This example is explained in detail in the
-[vignette](https://loelschlaeger.github.io/ao/articles/ao.html).
+[vignette](https://loelschlaeger.github.io/ao/articles/ao.html#application).
 
 ``` r
 library(ao)
@@ -63,5 +63,5 @@ f <- set_f(f = valley, npar = 9, lower = 0, upper = 10)
 ao(f = f, partition = list(1, 2, 3, 4, 5, 6, 7, 8, 9), initial = 0, iterations = 1e10, plot = FALSE)
 #> Optimum value: 5.315569e-12 
 #> Optimum at: 1.010331 0.8470081 0.53158 1.010331 0.8470081 0.53158 1.010331 0.8470081 0.53158 
-#> Optimization time: 0.7 seconds
+#> Optimization time: 0.76 seconds
 ```
