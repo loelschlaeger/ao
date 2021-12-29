@@ -1,14 +1,16 @@
 # ao 0.1.4.9000
 
-* New function `set_f()` for specification of the optimization problem. Parameter constrains can now be imposed on the target function.
-
 * `ao()` now returns the sequence of estimates in the different iterations as a data frame.
 
-* Plot function in `ao()`.
+* `ao()` now is able to plot the sequence of estimates during estimation.
 
-* Argument `groups` in `ao()` now is called `partition`, `sequence` is replaced by `iterations`.
+* Argument `groups` in `ao()` now is called `partition` and `sequence` is replaced by `iterations`.
 
-* New utils functions `is_number()`, `try_silent()` and `timed()`.
+* New function `set_f()` for specification of the optimization problem. Parameter constraints can now be imposed on the target function.
+
+* New utils functions `is_number()`, `try_silent()`, `timed()` and `euclidean()`.
+
+* Included a vignette for details on alternating optimization.
 
 * New package sticker.
 
@@ -28,7 +30,7 @@
 
 * Estimation times now is returned always in seconds.
 
-* Return nlm outputs.
+* Return `stats::nlm()` outputs.
 
 * Implemented method `print.ao()`.
 
