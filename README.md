@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# ao: alternating optimization <img src="man/figures/logo.png" align="right" alt="" width="120" />
+# ao: Alternating Optimization <img src="man/figures/logo.png" align="right" alt="" width="120" />
 
 <!-- badges: start -->
 

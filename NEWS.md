@@ -1,4 +1,4 @@
-# ao 0.1.4.9000
+# ao 0.2.0
 
 * `ao()` now returns the sequence of estimates in the different iterations as a data frame.
 
