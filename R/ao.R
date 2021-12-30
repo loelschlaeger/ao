@@ -9,10 +9,16 @@
 #' An object of class \code{ao_f}, i.e. the output of \code{\link{set_f}}.
 #' @param partition
 #' A list of vectors of parameter indices \eqn{1,...,n} of the function.
+#' For example, choosing \code{partition = list(1, 2, 3, 4, 5, 6, 7, 8, 9)} as
+#' in the example optimizes each parameter separately, while choosing
+#' \code{partition = list(1:9)} leads to joint optimization. Any configuration
+#' in-between is possible, while parameter indices can be members of multiple
+#' subsets.
 #' @param initial
-#' A vector of length \code{f$npar} of initial parameter values.
+#' A vector of length \code{f$npar} of initial parameter values. Per default,
+#' the algorithm is initialized at the origin.
 #' @param iterations
-#' The number of iterations.
+#' The number of iterations through all subsets.
 #' @param tolerance
 #' A non-negative numeric value. The function terminates prematurely if the
 #' euclidean distance between the current solution and the one from the last
@@ -22,7 +28,7 @@
 #' @param progress
 #' If \code{TRUE}, progress is printed.
 #' @param plot
-#' If \code{TRUE}, the progress is plotted.
+#' If \code{TRUE}, the parameter updates are plotted.
 #'
 #' @return
 #' An object of class \code{ao}, which is a list of
@@ -38,20 +44,19 @@
 #'   cons <- c(1.003344481605351, -3.344481605351171e-03)
 #'   n <- length(x)
 #'   f <- rep(0, n)
-#'   j <- 3 * (1:(n/3))
+#'   j <- 3 * (1:(n / 3))
 #'   jm2 <- j - 2
 #'   jm1 <- j - 1
-#'   f[jm2] <- (cons[2]*x[jm2]^3 + cons[1]*x[jm2]) * exp(-(x[jm2]^2)/100) - 1
+#'   f[jm2] <- (cons[2] * x[jm2]^3 + cons[1] * x[jm2]) * exp(-(x[jm2]^2) / 100) - 1
 #'   f[jm1] <- 10 * (sin(x[jm2]) - x[jm1])
 #'   f[j] <- 10 * (cos(x[jm2]) - x[j])
-#'   sum(f*f)
+#'   sum(f * f)
 #' }
 #' f <- set_f(f = valley, npar = 9, lower = 0, upper = 10, check = FALSE)
-#' ao(f = f, partition = list(1, 2, 3, 4, 5, 6, 7, 8, 9), initial = 0, iterations = 3)
-#'
+#' ao(f = f, partition = list(1, 2, 3, 4, 5, 6, 7, 8, 9))
 #' @export
 
-ao <- function(f, partition, initial = 0, iterations = 1, tolerance = 1e-6,
+ao <- function(f, partition, initial = 0, iterations = 10, tolerance = 1e-6,
                minimize = TRUE, progress = FALSE, plot = TRUE) {
 
   ### check inputs
@@ -89,7 +94,7 @@ ao <- function(f, partition, initial = 0, iterations = 1, tolerance = 1e-6,
   if (length(initial) != f$npar) {
     stop("'initial' must be a numeric vector of length 'f$npar.'", call. = FALSE)
   }
-  if(any(initial < f$lower) || any(initial > f$upper)) {
+  if (any(initial < f$lower) || any(initial > f$upper)) {
     stop("'initial' does not fulfill 'lower' and 'upper' constraints of 'f'.", call. = FALSE)
   }
   if (!(length(iterations) == 1 && is_number(iterations))) {
@@ -114,7 +119,7 @@ ao <- function(f, partition, initial = 0, iterations = 1, tolerance = 1e-6,
   if (plot) {
     data <- data.frame(x = 1:f$npar, y = estimate)
     x <- y <- NULL
-    vis <-  ggplot2::ggplot(data, ggplot2::aes(x, y)) +
+    vis <- ggplot2::ggplot(data, ggplot2::aes(x, y)) +
       ggplot2::geom_point() +
       ggplot2::scale_x_discrete(limits = factor(data$x)) +
       ggplot2::theme_minimal() +
@@ -133,18 +138,18 @@ ao <- function(f, partition, initial = 0, iterations = 1, tolerance = 1e-6,
 
     ### print progress
     if (progress) {
-      cat("iteration",i,"of",iterations,"\n")
+      cat("iteration", i, "of", iterations, "\n")
     }
 
     for (p in seq_along(partition)) {
 
       ### print and plot progress
       if (progress) {
-        cat("- partition",p,"of",length(partition),":",f$f(estimate),"\n")
+        cat("- partition", p, "of", length(partition), ":", f$f(estimate), "\n")
       }
       if (plot) {
         vis$data$y <- estimate
-        vis$labels$title <- paste("iteration",i,"partition",p)
+        vis$labels$title <- paste("iteration", i, "partition", p)
         print(vis)
       }
 
@@ -176,28 +181,32 @@ ao <- function(f, partition, initial = 0, iterations = 1, tolerance = 1e-6,
 
       ### (try to) solve divided estimation problem
       conquer <- try_silent({
-        do.call(what = optimx::optimx,
-                args = list(par = estimate[p_ind],
-                            fn = divide,
-                            lower = f$lower[p_ind],
-                            upper = f$upper[p_ind],
-                            method = f$method,
-                            itnmax = f$iterlim,
-                            if(length(f$f_par) != 0) f$f_par))
+        do.call(
+          what = optimx::optimx,
+          args = list(
+            par = estimate[p_ind],
+            fn = divide,
+            lower = f$lower[p_ind],
+            upper = f$upper[p_ind],
+            method = f$method,
+            itnmax = f$iterlim,
+            if (length(f$f_par) != 0) f$f_par
+          )
+        )
       })
 
       ### evaluate
       if (!"ao_fail" %in% class(conquer)) {
-        estimate[p_ind] <- as.numeric(conquer[, paste0("p",seq_along(p_ind))])
+        estimate[p_ind] <- as.numeric(conquer[, paste0("p", seq_along(p_ind))])
       }
       sequence <- rbind(sequence, c(i, p, estimate))
 
       ### check for premature interruption
-      if(nrow(sequence) > length(partition)) {
+      if (nrow(sequence) > length(partition)) {
         curr <- as.numeric(sequence[nrow(sequence) - length(partition), -(1:2)])
         last <- as.numeric(sequence[nrow(sequence), -(1:2)])
-        if(euclidean(curr, last) < tolerance) {
-          exit_flag = TRUE
+        if (euclidean(curr, last) < tolerance) {
+          exit_flag <- TRUE
         }
       }
     }

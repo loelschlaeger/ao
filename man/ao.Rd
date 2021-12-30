@@ -8,7 +8,7 @@ ao(
   f,
   partition,
   initial = 0,
-  iterations = 1,
+  iterations = 10,
   tolerance = 1e-06,
   minimize = TRUE,
   progress = FALSE,
@@ -18,11 +18,17 @@ ao(
 \arguments{
 \item{f}{An object of class \code{ao_f}, i.e. the output of \code{\link{set_f}}.}
 
-\item{partition}{A list of vectors of parameter indices \eqn{1,...,n} of the function.}
+\item{partition}{A list of vectors of parameter indices \eqn{1,...,n} of the function.
+For example, choosing \code{partition = list(1, 2, 3, 4, 5, 6, 7, 8, 9)} as
+in the example optimizes each parameter separately, while choosing
+\code{partition = list(1:9)} leads to joint optimization. Any configuration
+in-between is possible, while parameter indices can be members of multiple
+subsets.}
 
-\item{initial}{A vector of length \code{f$npar} of initial parameter values.}
+\item{initial}{A vector of length \code{f$npar} of initial parameter values. Per default,
+the algorithm is initialized at the origin.}
 
-\item{iterations}{The number of iterations.}
+\item{iterations}{The number of iterations through all subsets.}
 
 \item{tolerance}{A non-negative numeric value. The function terminates prematurely if the
 euclidean distance between the current solution and the one from the last
@@ -32,7 +38,7 @@ iteration is smaller than \code{tolerance}.}
 
 \item{progress}{If \code{TRUE}, progress is printed.}
 
-\item{plot}{If \code{TRUE}, the progress is plotted.}
+\item{plot}{If \code{TRUE}, the parameter updates are plotted.}
 }
 \value{
 An object of class \code{ao}, which is a list of
@@ -63,6 +69,6 @@ valley <- function(x) {
   sum(f*f)
 }
 f <- set_f(f = valley, npar = 9, lower = 0, upper = 10, check = FALSE)
-ao(f = f, partition = list(1, 2, 3, 4, 5, 6, 7, 8, 9), initial = 0, iterations = 3)
+ao(f = f, partition = list(1, 2, 3, 4, 5, 6, 7, 8, 9))
 
 }

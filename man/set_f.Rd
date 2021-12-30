@@ -11,21 +11,24 @@ set_f(f, ..., npar, lower = -Inf, upper = Inf, iterlim = NULL, check = FALSE)
 Its first argument should be a numeric vector of length \code{npar}.
 Additional arguments can be specified via the \code{...} argument.
 Gradient or Hessian of \code{f} can be specified via attributes
-\code{gradient} and \code{hessian} for the function value.}
+\code{gradient} and \code{hessian} for the function value.
+They are used for optimization if specified.}
 
 \item{...}{Additional arguments to be passed to \code{f}.}
 
 \item{npar}{The number of variables of \code{f}.}
 
-\item{lower}{Lower bounds on the variables.}
+\item{lower}{Lower bounds on the variables, which can be a single numeric value
+(a joint bound for all parameters) or a numeric vector of length \code{npar}
+(for individual bounds).}
 
-\item{upper}{Upper bounds on the variables.}
+\item{upper}{Upper bounds on the variables, analogue to \code{lower}.}
 
 \item{iterlim}{The maximum number of iterations for the numerical optimizer for each
-sub-problem.}
+sub-problem. No limit per default.}
 
 \item{check}{If \code{TRUE} checks the configuration.
-This will take at most 10 seconds in most cases.
+This will take at most 20 seconds in most cases.
 Set to \code{FALSE} if you are confident about the configuration to save
 computation time.}
 }
@@ -48,5 +51,5 @@ valley <- function(x) {
   f[j] <- 10 * (cos(x[jm2]) - x[j])
   sum(f*f)
 }
-set_f(f = valley, npar = 9, lower = 0, upper = 10, check = FALSE)
+set_f(f = valley, npar = 9, lower = 0, upper = 10)
 }

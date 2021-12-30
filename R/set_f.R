@@ -8,20 +8,23 @@
 #' Additional arguments can be specified via the \code{...} argument.
 #' Gradient or Hessian of \code{f} can be specified via attributes
 #' \code{gradient} and \code{hessian} for the function value.
+#' They are used for optimization if specified.
 #' @param ...
 #' Additional arguments to be passed to \code{f}.
 #' @param npar
 #' The number of variables of \code{f}.
 #' @param lower
-#' Lower bounds on the variables.
+#' Lower bounds on the variables, which can be a single numeric value
+#' (a joint bound for all parameters) or a numeric vector of length \code{npar}
+#' (for individual bounds).
 #' @param upper
-#' Upper bounds on the variables.
+#' Upper bounds on the variables, analogue to \code{lower}.
 #' @param iterlim
 #' The maximum number of iterations for the numerical optimizer for each
-#' sub-problem.
+#' sub-problem. No limit per default.
 #' @param check
 #' If \code{TRUE} checks the configuration.
-#' This will take at most 10 seconds in most cases.
+#' This will take at most 20 seconds in most cases.
 #' Set to \code{FALSE} if you are confident about the configuration to save
 #' computation time.
 #'
@@ -35,16 +38,15 @@
 #'   cons <- c(1.003344481605351, -3.344481605351171e-03)
 #'   n <- length(x)
 #'   f <- rep(0, n)
-#'   j <- 3 * (1:(n/3))
+#'   j <- 3 * (1:(n / 3))
 #'   jm2 <- j - 2
 #'   jm1 <- j - 1
-#'   f[jm2] <- (cons[2]*x[jm2]^3 + cons[1]*x[jm2]) * exp(-(x[jm2]^2)/100) - 1
+#'   f[jm2] <- (cons[2] * x[jm2]^3 + cons[1] * x[jm2]) * exp(-(x[jm2]^2) / 100) - 1
 #'   f[jm1] <- 10 * (sin(x[jm2]) - x[jm1])
 #'   f[j] <- 10 * (cos(x[jm2]) - x[j])
-#'   sum(f*f)
+#'   sum(f * f)
 #' }
-#' set_f(f = valley, npar = 9, lower = 0, upper = 10, check = FALSE)
-
+#' set_f(f = valley, npar = 9, lower = 0, upper = 10)
 set_f <- function(f, ..., npar, lower = -Inf, upper = Inf, iterlim = NULL,
                   check = FALSE) {
 
@@ -65,7 +67,7 @@ set_f <- function(f, ..., npar, lower = -Inf, upper = Inf, iterlim = NULL,
     stop("'lower' must be numeric.", .call = FALSE)
   }
   if (length(lower) == 1) {
-    lower = rep(lower, npar)
+    lower <- rep(lower, npar)
   }
   if (length(lower) != npar) {
     stop("'lower' must be of length 1 or 'npar'.", .call = FALSE)
@@ -74,7 +76,7 @@ set_f <- function(f, ..., npar, lower = -Inf, upper = Inf, iterlim = NULL,
     stop("'upper' must be numeric.", .call = FALSE)
   }
   if (length(upper) == 1) {
-    upper = rep(upper, npar)
+    upper <- rep(upper, npar)
   }
   if (length(upper) != npar) {
     stop("'upper' must be of length 1 or 'npar'.", .call = FALSE)
@@ -82,28 +84,32 @@ set_f <- function(f, ..., npar, lower = -Inf, upper = Inf, iterlim = NULL,
   if (any(upper < lower)) {
     stop("(Each element of) 'upper' must be greater than 'lower'.", .call = FALSE)
   }
-  if(!is.null(iterlim)){
-    if(length(iterlim) != 1 || !is_number(iterlim)) {
+  if (!is.null(iterlim)) {
+    if (length(iterlim) != 1 || !is_number(iterlim)) {
       stop("'iterlim' must be a number.", .call = FALSE)
     }
   }
-  if(!is.logical(check)){
+  if (!is.logical(check)) {
     stop("'stop' must be a boolean.", .call = FALSE)
   }
   f_par <- list(...)
-  constrains <- if(any(lower != -Inf) || any(upper != Inf)) TRUE else FALSE
+  constrains <- if (any(lower != -Inf) || any(upper != Inf)) TRUE else FALSE
   method <- ifelse(constrains, "L-BFGS-B", "nlm")
 
   ### define call to optimizer
   cto <- function(p) {
-    do.call(what = optimx::optimx,
-            args = list(par = p,
-                        fn = f,
-                        lower = lower,
-                        upper = upper,
-                        method = method,
-                        itnmax = iterlim,
-                        if(length(f_par) != 0) f_par))
+    do.call(
+      what = optimx::optimx,
+      args = list(
+        par = p,
+        fn = f,
+        lower = lower,
+        upper = upper,
+        method = method,
+        itnmax = iterlim,
+        if (length(f_par) != 0) f_par
+      )
+    )
   }
 
   ### configuration checks
@@ -113,7 +119,7 @@ set_f <- function(f, ..., npar, lower = -Inf, upper = Inf, iterlim = NULL,
     optimizer_success <- 0
     first_fail <- NULL
     for (i in 1:check_runs) {
-      if(constrains) {
+      if (constrains) {
         p <- stats::runif(npar, lower, upper)
       } else {
         p <- stats::rnorm(npar)
@@ -141,9 +147,9 @@ set_f <- function(f, ..., npar, lower = -Inf, upper = Inf, iterlim = NULL,
       stop("Configuration failed.\nFirst error was: ", first_fail, call. = FALSE)
     } else if (f_success < check_runs || optimizer_success < check_runs) {
       warning(check_runs - f_success, " of ", check_runs, " random calls of 'f' failed. ",
-              check_runs - optimizer_success, " of ", check_runs, " calls of 'optimizer' failed.\n",
-              "First error was: ", first_fail,
-              call. = FALSE
+        check_runs - optimizer_success, " of ", check_runs, " calls of 'optimizer' failed.\n",
+        "First error was: ", first_fail,
+        call. = FALSE
       )
     } else {
       message("Configuration checked.")
