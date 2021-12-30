@@ -22,7 +22,7 @@ knitr::opts_chunk$set(
 [![Codecov test coverage](https://codecov.io/gh/loelschlaeger/ao/branch/main/graph/badge.svg)](https://app.codecov.io/gh/loelschlaeger/ao?branch=main)
 <!-- badges: end -->
 
-This package performs alternating optimization, which is an iterative procedure for optimizing some function jointly over all variables by alternating restricted optimization over individual variable subsets. 
+This package implemented alternating optimization, which is an iterative procedure for optimizing some function jointly over all parameters by alternating restricted optimization over individual parameter subsets. 
 
 See the [vignette](https://loelschlaeger.github.io/ao/articles/ao.html) for more details on the method.
 
@@ -60,5 +60,5 @@ valley <- function(x) {
   sum(f*f)
 }
 f <- set_f(f = valley, npar = 9, lower = 0, upper = 10)
-ao(f = f, partition = list(1, 2, 3, 4, 5, 6, 7, 8, 9), initial = 0, iterations = 1e10, plot = FALSE)
+ao(f = f, partition = list(1, 2, 3, 4, 5, 6, 7, 8, 9), progress = FALSE, plot = FALSE)
 ```

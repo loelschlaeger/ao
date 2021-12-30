@@ -14,9 +14,9 @@ downloads](https://cranlogs.r-pkg.org/badges/grand-total/ao)](https://cranlogs.r
 coverage](https://codecov.io/gh/loelschlaeger/ao/branch/main/graph/badge.svg)](https://app.codecov.io/gh/loelschlaeger/ao?branch=main)
 <!-- badges: end -->
 
-This package performs alternating optimization, which is an iterative
-procedure for optimizing some function jointly over all variables by
-alternating restricted optimization over individual variable subsets.
+This package implemented alternating optimization, which is an iterative
+procedure for optimizing some function jointly over all parameters by
+alternating restricted optimization over individual parameter subsets.
 
 See the [vignette](https://loelschlaeger.github.io/ao/articles/ao.html)
 for more details on the method.
@@ -44,7 +44,7 @@ This example is explained in detail in the
 
 ``` r
 library(ao)
-#> Thanks for using ao version 0.1.4.9000, happy alternating optimization!
+#> Thanks for using ao version 0.2.0, happy alternating optimization!
 #> See https://loelschlaeger.github.io/ao for help.
 #> Type 'citation("ao")' for citing this R package.
 valley <- function(x) {
@@ -60,8 +60,8 @@ valley <- function(x) {
   sum(f*f)
 }
 f <- set_f(f = valley, npar = 9, lower = 0, upper = 10)
-ao(f = f, partition = list(1, 2, 3, 4, 5, 6, 7, 8, 9), initial = 0, iterations = 1e10, plot = FALSE)
-#> Optimum value: 5.315569e-12 
+ao(f = f, partition = list(1, 2, 3, 4, 5, 6, 7, 8, 9), progress = FALSE, plot = FALSE)
+#> Optimum value: 5.411669e-12 
 #> Optimum at: 1.010331 0.8470081 0.53158 1.010331 0.8470081 0.53158 1.010331 0.8470081 0.53158 
-#> Optimization time: 0.76 seconds
+#> Optimization time: 0.41 seconds
 ```
