@@ -9,8 +9,17 @@ test_that("try_silent works", {
   expect_s3_class(try_silent(log("1")), "ao_fail")
 })
 
-test_that("try_silent works", {
-  f <- function(x, t) {Sys.sleep(t); x}
+test_that("timed works", {
+  f <- function(x, t) {
+    Sys.sleep(t)
+    x
+  }
   expect_null(timed(f(1, 1.5), 1))
   expect_equal(timed(f(1, 0.5), 1), 1)
+})
+
+test_that("euclidean works", {
+  x <- 1:10
+  y <- 1:10
+  expect_equal(euclidean(x, y), 0)
 })
