@@ -18,21 +18,17 @@ knitr::opts_chunk$set(
 )
 ```
 
-```{r setup}
-library(ao)
-```
-
 ## Theory
 
 ### What is alternating optimization?
 
-Alternating optimization is an iterative procedure for optimizing some function jointly over all variables by alternating restricted optimization over individual variable subsets.
+Alternating optimization is an iterative procedure for optimizing some function jointly over all parameters by alternating restricted optimization over individual parameter subsets.
 
 More precisely, consider minimizing or maximizing $f:\mathbb{R}^n \to \mathbb{R}$ over the set of feasible points $x \in X \subseteq \mathbb{R}^n$. The underlying algorithm of alternating optimization is as follows:
 
 1. Assign an initial value for $x$.
 
-2. Optimize $f$ with respect to a subset of parameters $\tilde{x}$ while holding the other parameters constant. This can be done explicitly or implicitly (by numerical optimization, which is the implemented method in this package).
+2. Optimize $f$ with respect to a subset of parameters $\tilde{x}$ while holding the other parameters constant[^1]. This can be done explicitly or implicitly (by numerical optimization, which is the implemented method in this package).
 
 3. Replace the values in $x$ by the optimal values for $\tilde{x}$ found in step 2.
 
@@ -40,13 +36,13 @@ More precisely, consider minimizing or maximizing $f:\mathbb{R}^n \to \mathbb{R}
 
 5. Stop when the process has converged or reached an iteration limit.
 
-Note that alternating optimization is a generalization of joint optimization, where the only parameter subset would be the whole set of parameters.
+[^1]: Note that alternating optimization is a generalization of joint optimization, where the only parameter subset would be the whole set of parameters.
 
 ### When is alternating optimization a good idea?
 
 - When the joint optimization is (numerically) difficult (or not feasible).
 
-- When there is a natural division of parameters in subsets. That is the case e.g. for likelihood functions, where the parameter space naturally divides into parameter subsets corresponding to linear effects, variances and covariances with different influence on the likelihood value.
+- When there is a natural division of the parameters. That is the case e.g. for likelihood functions, where the parameter space naturally divides into parameter subsets corresponding to linear effects, variances and covariances with different influence on the likelihood value.
 
 - To improve optimization time in some cases, see [@hu2002] for an example.
 
@@ -56,33 +52,13 @@ Note that alternating optimization is a generalization of joint optimization, wh
 
 Alternating optimization, under certain conditions on $f$, can convergence to the global optimum. However, the set of possible solutions also contains saddle points of $f$, see for example [@bezdek1987].
 
-[@bezdek2003] shows, that alternating optimization under reasonable assumptions is locally q-linearly convergent.
+[@bezdek2003] shows that alternating optimization under reasonable assumptions is locally q-linearly convergent.
 
 ## Application
 
-How are the functions and arguments defined?
+As an application, we consider minimizing the following valley function in $n = 9$ dimensions with parameter constraints $0 \leq x_1, \dots, x_9 \leq 10$[^2]:
 
-Example 1
-
-```{r example 1}
-f <- set_f(f = function(x) x[1]^2 - 3*x[1]*x[2] + x[2]^2, npar = 2)
-ao(f = f, initial = -1, partition = list(1,2))
-ao(f = f, initial = 1, partition = list(c(1,2)))
-```
-
-Example 2
-
-```{r example 2}
-A <- matrix(c(100, 80, 5, 1, 80, 90, 2, 1, 5, 2, 70, 40, 1, 1, 40, 80), 4, 4)
-q <- function(x) as.numeric(t(x) %*% A %*% x)
-f <- set_f(f = q, npar = 4)
-ao(f = f, initial = 1, partition = list(1:2,3:4), iterations = 100)
-ao(f = f, initial = 1, partition = list(1:4), iterations = 100)
-```
-
-Example from Mail
-
-```{r example 3}
+```{r valley}
 valley <- function(x) {
   cons <- c(1.003344481605351, -3.344481605351171e-03)
   n <- length(x)
@@ -95,8 +71,65 @@ valley <- function(x) {
   f[j] <- 10 * (cos(x[jm2]) - x[j])
   sum(f*f)
 }
-f <- set_f(f = valley, npar = 9, lower = 0, upper = 10, check = FALSE)
-ao(f = f, partition = list(1, 2, 3, 4, 5, 6, 7, 8, 9), initial = 0, iterations = 3)
 ```
+
+[^2]: This application has been suggested by [Hans Werner Borchers](https://hwborchers.lima-city.de/), which is gratefully acknowledged.
+
+### Problem specification
+
+The ao package requires that the function first is introduced via the `ao::set_f()` function in the following way:
+
+```{r set_f}
+f <- ao::set_f(f = valley, npar = 9, lower = 0, upper = 10, check = TRUE)
+```
+
+The output `f` is an object of class `ao_f` which can be passed to the implementation of the alternating optimization algorithm `ao::ao()` in the following.
+
+`ao::set_f()` has the following arguments:
+
+- `f`: A function to be optimized, returning a single numeric value. Its first argument should be a numeric vector of length `npar`. Additional arguments can be specified via the `...` argument. Gradient or Hessian of `f` can be specified via attributes `gradient` and `hessian` for the function value. They are used for optimization if specified.
+
+- `...`: Additional arguments to be passed to `f`.
+
+- `npar`: The number of variables of `f`.
+
+- `lower`: Lower bounds on the variables, which can be a single numeric value (a joint bound for all parameters) or a numeric vector of length `npar` (for individual bounds).
+
+- `upper`: Upper bounds on the variables, analogue to `lower`.
+
+- `iterlim`: The maximum number of iterations for the numerical optimizer for each sub-problem. No limit per default.
+
+- `check`: If `TRUE` checks the configuration. This will take at most 20 seconds in most cases. Set to `FALSE` if you are confident about the configuration to save computation time.
+
+### Alternating Optimization
+
+Next, we pass `f` to `ao::ao()` as follows to perform alternating optimization:
+
+```{r ao}
+ao::ao(f = f, partition = list(1, 2, 3, 4, 5, 6, 7, 8, 9), initial = 0, iterations = 10, 
+       tolerance = 1e-6, minimize = TRUE, progress = FALSE, plot = FALSE)
+```
+
+This does the following: It minimizes `f` by alternating optimizing with respect to each parameter separately, where the parameters all are initialized at the value 0. The algorithm terminates after 10 iterations or prematurely if the euclidean distance between the current solution and the one from the last iteration is smaller than `tolerance = 1e-6`.[^3] 
+
+[^3]: We set `progress = FALSE` and `plot = FALSE` here because setting these parameters to `TRUE` would heavily expand the output. However, these options for printing and plotting the progress are useful for analyzing the behaviour of the alternating optimization.
+
+Let's also review the arguments of `ao::ao()`:
+
+- `f`: An object of class `ao_f`, i.e. the output of `ao::set_f()`.
+
+- `partition`: A list of vectors of parameter indices $1,...,n$ of the function. For example, choosing `partition = list(1, 2, 3, 4, 5, 6, 7, 8, 9)` as in the example optimizes each parameter separately, while choosing `partition = list(1:9)` leads to joint optimization. Any configuration in-between is possible, while parameter indices can be members of multiple subsets.
+
+- `initial`: A vector of length `npar` of initial parameter values. Per default, the algorithm is initialized at the origin.
+
+- `iterations`: The number of iterations through all subsets.
+
+- `tolerance`: A non-negative numeric value. The function terminates prematurely if the euclidean distance between the current solution and the one from the last iteration is smaller than `tolerance`.
+
+- `minimize`: If `TRUE` (the default), minimization, if `FALSE`, maximization.
+
+- `progress`: If `TRUE`, progress is printed.
+
+- `plot`: If `TRUE`, the parameter updates are plotted.
 
 ## References
