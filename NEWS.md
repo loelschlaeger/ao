@@ -1,3 +1,7 @@
+# ao 0.2.1
+
+* The [Himmelblau's function](https://en.wikipedia.org/wiki/Himmelblau%27s_function) is included as an example.
+
 # ao 0.2.0
 
 * `ao()` now returns the sequence of estimates in the different iterations as a data frame.

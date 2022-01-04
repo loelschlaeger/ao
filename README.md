@@ -47,21 +47,10 @@ library(ao)
 #> Thanks for using ao version 0.2.0, happy alternating optimization!
 #> See https://loelschlaeger.github.io/ao for help.
 #> Type 'citation("ao")' for citing this R package.
-valley <- function(x) {
-  cons <- c(1.003344481605351, -3.344481605351171e-03)
-  n <- length(x)
-  f <- rep(0, n)
-  j <- 3 * (1:(n/3))
-  jm2 <- j - 2
-  jm1 <- j - 1
-  f[jm2] <- (cons[2]*x[jm2]^3 + cons[1]*x[jm2]) * exp(-(x[jm2]^2)/100) - 1
-  f[jm1] <- 10 * (sin(x[jm2]) - x[jm1])
-  f[j] <- 10 * (cos(x[jm2]) - x[j])
-  sum(f*f)
-}
-f <- set_f(f = valley, npar = 9, lower = 0, upper = 10)
-ao(f = f, partition = list(1, 2, 3, 4, 5, 6, 7, 8, 9), progress = FALSE, plot = FALSE)
-#> Optimum value: 5.411669e-12 
-#> Optimum at: 1.010331 0.8470081 0.53158 1.010331 0.8470081 0.53158 1.010331 0.8470081 0.53158 
-#> Optimization time: 0.41 seconds
+himmelblau <- function(x) (x[1]^2+x[2]-11)^2 + (x[1]+x[2]^2-7)^2
+f <- set_f(f = himmelblau, npar = 2, lower = -5, upper = 5)
+ao(f = f, partition = list(1, 2), progress = FALSE, plot = FALSE)
+#> Optimum value: 1.743666 
+#> Optimum at: 3.395691 -1.803183 
+#> Optimization time: 0.1 seconds
 ```

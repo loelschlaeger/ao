@@ -56,31 +56,18 @@ Alternating optimization, under certain conditions on $f$, can convergence to th
 
 ## Application
 
-As an application, we consider minimizing the following valley function in $n = 9$ dimensions with parameter constraints $0 \leq x_1, \dots, x_9 \leq 10$[^2]:
+As an application, we consider minimizing the [Himmelblau's function](https://en.wikipedia.org/wiki/Himmelblau%27s_function) in $n = 2$ dimensions with parameter constraints $-5 \leq x_1, x_2 \leq 5$:
 
-```{r valley}
-valley <- function(x) {
-  cons <- c(1.003344481605351, -3.344481605351171e-03)
-  n <- length(x)
-  f <- rep(0, n)
-  j <- 3 * (1:(n/3))
-  jm2 <- j - 2
-  jm1 <- j - 1
-  f[jm2] <- (cons[2]*x[jm2]^3 + cons[1]*x[jm2]) * exp(-(x[jm2]^2)/100) - 1
-  f[jm1] <- 10 * (sin(x[jm2]) - x[jm1])
-  f[j] <- 10 * (cos(x[jm2]) - x[j])
-  sum(f*f)
-}
+```{r himmelblau}
+himmelblau <- function(x) (x[1]^2+x[2]-11)^2+(x[1]+x[2]^2-7)^2
 ```
-
-[^2]: This application has been suggested by [Hans Werner Borchers](https://hwborchers.lima-city.de/), which is gratefully acknowledged.
 
 ### Problem specification
 
 The ao package requires that the function first is introduced via the `ao::set_f()` function in the following way:
 
 ```{r set_f}
-f <- ao::set_f(f = valley, npar = 9, lower = 0, upper = 10, check = TRUE)
+f <- ao::set_f(f = himmelblau, npar = 2, lower = -5, upper = 5, check = TRUE)
 ```
 
 The output `f` is an object of class `ao_f` which can be passed to the implementation of the alternating optimization algorithm `ao::ao()` in the following.
@@ -106,19 +93,19 @@ The output `f` is an object of class `ao_f` which can be passed to the implement
 Next, we pass `f` to `ao::ao()` as follows to perform alternating optimization:
 
 ```{r ao}
-ao::ao(f = f, partition = list(1, 2, 3, 4, 5, 6, 7, 8, 9), initial = 0, iterations = 10, 
+ao::ao(f = f, partition = list(1, 2), initial = 0, iterations = 10, 
        tolerance = 1e-6, minimize = TRUE, progress = FALSE, plot = FALSE)
 ```
 
-This does the following: It minimizes `f` by alternating optimizing with respect to each parameter separately, where the parameters all are initialized at the value 0. The algorithm terminates after 10 iterations or prematurely if the euclidean distance between the current solution and the one from the last iteration is smaller than `tolerance = 1e-6`.[^3] 
+This does the following: It minimizes `f` by alternating optimizing with respect to each parameter separately, where the parameters all are initialized at the value 0. The algorithm terminates after 10 iterations or prematurely if the euclidean distance between the current solution and the one from the last iteration is smaller than `tolerance = 1e-6`.[^2] 
 
-[^3]: We set `progress = FALSE` and `plot = FALSE` here because setting these parameters to `TRUE` would heavily expand the output. However, these options for printing and plotting the progress are useful for analyzing the behaviour of the alternating optimization.
+[^2]: We set `progress = FALSE` and `plot = FALSE` here because setting these parameters to `TRUE` would heavily expand the output. However, these options for printing and plotting the progress are useful for analyzing the behaviour of the alternating optimization.
 
 Let's also review the arguments of `ao::ao()`:
 
 - `f`: An object of class `ao_f`, i.e. the output of `ao::set_f()`.
 
-- `partition`: A list of vectors of parameter indices $1,...,n$ of the function. For example, choosing `partition = list(1, 2, 3, 4, 5, 6, 7, 8, 9)` as in the example optimizes each parameter separately, while choosing `partition = list(1:9)` leads to joint optimization. Any configuration in-between is possible, while parameter indices can be members of multiple subsets.
+- `partition`: A list of vectors of parameter indices $1,...,n$ of the function. For example, choosing `partition = list(1, 2)` as in the example optimizes each parameter separately, while choosing `partition = list(1:2)` leads to joint optimization. Parameter indices can be members of multiple subsets.
 
 - `initial`: A vector of length `npar` of initial parameter values. Per default, the algorithm is initialized at the origin.
 

@@ -19,11 +19,10 @@ ao(
 \item{f}{An object of class \code{ao_f}, i.e. the output of \code{\link{set_f}}.}
 
 \item{partition}{A list of vectors of parameter indices \eqn{1,...,n} of the function.
-For example, choosing \code{partition = list(1, 2, 3, 4, 5, 6, 7, 8, 9)} as
+For example, choosing \code{partition = list(1, 2)} as
 in the example optimizes each parameter separately, while choosing
-\code{partition = list(1:9)} leads to joint optimization. Any configuration
-in-between is possible, while parameter indices can be members of multiple
-subsets.}
+\code{partition = list(1:2)} leads to joint optimization. Parameter indices
+can be members of multiple subsets.}
 
 \item{initial}{A vector of length \code{f$npar} of initial parameter values. Per default,
 the algorithm is initialized at the origin.}
@@ -56,18 +55,7 @@ This function performs alternating optimization on the function \code{f}.
 This function depends on \code{\link[optimx]{optimx}}.
 }
 \examples{
-valley <- function(x) {
-  cons <- c(1.003344481605351, -3.344481605351171e-03)
-  n <- length(x)
-  f <- rep(0, n)
-  j <- 3 * (1:(n / 3))
-  jm2 <- j - 2
-  jm1 <- j - 1
-  f[jm2] <- (cons[2] * x[jm2]^3 + cons[1] * x[jm2]) * exp(-(x[jm2]^2) / 100) - 1
-  f[jm1] <- 10 * (sin(x[jm2]) - x[jm1])
-  f[j] <- 10 * (cos(x[jm2]) - x[j])
-  sum(f * f)
-}
-f <- set_f(f = valley, npar = 9, lower = 0, upper = 10, check = FALSE)
-ao(f = f, partition = list(1, 2, 3, 4, 5, 6, 7, 8, 9))
+himmelblau <- function(x) (x[1]^2 + x[2] - 11)^2 + (x[1] + x[2]^2 - 7)^2
+f <- set_f(f = himmelblau, npar = 2, lower = -5, upper = 5)
+ao(f = f, partition = list(1, 2))
 }

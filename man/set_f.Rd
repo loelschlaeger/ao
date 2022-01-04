@@ -39,17 +39,6 @@ An object of class \code{ao_f}.
 This function specifies the function to be optimized.
 }
 \examples{
-valley <- function(x) {
-  cons <- c(1.003344481605351, -3.344481605351171e-03)
-  n <- length(x)
-  f <- rep(0, n)
-  j <- 3 * (1:(n / 3))
-  jm2 <- j - 2
-  jm1 <- j - 1
-  f[jm2] <- (cons[2] * x[jm2]^3 + cons[1] * x[jm2]) * exp(-(x[jm2]^2) / 100) - 1
-  f[jm1] <- 10 * (sin(x[jm2]) - x[jm1])
-  f[j] <- 10 * (cos(x[jm2]) - x[j])
-  sum(f * f)
-}
-set_f(f = valley, npar = 9, lower = 0, upper = 10)
+himmelblau <- function(x) (x[1]^2 + x[2] - 11)^2 + (x[1] + x[2]^2 - 7)^2
+set_f(f = himmelblau, npar = 2, lower = -5, upper = 5)
 }
