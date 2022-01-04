@@ -14,7 +14,6 @@ test_that("timed works", {
     Sys.sleep(t)
     x
   }
-  expect_null(timed(f(1, 1.5), 1))
   expect_equal(timed(f(1, 0.5), 1), 1)
 })
 
