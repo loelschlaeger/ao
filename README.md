@@ -39,18 +39,18 @@ devtools::install_github("loelschlaeger/ao")
 
 ## Example
 
-This example is explained in detail in the
-[vignette](https://loelschlaeger.github.io/ao/articles/ao.html#application).
-
 ``` r
 library(ao)
-#> Thanks for using ao version 0.2.0, happy alternating optimization!
+#> Thanks for using ao version 0.2.1, happy alternating optimization!
 #> See https://loelschlaeger.github.io/ao for help.
 #> Type 'citation("ao")' for citing this R package.
 himmelblau <- function(x) (x[1]^2+x[2]-11)^2 + (x[1]+x[2]^2-7)^2
 f <- set_f(f = himmelblau, npar = 2, lower = -5, upper = 5)
 ao(f = f, partition = list(1, 2), progress = FALSE, plot = FALSE)
-#> Optimum value: 1.743666 
-#> Optimum at: 3.395691 -1.803183 
-#> Optimization time: 0.1 seconds
+#> Optimum value: 1.940035e-12 
+#> Optimum at: 3.584428 -1.848126 
+#> Optimization time: 0.48 seconds
 ```
+
+This example is explained in detail
+[here](https://loelschlaeger.github.io/ao/articles/ao.html#application).

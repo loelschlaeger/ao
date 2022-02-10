@@ -43,11 +43,11 @@ devtools::install_github("loelschlaeger/ao")
 
 ## Example
 
-This example is explained in detail in the [vignette](https://loelschlaeger.github.io/ao/articles/ao.html#application).
-
 ```{r, example}
 library(ao)
 himmelblau <- function(x) (x[1]^2+x[2]-11)^2 + (x[1]+x[2]^2-7)^2
 f <- set_f(f = himmelblau, npar = 2, lower = -5, upper = 5)
 ao(f = f, partition = list(1, 2), progress = FALSE, plot = FALSE)
 ```
+
+This example is explained in detail [here](https://loelschlaeger.github.io/ao/articles/ao.html#application).
