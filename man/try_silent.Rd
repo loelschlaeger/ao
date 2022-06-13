@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{try_silent}
 \alias{try_silent}
-\title{Try an expression silently.}
+\title{Try an expression silently}
 \usage{
 try_silent(expr)
 }

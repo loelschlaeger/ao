@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{is_number}
 \alias{is_number}
-\title{Check for number.}
+\title{Check for number}
 \usage{
 is_number(x)
 }

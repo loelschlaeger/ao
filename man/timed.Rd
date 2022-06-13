@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{timed}
 \alias{timed}
-\title{Interruption of long evaluations.}
+\title{Interruption of long evaluations}
 \usage{
 timed(expr, secs)
 }

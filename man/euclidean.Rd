@@ -2,7 +2,7 @@
 % Please edit documentation in R/utils.R
 \name{euclidean}
 \alias{euclidean}
-\title{Euclidean distance.}
+\title{Euclidean distance}
 \usage{
 euclidean(a, b)
 }

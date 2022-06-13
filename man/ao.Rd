@@ -2,7 +2,7 @@
 % Please edit documentation in R/ao.R
 \name{ao}
 \alias{ao}
-\title{Alternating Optimization.}
+\title{Alternating Optimization}
 \usage{
 ao(
   f,
@@ -21,21 +21,24 @@ ao(
 \item{partition}{A list of vectors of parameter indices \eqn{1,...,n} of the function.
 For example, choosing \code{partition = list(1, 2)} as
 in the example optimizes each parameter separately, while choosing
-\code{partition = list(1:2)} leads to joint optimization. Parameter indices
-can be members of multiple subsets.}
+\code{partition = list(1:2)} leads to joint optimization.
+Parameter indices can be members of multiple subsets.}
 
-\item{initial}{A vector of length \code{f$npar} of initial parameter values. Per default,
-the algorithm is initialized at the origin.}
+\item{initial}{A vector of length \code{f$npar} of initial parameter values.
+Can also be a single numeric, which then is repeated \code{f$npar} times.
+Per default, the algorithm is initialized at the origin.}
 
-\item{iterations}{The number of iterations through all subsets.}
+\item{iterations}{The number of iterations through all subsets.
+The default is \code{10}.}
 
 \item{tolerance}{A non-negative numeric value. The function terminates prematurely if the
 euclidean distance between the current solution and the one from the last
-iteration is smaller than \code{tolerance}.}
+iteration is smaller than \code{tolerance}.
+Per default, \code{tolerance = 1e-6}.}
 
-\item{minimize}{If \code{TRUE}, minimization, if \code{FALSE}, maximization.}
+\item{minimize}{If \code{TRUE} (the default), minimization, if \code{FALSE}, maximization.}
 
-\item{progress}{If \code{TRUE}, progress is printed.}
+\item{progress}{If \code{TRUE}, progress is printed. The default is \code{FALSE}.}
 
 \item{plot}{If \code{TRUE}, the parameter updates are plotted.}
 }
@@ -44,18 +47,17 @@ An object of class \code{ao}, which is a list of
 \itemize{
 \item \code{optimum}, the optimal value,
 \item \code{estimate}, the parameter vector that yields the optimum,
-\item \code{sequence}, a data frame of the estimates in the single iterations,
+\item \code{sequence}, a \code{data.frame} of the estimates in the single
+iterations,
 \item \code{time}, the total estimation time in seconds.
 }
 }
 \description{
 This function performs alternating optimization on the function \code{f}.
 }
-\details{
-This function depends on \code{\link[optimx]{optimx}}.
-}
 \examples{
 himmelblau <- function(x) (x[1]^2 + x[2] - 11)^2 + (x[1] + x[2]^2 - 7)^2
 f <- set_f(f = himmelblau, npar = 2, lower = -5, upper = 5)
 ao(f = f, partition = list(1, 2))
+
 }

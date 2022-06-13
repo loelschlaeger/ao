@@ -1,5 +1,6 @@
-#' Check for number.
+#' Check for number
 #'
+#' @description
 #' This function checks if the input \code{x} is a (vector of) number(s), i.e.
 #' a (vector of) positive integer value(s).
 #'
@@ -13,12 +14,14 @@
 #'
 #' @examples
 #' is_number(c(0, 1, 1.5))
+
 is_number <- function(x) {
   sapply(x, function(x) is.numeric(x) && x > 0 && x %% 1 == 0, USE.NAMES = FALSE)
 }
 
-#' Try an expression silently.
+#' Try an expression silently
 #'
+#' @description
 #' This function tries to execute \code{expr} and returns a string with the
 #' error message if the execution failed.
 #'
@@ -37,6 +40,7 @@ is_number <- function(x) {
 #' @examples
 #' try_silent(log(1))
 #' try_silent(log("1"))
+
 try_silent <- function(expr) {
   out <- suppressWarnings(try(expr, silent = TRUE))
   if ("try-error" %in% class(out)) {
@@ -46,13 +50,13 @@ try_silent <- function(expr) {
   return(out)
 }
 
-#' Print method for \code{ao_fail}.
+#' Print method for \code{ao_fail}
 #'
+#' @description
 #' This function is the print method for an object of class \code{ao_fail}.
 #'
 #' @param x
 #' An object of class \code{ao_fail}.
-#'
 #' @param ...
 #' Ignored.
 #'
@@ -64,8 +68,9 @@ print.ao_fail <- function(x, ...) {
   cat(x)
 }
 
-#' Interruption of long evaluations.
+#' Interruption of long evaluations
 #'
+#' @description
 #' This function evaluates \code{expr} and interrupts the evaluation after
 #' \code{secs} seconds.
 #'
@@ -74,7 +79,6 @@ print.ao_fail <- function(x, ...) {
 #'
 #' @param expr
 #' An R expression to evaluate.
-#'
 #' @param secs
 #' The number of seconds.
 #'
@@ -86,6 +90,7 @@ print.ao_fail <- function(x, ...) {
 #'
 #' @examples
 #' timed(Sys.sleep(1.1), 1)
+
 timed <- function(expr, secs) {
   if (!(length(secs) == 1 && is_number(secs))) {
     stop("'secs' must be a number.")
@@ -93,13 +98,13 @@ timed <- function(expr, secs) {
   R.utils::withTimeout(expr, timeout = secs, onTimeout = "silent")
 }
 
-#' Euclidean distance.
+#' Euclidean distance
 #'
+#' @description
 #' This function computes the euclidean distance between two numeric vectors.
 #'
 #' @param a
 #' A numeric (vector).
-#'
 #' @param b
 #' A numeric (vector).
 #'
@@ -110,6 +115,7 @@ timed <- function(expr, secs) {
 #'
 #' @examples
 #' euclidean(c(0, 0), c(1, 1))
+
 euclidean <- function(a, b) {
   stopifnot(is.numeric(a), is.numeric(b))
   sqrt(sum((a - b)^2))

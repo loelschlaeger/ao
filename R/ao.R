@@ -1,9 +1,7 @@
-#' Alternating Optimization.
+#' Alternating Optimization
 #'
+#' @description
 #' This function performs alternating optimization on the function \code{f}.
-#'
-#' @details
-#' This function depends on \code{\link[optimx]{optimx}}.
 #'
 #' @param f
 #' An object of class \code{ao_f}, i.e. the output of \code{\link{set_f}}.
@@ -11,21 +9,24 @@
 #' A list of vectors of parameter indices \eqn{1,...,n} of the function.
 #' For example, choosing \code{partition = list(1, 2)} as
 #' in the example optimizes each parameter separately, while choosing
-#' \code{partition = list(1:2)} leads to joint optimization. Parameter indices
-#' can be members of multiple subsets.
+#' \code{partition = list(1:2)} leads to joint optimization.
+#' Parameter indices can be members of multiple subsets.
 #' @param initial
-#' A vector of length \code{f$npar} of initial parameter values. Per default,
-#' the algorithm is initialized at the origin.
+#' A vector of length \code{f$npar} of initial parameter values.
+#' Can also be a single numeric, which then is repeated \code{f$npar} times.
+#' Per default, the algorithm is initialized at the origin.
 #' @param iterations
 #' The number of iterations through all subsets.
+#' The default is \code{10}.
 #' @param tolerance
 #' A non-negative numeric value. The function terminates prematurely if the
 #' euclidean distance between the current solution and the one from the last
 #' iteration is smaller than \code{tolerance}.
+#' Per default, \code{tolerance = 1e-6}.
 #' @param minimize
-#' If \code{TRUE}, minimization, if \code{FALSE}, maximization.
+#' If \code{TRUE} (the default), minimization, if \code{FALSE}, maximization.
 #' @param progress
-#' If \code{TRUE}, progress is printed.
+#' If \code{TRUE}, progress is printed. The default is \code{FALSE}.
 #' @param plot
 #' If \code{TRUE}, the parameter updates are plotted.
 #'
@@ -34,7 +35,8 @@
 #' \itemize{
 #'   \item \code{optimum}, the optimal value,
 #'   \item \code{estimate}, the parameter vector that yields the optimum,
-#'   \item \code{sequence}, a data frame of the estimates in the single iterations,
+#'   \item \code{sequence}, a \code{data.frame} of the estimates in the single
+#'         iterations,
 #'   \item \code{time}, the total estimation time in seconds.
 #' }
 #'
@@ -42,6 +44,7 @@
 #' himmelblau <- function(x) (x[1]^2 + x[2] - 11)^2 + (x[1] + x[2]^2 - 7)^2
 #' f <- set_f(f = himmelblau, npar = 2, lower = -5, upper = 5)
 #' ao(f = f, partition = list(1, 2))
+#'
 #' @export
 
 ao <- function(f, partition, initial = 0, iterations = 10, tolerance = 1e-6,
@@ -64,7 +67,8 @@ ao <- function(f, partition, initial = 0, iterations = 10, tolerance = 1e-6,
     stop("'partition' must be a list of numbers.", call. = FALSE)
   }
   if (any(!unlist(partition) %in% seq_len(f$npar))) {
-    stop("'partition' contains values that are not parameter indices.", call. = FALSE)
+    stop("'partition' contains values that are not parameter indices.",
+         call. = FALSE)
   }
   if (any(!seq_len(f$npar) %in% unlist(partition))) {
     warning(paste(
@@ -80,15 +84,17 @@ ao <- function(f, partition, initial = 0, iterations = 10, tolerance = 1e-6,
     initial <- rep(initial, f$npar)
   }
   if (length(initial) != f$npar) {
-    stop("'initial' must be a numeric vector of length 'f$npar.'", call. = FALSE)
+    stop("'initial' must be a numeric vector of length 'f$npar.'",
+         call. = FALSE)
   }
   if (any(initial < f$lower) || any(initial > f$upper)) {
-    stop("'initial' does not fulfill 'lower' and 'upper' constraints of 'f'.", call. = FALSE)
+    stop("'initial' does not fulfill 'lower' and 'upper' constraints of 'f'.",
+         call. = FALSE)
   }
   if (!(length(iterations) == 1 && is_number(iterations))) {
     stop("'iterations' must be a number.", call. = FALSE)
   }
-  if (!(length(tolerance) == 1 && is.numeric(tolerance) && tolerance > 0)) {
+  if (!(length(tolerance) == 1 && is.numeric(tolerance) && tolerance >= 0)) {
     stop("'tolerance' must be non-negative.", call. = FALSE)
   }
   if (!is.logical(minimize)) {
@@ -159,33 +165,28 @@ ao <- function(f, partition, initial = 0, iterations = 10, tolerance = 1e-6,
           out <- -out
         }
         if (!is.null(attr(out, "gradient", exact = TRUE))) {
-          attr(out, "gradient") <- attr(out, "gradient", exact = TRUE)[p_ind]
+          attr(out, "gradient") <- attr(out, "gradient",
+                                        exact = TRUE)[p_ind]
         }
         if (!is.null(attr(out, "hessian", exact = TRUE))) {
-          attr(out, "hessian") <- attr(out, "hessian", exact = TRUE)[p_ind, p_ind]
+          attr(out, "hessian") <- attr(out, "hessian",
+                                       exact = TRUE)[p_ind, p_ind]
         }
         return(out)
       }
 
       ### (try to) solve divided estimation problem
+      base_args <- list(divide, estimate[p_ind])
+      names(base_args) <- f$optimizer$base_arg_names[1:2]
       conquer <- try_silent({
         do.call(
-          what = optimx::optimx,
-          args = list(
-            par = estimate[p_ind],
-            fn = divide,
-            lower = f$lower[p_ind],
-            upper = f$upper[p_ind],
-            method = f$method,
-            itnmax = f$iterlim,
-            if (length(f$f_par) != 0) f$f_par
-          )
-        )
+          what = f$optimizer$f,
+          args = c(base_args, f$f_par, f$optimizer$args))
       })
 
       ### evaluate
       if (!"ao_fail" %in% class(conquer)) {
-        estimate[p_ind] <- as.numeric(conquer[, paste0("p", seq_along(p_ind))])
+        estimate[p_ind] <- conquer[[f$optimizer$base_arg_names[3]]]
       }
       sequence <- rbind(sequence, c(i, p, estimate))
 

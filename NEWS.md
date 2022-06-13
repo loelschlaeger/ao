@@ -1,3 +1,7 @@
+# ao 0.2.1.9000
+
+* Custom optimizer can now be specified via the `optimizer` argument in `set_f()` via the `ino::set_optimizer()` interface. The default optimizer changed from `optimx::optimx()` to `stats::optim()`.
+
 # ao 0.2.1
 
 * The [Himmelblau's function](https://en.wikipedia.org/wiki/Himmelblau%27s_function) is included as an example.
