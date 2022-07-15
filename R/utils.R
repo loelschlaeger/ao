@@ -10,10 +10,8 @@
 #' @return
 #' A logical vector of the same length as \code{x}.
 #'
-#' @export
-#'
-#' @examples
-#' is_number(c(0, 1, 1.5))
+#' @keywords
+#' internal utils
 
 is_number <- function(x) {
   sapply(x, function(x) is.numeric(x) && x > 0 && x %% 1 == 0, USE.NAMES = FALSE)
@@ -33,39 +31,18 @@ is_number <- function(x) {
 #'
 #' @return
 #' Either the value of \code{expr} or in case of a failure an object of class
-#' \code{ao_fail}, which is the error message.
+#' \code{fail}, which is the error message.
 #'
-#' @export
-#'
-#' @examples
-#' try_silent(log(1))
-#' try_silent(log("1"))
+#' @keywords
+#' internal utils
 
 try_silent <- function(expr) {
   out <- suppressWarnings(try(expr, silent = TRUE))
-  if ("try-error" %in% class(out)) {
+  if (!inherits(out,"try-error")) {
     out <- out[1]
-    class(out) <- "ao_fail"
+    class(out) <- "fail"
   }
   return(out)
-}
-
-#' Print method for \code{ao_fail}
-#'
-#' @description
-#' This function is the print method for an object of class \code{ao_fail}.
-#'
-#' @param x
-#' An object of class \code{ao_fail}.
-#' @param ...
-#' Ignored.
-#'
-#' @export
-#'
-#' @noRd
-
-print.ao_fail <- function(x, ...) {
-  cat(x)
 }
 
 #' Interruption of long evaluations
@@ -86,10 +63,8 @@ print.ao_fail <- function(x, ...) {
 #' Either the value of \code{expr} or \code{NULL} if the evaluation time
 #' exceeded \code{secs} seconds.
 #'
-#' @export
-#'
-#' @examples
-#' timed(Sys.sleep(1.1), 1)
+#' @keywords
+#' internal utils
 
 timed <- function(expr, secs) {
   if (!(length(secs) == 1 && is_number(secs))) {
@@ -111,10 +86,8 @@ timed <- function(expr, secs) {
 #' @return
 #' A numeric.
 #'
-#' @export
-#'
-#' @examples
-#' euclidean(c(0, 0), c(1, 1))
+#' @keywords
+#' internal utils
 
 euclidean <- function(a, b) {
   stopifnot(is.numeric(a), is.numeric(b))

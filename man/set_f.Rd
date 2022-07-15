@@ -2,7 +2,7 @@
 % Please edit documentation in R/set_f.R
 \name{set_f}
 \alias{set_f}
-\title{Specify function}
+\title{Specify optimization problem}
 \usage{
 set_f(f, ..., npar, lower = -Inf, upper = Inf, check = FALSE, optimizer = NULL)
 }
@@ -45,11 +45,12 @@ This function specifies the function to be optimized.
 himmelblau <- function(x) (x[1]^2 + x[2] - 11)^2 + (x[1] + x[2]^2 - 7)^2
 
 ### standard optimizer
-set_f(f = himmelblau, npar = 2, lower = -5, upper = 5)
+set_f(f = himmelblau, npar = 2, lower = c(-5,-5), upper = c(5,5), check = TRUE)
 
 ### custom optimizer
 custom_opt <- ino::set_optimizer(
-  opt = pracma::nelder_mead, f = "fn", p = "x0", z = "xmin", tol = 1e-6,
+  opt = pracma::nelder_mead, f = "fn",
+  p = "x0", v = "fmin", z = "xmin", tol = 1e-6,
   crit = c("xmin", "fcount")
 )
 set_f(f = himmelblau, npar = 2, optimizer = custom_opt)

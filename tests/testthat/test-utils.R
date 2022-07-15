@@ -6,7 +6,7 @@ test_that("is_number works", {
 
 test_that("try_silent works", {
   expect_equal(try_silent(log(1)), 0)
-  expect_s3_class(try_silent(log("1")), "ao_fail")
+  expect_s3_class(try_silent(log("1")), "fail")
 })
 
 test_that("timed works", {

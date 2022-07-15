@@ -17,6 +17,5 @@ A numeric.
 \description{
 This function computes the euclidean distance between two numeric vectors.
 }
-\examples{
-euclidean(c(0, 0), c(1, 1))
-}
+\keyword{internal}
+\keyword{utils}

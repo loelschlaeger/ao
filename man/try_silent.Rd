@@ -11,7 +11,7 @@ try_silent(expr)
 }
 \value{
 Either the value of \code{expr} or in case of a failure an object of class
-\code{ao_fail}, which is the error message.
+\code{fail}, which is the error message.
 }
 \description{
 This function tries to execute \code{expr} and returns a string with the
@@ -20,7 +20,5 @@ error message if the execution failed.
 \details{
 This function is a wrapper for \code{\link[base]{try}}.
 }
-\examples{
-try_silent(log(1))
-try_silent(log("1"))
-}
+\keyword{internal}
+\keyword{utils}

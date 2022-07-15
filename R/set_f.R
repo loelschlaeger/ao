@@ -1,4 +1,4 @@
-#' Specify function
+#' Specify optimization problem
 #'
 #' @description
 #' This function specifies the function to be optimized.
@@ -41,11 +41,12 @@
 #' himmelblau <- function(x) (x[1]^2 + x[2] - 11)^2 + (x[1] + x[2]^2 - 7)^2
 #'
 #' ### standard optimizer
-#' set_f(f = himmelblau, npar = 2, lower = -5, upper = 5)
+#' set_f(f = himmelblau, npar = 2, lower = c(-5,-5), upper = c(5,5), check = TRUE)
 #'
 #' ### custom optimizer
 #' custom_opt <- ino::set_optimizer(
-#'   opt = pracma::nelder_mead, f = "fn", p = "x0", z = "xmin", tol = 1e-6,
+#'   opt = pracma::nelder_mead, f = "fn",
+#'   p = "x0", v = "fmin", z = "xmin", tol = 1e-6,
 #'   crit = c("xmin", "fcount")
 #' )
 #' set_f(f = himmelblau, npar = 2, optimizer = custom_opt)
@@ -55,35 +56,43 @@ set_f <- function(f, ..., npar, lower = -Inf, upper = Inf, check = FALSE,
 
   ### input checks
   if (missing(f)) {
-    stop("Please set 'f'.", call. = FALSE)
+    stop("Please set 'f'.",
+         call. = FALSE)
   }
   if (!is.function(f)) {
-    stop("'f' must be a function.", call. = FALSE)
+    stop("'f' must be a function.",
+         call. = FALSE)
   }
   if (missing(npar)) {
-    stop("Please set 'npar'.", call. = FALSE)
+    stop("Please set 'npar'.",
+         call. = FALSE)
   }
   if (!(length(npar) == 1 && is_number(npar))) {
-    stop("'npar' must be a number.", call. = FALSE)
+    stop("'npar' must be a number.",
+         call. = FALSE)
   }
   if (is.null(optimizer)) {
     if (!is.numeric(lower)) {
-      stop("'lower' must be numeric.", call. = FALSE)
+      stop("'lower' must be numeric.",
+           call. = FALSE)
     }
     if (length(lower) == 1) {
       lower <- rep(lower, npar)
     }
     if (length(lower) != npar) {
-      stop("'lower' must be of length 1 or 'npar'.", call. = FALSE)
+      stop("'lower' must be of length 1 or 'npar'.",
+           call. = FALSE)
     }
     if (!is.numeric(upper)) {
-      stop("'upper' must be numeric.", call. = FALSE)
+      stop("'upper' must be numeric.",
+           call. = FALSE)
     }
     if (length(upper) == 1) {
       upper <- rep(upper, npar)
     }
     if (length(upper) != npar) {
-      stop("'upper' must be of length 1 or 'npar'.", call. = FALSE)
+      stop("'upper' must be of length 1 or 'npar'.",
+           call. = FALSE)
     }
     if (any(upper < lower)) {
       stop("(Each element of) 'upper' must be greater than 'lower'.",
@@ -113,7 +122,7 @@ set_f <- function(f, ..., npar, lower = -Inf, upper = Inf, check = FALSE,
         p <- stats::rnorm(npar)
       }
       out_f <- timed(try_silent(f(p)), 1)
-      if ("ao_fail" %in% class(out_f)) {
+      if (inherits(out_f, "fail")) {
         if (is.null(first_fail)) {
           first_fail <- out_f
         }
@@ -128,7 +137,7 @@ set_f <- function(f, ..., npar, lower = -Inf, upper = Inf, check = FALSE,
             args = c(base_args, f_par, optimizer$args)
           )),
           secs = 1)
-        if ("ao_fail" %in% class(out_optimizer)) {
+        if (inherits(out_optimizer, "fail")) {
           if (is.null(first_fail)) {
             first_fail <- out_optimizer
           }
@@ -144,8 +153,9 @@ set_f <- function(f, ..., npar, lower = -Inf, upper = Inf, check = FALSE,
       warning(
         check_runs - f_success, " of ", check_runs,
         " random calls of 'f' failed. ", check_runs - optimizer_success, " of ",
-        check_runs, " calls of 'optimizer' failed.\n", "First error was: ",
-        first_fail, call. = FALSE
+        check_runs, " calls of 'optimizer' failed.\n",
+        "First error was: ", first_fail,
+        call. = FALSE
       )
     } else {
       message("Configuration checked.")
@@ -159,6 +169,7 @@ set_f <- function(f, ..., npar, lower = -Inf, upper = Inf, check = FALSE,
   return(out)
 }
 
+#' @exportS3Method
 #' @noRd
 
 print.ao_f <- function(x, ...) {

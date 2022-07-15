@@ -1,4 +1,4 @@
-#' Alternating Optimization
+#' Alternating optimization
 #'
 #' @description
 #' This function performs alternating optimization on the function \code{f}.
@@ -52,19 +52,24 @@ ao <- function(f, partition, initial = 0, iterations = 10, tolerance = 1e-6,
 
   ### check inputs
   if (missing(f)) {
-    stop("Please set 'f'.", call. = FALSE)
+    stop("Please set 'f'.",
+         call. = FALSE)
   }
-  if (class(f) != "ao_f") {
-    stop("'f' must be of class 'ao_f'.", call. = FALSE)
+  if (!inherits(f, "ao_f")) {
+    stop("'f' must be of class 'ao_f'.",
+         call. = FALSE)
   }
   if (missing(partition)) {
-    stop("Please set 'partition'.", call. = FALSE)
+    stop("Please set 'partition'.",
+         call. = FALSE)
   }
   if (!is.list(partition)) {
-    stop("'partition' must be a list.", call. = FALSE)
+    stop("'partition' must be a list.",
+         call. = FALSE)
   }
   if (any(!is_number(unlist(partition)))) {
-    stop("'partition' must be a list of numbers.", call. = FALSE)
+    stop("'partition' must be a list of numbers.",
+         call. = FALSE)
   }
   if (any(!unlist(partition) %in% seq_len(f$npar))) {
     stop("'partition' contains values that are not parameter indices.",
@@ -78,7 +83,8 @@ ao <- function(f, partition, initial = 0, iterations = 10, tolerance = 1e-6,
     ), call. = FALSE)
   }
   if (!is.numeric(initial)) {
-    stop("'initial' must be a numeric vector.", call. = FALSE)
+    stop("'initial' must be a numeric vector.",
+         call. = FALSE)
   }
   if (length(initial) == 1) {
     initial <- rep(initial, f$npar)
@@ -92,16 +98,20 @@ ao <- function(f, partition, initial = 0, iterations = 10, tolerance = 1e-6,
          call. = FALSE)
   }
   if (!(length(iterations) == 1 && is_number(iterations))) {
-    stop("'iterations' must be a number.", call. = FALSE)
+    stop("'iterations' must be a number.",
+         call. = FALSE)
   }
   if (!(length(tolerance) == 1 && is.numeric(tolerance) && tolerance >= 0)) {
-    stop("'tolerance' must be non-negative.", call. = FALSE)
+    stop("'tolerance' must be non-negative.",
+         call. = FALSE)
   }
   if (!is.logical(minimize)) {
-    stop("'minimize' must be a boolean.", call. = FALSE)
+    stop("'minimize' must be a boolean.",
+         call. = FALSE)
   }
   if (!is.logical(progress)) {
-    stop("'progress' must be a boolean.", call. = FALSE)
+    stop("'progress' must be a boolean.",
+         call. = FALSE)
   }
 
   ### setup
@@ -185,8 +195,8 @@ ao <- function(f, partition, initial = 0, iterations = 10, tolerance = 1e-6,
       })
 
       ### evaluate
-      if (!"ao_fail" %in% class(conquer)) {
-        estimate[p_ind] <- conquer[[f$optimizer$base_arg_names[3]]]
+      if (!inherits(conquer,"fail")) {
+        estimate[p_ind] <- conquer[[f$optimizer$base_arg_names[4]]]
       }
       sequence <- rbind(sequence, c(i, p, estimate))
 
@@ -215,24 +225,13 @@ ao <- function(f, partition, initial = 0, iterations = 10, tolerance = 1e-6,
     "time" = difftime(t_end, t_start, units = "secs")
   )
 
-  class(output) <- "ao"
+  class(output) <- c("ao","list")
 
   ### return output
   return(output)
 }
 
-#' Print method for \code{ao}.
-#'
-#' This function is the print method for an object of class \code{ao}.
-#'
-#' @param x
-#' An object of class \code{ao}.
-#'
-#' @param ...
-#' Ignored.
-#'
-#' @export
-#'
+#' @exportS3Method
 #' @noRd
 
 print.ao <- function(x, ...) {

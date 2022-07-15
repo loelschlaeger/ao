@@ -1,8 +1,7 @@
 .onAttach <- function(lib, pkg) {
-  # startup message
   msg <- c(
     paste0(
-      "Thanks for using {ao} version ", utils::packageVersion("ao")
+      "Thanks for using {ao} ", utils::packageVersion("ao")
     ),
     ", happy alternating optimization!\n",
     "See https://loelschlaeger.github.io/ao for help.\n",

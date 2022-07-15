@@ -22,6 +22,5 @@ This function evaluates \code{expr} and interrupts the evaluation after
 \details{
 This function is a wrapper for \code{\link[R.utils]{withTimeout}}.
 }
-\examples{
-timed(Sys.sleep(1.1), 1)
-}
+\keyword{internal}
+\keyword{utils}
