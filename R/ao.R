@@ -218,17 +218,15 @@ ao <- function(f, partition, initial = 0, iterations = 10, tolerance = 1e-6,
   optimum <- f$f(estimate)
 
   ### prepare output
-  output <- list(
-    "optimum" = optimum,
-    "estimate" = estimate,
-    "sequence" = sequence,
-    "time" = difftime(t_end, t_start, units = "secs")
+  structure(
+    list(
+      "optimum" = optimum,
+      "estimate" = estimate,
+      "sequence" = sequence,
+      "time" = difftime(t_end, t_start, units = "secs")
+    ),
+    class = "ao"
   )
-
-  class(output) <- c("ao","list")
-
-  ### return output
-  return(output)
 }
 
 #' @exportS3Method
