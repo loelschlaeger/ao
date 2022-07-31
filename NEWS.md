@@ -1,6 +1,12 @@
 # ao 0.2.1.9000
 
-* Custom optimizer can now be specified via the `optimizer` argument in `set_f()` via the `ino::set_optimizer()` interface. The default optimizer changed from `optimx::optimx()` to `stats::optim()`.
+* Removed `set_f()` interface. The optimization problem is now specified directly in `ao()`.
+
+* The output format of `ao()` has been changed, see the documentation of `ao()`.
+
+* Removed utils functions. They are imported from the {optimizeR} package.
+
+* Arbitrary optimizer can now be specified in `ao()` as an `optimizer` object via the {optimizeR} framework.
 
 # ao 0.2.1
 

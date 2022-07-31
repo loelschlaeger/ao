@@ -9,9 +9,10 @@ Authors@R:
            email = "lennart.oelschlaeger@uni-bielefeld.de",
            comment = c(ORCID = "0000-0001-5421-9313"))
 Description: Alternating optimization of (high-dimensional) functions is an 
-    iterative procedure for minimizing (or maximizing) jointly over all 
-    parameters by alternately optimizing parameter subsets. For a reference, 
-    see Bezdek and Hathaway (2002) "Some Notes on Alternating Optimization" 
+    iterative procedure for optimizing jointly over all parameters by 
+    alternately optimizing parameter subsets.
+    For a reference on the method, see Bezdek and Hathaway (2002) 
+    "Some Notes on Alternating Optimization" 
     <doi:10.1007/3-540-45631-7_39>. 
 URL: https://loelschlaeger.de/ao/
 BugReports: https://github.com/loelschlaeger/ao/issues
@@ -20,17 +21,14 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.1
 Imports:
-    R.utils,
     ggplot2,
-    ino,
-    lifecycle
+    lifecycle,
+    rlang
 Suggests: 
     testthat (>= 3.0.0),
-    magrittr,
     knitr,
     rmarkdown,
-    covr,
-    pracma
+    covr
 Config/testthat/edition: 3
 VignetteBuilder: knitr
 Depends:

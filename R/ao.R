@@ -1,239 +1,174 @@
 #' Alternating optimization
 #'
 #' @description
-#' This function performs alternating optimization on the function \code{f}.
+#' This function carries out alternating optimization of the function \code{f}.
+#'
+#' @details
+#' For more details see the help vignette:
+#' \code{vignette("ao", package = "ao")}
 #'
 #' @param f
-#' An object of class \code{ao_f}, i.e. the output of \code{\link{set_f}}.
+#' The function to be optimized, returning a single numeric value. The first
+#' argument of \code{f} must be a numeric vector of the length of \code{p}
+#' followed by any other arguments specified by the \code{...} argument.
+#' @param p
+#' Starting parameter values for the optimization.
+#' @param ...
+#' Additional arguments to be passed to \code{f}.
 #' @param partition
-#' A list of vectors of parameter indices \eqn{1,...,n} of the function.
-#' For example, choosing \code{partition = list(1, 2)} as
-#' in the example optimizes each parameter separately, while choosing
-#' \code{partition = list(1:2)} leads to joint optimization.
+#' A list of vectors of indices of \code{p}, specifying the partition of the
+#' alternating optimization.
+#' The default is \code{as.list(1:length(p))}, i.e. each parameter is
+#' optimized separately.
 #' Parameter indices can be members of multiple subsets.
-#' @param initial
-#' A vector of length \code{f$npar} of initial parameter values.
-#' Can also be a single numeric, which then is repeated \code{f$npar} times.
-#' Per default, the algorithm is initialized at the origin.
+#' @param optimizer
+#' An object of class \code{optimizer}, which can be specified via
+#' \code{\link[optimizeR]{set_optimizer}}.
+#' The default optimizer is \code{\link[stats]{optim}}.
 #' @param iterations
-#' The number of iterations through all subsets.
+#' The number of iterations through the partitions.
 #' The default is \code{10}.
 #' @param tolerance
 #' A non-negative numeric value. The function terminates prematurely if the
 #' euclidean distance between the current solution and the one from the last
 #' iteration is smaller than \code{tolerance}.
-#' Per default, \code{tolerance = 1e-6}.
-#' @param minimize
-#' If \code{TRUE} (the default), minimization, if \code{FALSE}, maximization.
-#' @param progress
-#' If \code{TRUE}, progress is printed. The default is \code{FALSE}.
+#' The default is \code{1e-6}.
+#' @param print.level
+#' This argument determines the level of printing which is done during the
+#' optimization process.
+#' Three values (analogue to \code{\link[stats]{nlm}}) can be specified:
+#' * \code{0} (the default): no printing
+#' * \code{1}: initial and final details are printed
+#' * \code{2}: full tracing information is printed
 #' @param plot
 #' If \code{TRUE}, the parameter updates are plotted.
+#' The default is \code{FALSE}.
 #'
 #' @return
-#' An object of class \code{ao}, which is a list of
-#' \itemize{
-#'   \item \code{optimum}, the optimal value,
-#'   \item \code{estimate}, the parameter vector that yields the optimum,
-#'   \item \code{sequence}, a \code{data.frame} of the estimates in the single
-#'         iterations,
-#'   \item \code{time}, the total estimation time in seconds.
-#' }
+#' A list containing the following components:
+#' * \code{par}, the optimal set of parameters found,
+#' * \code{value}, the value of \code{f} corresponding to \code{par},
+#' * \code{seq}, a data frame of the estimates and computation times in the
+#'   single iterations,
+#' * amd \code{time}, the overall computation time.
 #'
 #' @examples
+#' ### alternating optimization separately for x_1 and x_2
+#' ### parameter restriction: -5 <= x_1, x_2 <= 5
 #' himmelblau <- function(x) (x[1]^2 + x[2] - 11)^2 + (x[1] + x[2]^2 - 7)^2
-#' f <- set_f(f = himmelblau, npar = 2, lower = -5, upper = 5)
-#' ao(f = f, partition = list(1, 2))
+#' ao(
+#'   f = himmelblau, p = c(0,0), partition = list(1, 2),
+#'   optimizer = set_optimizer_optim(lower = -5, upper = 5, method = "L-BFGS-B")
+#' )
 #'
 #' @export
+#'
+#' @importFrom rlang .data
 
-ao <- function(f, partition, initial = 0, iterations = 10, tolerance = 1e-6,
-               minimize = TRUE, progress = FALSE, plot = TRUE) {
-
-  ### check inputs
-  if (missing(f)) {
-    stop("Please set 'f'.",
-         call. = FALSE)
+ao <- function(
+    f, p, ..., partition = as.list(1:length(p)),
+    optimizer = set_optimizer_optim(), iterations = 10L, tolerance = 1e-6,
+    print.level = 0, plot = FALSE
+) {
+  if (missing(f) || !is.function(f)) {
+    ao_stop("'f' must be a function.")
   }
-  if (!inherits(f, "ao_f")) {
-    stop("'f' must be of class 'ao_f'.",
-         call. = FALSE)
+  if (missing(p) || !is.numeric(p)) {
+    ao_stop("'p' must be a numeric vector.")
   }
-  if (missing(partition)) {
-    stop("Please set 'partition'.",
-         call. = FALSE)
+  if (!is.list(partition) || any(!is_number(unlist(partition))) ||
+      !setequal(unlist(partition), seq_along(p))) {
+    ao_stop("'partition' must be a list of vectors of indices of 'p'.")
   }
-  if (!is.list(partition)) {
-    stop("'partition' must be a list.",
-         call. = FALSE)
+  if (!inherits(optimizer, "optimizer")) {
+    ao_stop("'optimizer' must be an object of class 'optimizer'.")
   }
-  if (any(!is_number(unlist(partition)))) {
-    stop("'partition' must be a list of numbers.",
-         call. = FALSE)
+  if (length(iterations) != 1 || !is_number(iterations)) {
+    ao_stop("'iterations' must be a single number.")
   }
-  if (any(!unlist(partition) %in% seq_len(f$npar))) {
-    stop("'partition' contains values that are not parameter indices.",
-         call. = FALSE)
+  if (length(tolerance) != 1 || !is.numeric(tolerance) || tolerance < 0) {
+    ao_stop("'tolerance' must be a single, non-negative numeric.")
   }
-  if (any(!seq_len(f$npar) %in% unlist(partition))) {
-    warning(paste(
-      "Parameter(s)",
-      paste(setdiff(seq_len(f$npar), unlist(partition)), collapse = ", "),
-      "do not get optimized."
-    ), call. = FALSE)
+  if (length(print.level) != 1 ||  !print.level %in% c(0,1,2)) {
+    ao_stop("'print.level' must be in {0,1,2}.")
   }
-  if (!is.numeric(initial)) {
-    stop("'initial' must be a numeric vector.",
-         call. = FALSE)
+  if (!isTRUE(plot) && !isFALSE(plot)) {
+    ao_stop("'plot' must be a boolean.")
   }
-  if (length(initial) == 1) {
-    initial <- rep(initial, f$npar)
-  }
-  if (length(initial) != f$npar) {
-    stop("'initial' must be a numeric vector of length 'f$npar.'",
-         call. = FALSE)
-  }
-  if (any(initial < f$lower) || any(initial > f$upper)) {
-    stop("'initial' does not fulfill 'lower' and 'upper' constraints of 'f'.",
-         call. = FALSE)
-  }
-  if (!(length(iterations) == 1 && is_number(iterations))) {
-    stop("'iterations' must be a number.",
-         call. = FALSE)
-  }
-  if (!(length(tolerance) == 1 && is.numeric(tolerance) && tolerance >= 0)) {
-    stop("'tolerance' must be non-negative.",
-         call. = FALSE)
-  }
-  if (!is.logical(minimize)) {
-    stop("'minimize' must be a boolean.",
-         call. = FALSE)
-  }
-  if (!is.logical(progress)) {
-    stop("'progress' must be a boolean.",
-         call. = FALSE)
-  }
-
-  ### setup
   exit_flag <- FALSE
-  estimate <- initial
-  sequence <- data.frame(t(c(0, 0, estimate)))
-  colnames(sequence) <- c("iteration", "partition", paste0("p", 1:f$npar))
+  est <- p
+  npar <- length(p)
+  seq <- structure(
+    data.frame(t(c(0, 0, 0, est))),
+    names = c("iteration", "partition", "time", paste0("p", 1:npar))
+  )
   t_start <- Sys.time()
   if (plot) {
-    data <- data.frame(x = 1:f$npar, y = estimate)
-    x <- y <- NULL
-    vis <- ggplot2::ggplot(data, ggplot2::aes(x, y)) +
+    data <- data.frame(x = 1:npar, y = est)
+    vis <- ggplot2::ggplot(data, ggplot2::aes(rlang::.data$x, rlang::.data$y)) +
       ggplot2::geom_point() +
       ggplot2::scale_x_discrete(limits = factor(data$x)) +
       ggplot2::theme_minimal() +
       ggplot2::labs(x = "Parameter index", y = "", title = "")
   }
-
-  for (i in seq_len(iterations)) {
-
-    ### premature interruption
+  for (it in seq_len(iterations)) {
+    print <- (print.level == 2 || (print.level == 1 && it %in% c(1, iterations)))
     if (exit_flag) {
-      if (progress) {
-        cat("premature interruption because 'tolerance' is reached\n")
-      }
       break
     }
-
-    ### print progress
-    if (progress) {
-      cat("iteration", i, "of", iterations, "\n")
+    if (print) {
+      cat("iteration", it, "of", iterations, "\n")
     }
-
-    for (p in seq_along(partition)) {
-
-      ### print and plot progress
-      if (progress) {
-        cat("- partition", p, "of", length(partition), ":", f$f(estimate), "\n")
+    for (part in seq_along(partition)) {
+      if (print) {
+        cat(
+          paste0(
+            "- partition ", part, " of ", length(partition), ": f = ", f(est)
+            ), "\n"
+        )
       }
       if (plot) {
-        vis$data$y <- estimate
-        vis$labels$title <- paste("iteration", i, "partition", p)
+        vis$data$y <- est
+        vis$labels$title <- paste("iteration", it, "partition", part)
         print(vis)
       }
-
-      ### indices of selected group
-      p_ind <- partition[[p]]
-
-      ### skip step if selected group is empty
+      p_ind <- partition[[part]]
       if (length(p_ind) == 0) {
         next
       }
-
-      ### divide estimation problem
-      divide <- function(theta_small) {
-        theta <- numeric(f$npar)
+      f_small <- function(theta_small) {
+        theta <- numeric(npar)
         theta[p_ind] <- theta_small
-        theta[-p_ind] <- estimate[-p_ind]
-        out <- f$f(theta)
-        if (!minimize) {
-          out <- -out
+        theta[-p_ind] <- est[-p_ind]
+        out <- f(theta)
+        if (inherits(out, "gradient")) {
+          attr(out, "gradient") <- attr(out, "gradient")[p_ind]
         }
-        if (!is.null(attr(out, "gradient", exact = TRUE))) {
-          attr(out, "gradient") <- attr(out, "gradient",
-                                        exact = TRUE)[p_ind]
+        if (inherits(out, "hessian")) {
+          attr(out, "hessian") <- attr(out, "hessian")[p_ind, p_ind]
         }
-        if (!is.null(attr(out, "hessian", exact = TRUE))) {
-          attr(out, "hessian") <- attr(out, "hessian",
-                                       exact = TRUE)[p_ind, p_ind]
-        }
-        return(out)
+        out
       }
-
-      ### (try to) solve divided estimation problem
-      base_args <- list(divide, estimate[p_ind])
-      names(base_args) <- f$optimizer$base_arg_names[1:2]
-      conquer <- try_silent({
-        do.call(
-          what = f$optimizer$f,
-          args = c(base_args, f$f_par, f$optimizer$args))
-      })
-
-      ### evaluate
-      if (!inherits(conquer,"fail")) {
-        estimate[p_ind] <- conquer[[f$optimizer$base_arg_names[4]]]
-      }
-      sequence <- rbind(sequence, c(i, p, estimate))
-
-      ### check for premature interruption
-      if (nrow(sequence) > length(partition)) {
-        curr <- as.numeric(sequence[nrow(sequence) - length(partition), -(1:2)])
-        last <- as.numeric(sequence[nrow(sequence), -(1:2)])
-        if (euclidean(curr, last) < tolerance) {
+      f_small_out <- optimizeR(
+        optimizer = optimizer, f = f_small, p = est[p_ind]#, ...
+      )
+      est[p_ind] <- f_small_out[["z"]]
+      seq <- rbind(seq, c(it, part, f_small_out$time, est))
+      if (nrow(seq) > length(partition)) {
+        curr <- as.numeric(seq[nrow(seq) - length(partition), -(1:3)])
+        last <- as.numeric(seq[nrow(seq), -(1:3)])
+        if (sqrt(sum(curr - last)^2) < tolerance) {
           exit_flag <- TRUE
         }
       }
     }
   }
-
-  ### end timer
   t_end <- Sys.time()
-
-  ### compute optimal function value
-  optimum <- f$f(estimate)
-
-  ### prepare output
-  structure(
-    list(
-      "optimum" = optimum,
-      "estimate" = estimate,
-      "sequence" = sequence,
-      "time" = difftime(t_end, t_start, units = "secs")
-    ),
-    class = "ao"
+  list(
+    "optimum" = f(est),
+    "estimate" = est,
+    "sequence" = seq,
+    "time" = difftime(t_end, t_start)
   )
 }
 
-#' @exportS3Method
-#' @noRd
-
-print.ao <- function(x, ...) {
-  cat("Optimum value:", zapsmall(x$optimum), "\n")
-  cat("Optimum at:", zapsmall(x$estimate), "\n")
-  cat("Optimization time:", signif(x$time, digits = 2), "seconds\n")
-}

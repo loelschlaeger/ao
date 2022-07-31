@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# ao: Alternating Optimization <img src="man/figures/logo.png" align="right" alt="" width="120" />
+# {ao}
 
 <!-- badges: start -->
 
@@ -14,16 +14,20 @@ downloads](https://cranlogs.r-pkg.org/badges/grand-total/ao)](https://cranlogs.r
 coverage](https://codecov.io/gh/loelschlaeger/ao/branch/main/graph/badge.svg)](https://app.codecov.io/gh/loelschlaeger/ao?branch=main)
 <!-- badges: end -->
 
-This package implemented alternating optimization, which is an iterative
-procedure for optimizing some function jointly over all parameters by
-alternating restricted optimization over individual parameter subsets.
+This R package implements alternating optimization, which is an
+iterative procedure for optimizing some function jointly over all
+parameters by alternating restricted optimization over individual
+parameter subsets.
 
-See the [vignette](https://loelschlaeger.github.io/ao/articles/ao.html)
-for more details on the method.
+For more details see the help vignette:
+
+``` r
+vignette("ao", package = "ao")
+```
 
 ## Installation
 
-You can install the released version of ao from
+You can install the released version from
 [CRAN](https://CRAN.R-project.org) with:
 
 ``` r
@@ -39,18 +43,44 @@ devtools::install_github("loelschlaeger/ao")
 
 ## Example
 
-``` r
-library(ao)
-#> Thanks for using ao version 0.2.1, happy alternating optimization!
-#> See https://loelschlaeger.github.io/ao for help.
-#> Type 'citation("ao")' for citing this R package.
-himmelblau <- function(x) (x[1]^2+x[2]-11)^2 + (x[1]+x[2]^2-7)^2
-f <- set_f(f = himmelblau, npar = 2, lower = -5, upper = 5)
-ao(f = f, partition = list(1, 2), progress = FALSE, plot = FALSE)
-#> Optimum value: 1.940035e-12 
-#> Optimum at: 3.584428 -1.848126 
-#> Optimization time: 0.48 seconds
-```
+The following example carries out alternating optimization of the
+[Himmelblau’s
+function](https://en.wikipedia.org/wiki/Himmelblau%27s_function),
+separately for
+![x_1](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;x_1 "x_1")
+and
+![x_2](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;x_2 "x_2"),
+with parameter restrictions
+![-5 \leq x_1, x_2 \leq 5](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;-5%20%5Cleq%20x_1%2C%20x_2%20%5Cleq%205 "-5 \leq x_1, x_2 \leq 5"):
 
-This example is explained in detail
-[here](https://loelschlaeger.github.io/ao/articles/ao.html#application).
+``` r
+library("ao")
+#> Lade nötiges Paket: optimizeR
+himmelblau <- function(x) (x[1]^2 + x[2] - 11)^2 + (x[1] + x[2]^2 - 7)^2
+ao(
+  f = himmelblau, p = c(0,0), partition = list(1, 2),
+  optimizer = set_optimizer_optim(lower = -5, upper = 5, method = "L-BFGS-B")
+)
+#> $optimum
+#> [1] 1.940035e-12
+#> 
+#> $estimate
+#> [1]  3.584428 -1.848126
+#> 
+#> $sequence
+#>    iteration partition         time       p1        p2
+#> 1          0         0 0.0000000000 0.000000  0.000000
+#> 2          1         1 0.0068581104 3.395691  0.000000
+#> 3          1         2 0.0002210140 3.395691 -1.803183
+#> 4          2         1 0.0001919270 3.581412 -1.803183
+#> 5          2         2 0.0001709461 3.581412 -1.847412
+#> 6          3         1 0.0002279282 3.584381 -1.847412
+#> 7          3         2 0.0001389980 3.584381 -1.848115
+#> 8          4         1 0.0001389980 3.584427 -1.848115
+#> 9          4         2 0.0001230240 3.584427 -1.848126
+#> 10         5         1 0.0001201630 3.584428 -1.848126
+#> 11         5         2 0.0001270771 3.584428 -1.848126
+#> 
+#> $time
+#> Time difference of 0.01215196 secs
+```

@@ -8,63 +8,84 @@
 \usage{
 ao(
   f,
-  partition,
-  initial = 0,
-  iterations = 10,
+  p,
+  ...,
+  partition = as.list(1:length(p)),
+  optimizer = set_optimizer_optim(),
+  iterations = 10L,
   tolerance = 1e-06,
-  minimize = TRUE,
-  progress = FALSE,
-  plot = TRUE
+  print.level = 0,
+  plot = FALSE
 )
 }
 \arguments{
-\item{f}{An object of class \code{ao_f}, i.e. the output of \code{\link{set_f}}.}
+\item{f}{The function to be optimized, returning a single numeric value. The first
+argument of \code{f} must be a numeric vector of the length of \code{p}
+followed by any other arguments specified by the \code{...} argument.}
 
-\item{partition}{A list of vectors of parameter indices \eqn{1,...,n} of the function.
-For example, choosing \code{partition = list(1, 2)} as
-in the example optimizes each parameter separately, while choosing
-\code{partition = list(1:2)} leads to joint optimization.
+\item{p}{Starting parameter values for the optimization.}
+
+\item{...}{Additional arguments to be passed to \code{f}.}
+
+\item{partition}{A list of vectors of indices of \code{p}, specifying the partition of the
+alternating optimization.
+The default is \code{as.list(1:length(p))}, i.e. each parameter is
+optimized separately.
 Parameter indices can be members of multiple subsets.}
 
-\item{initial}{A vector of length \code{f$npar} of initial parameter values.
-Can also be a single numeric, which then is repeated \code{f$npar} times.
-Per default, the algorithm is initialized at the origin.}
+\item{optimizer}{An object of class \code{optimizer}, which can be specified via
+\code{\link[optimizeR]{set_optimizer}}.
+The default optimizer is \code{\link[stats]{optim}}.}
 
-\item{iterations}{The number of iterations through all subsets.
+\item{iterations}{The number of iterations through the partitions.
 The default is \code{10}.}
 
 \item{tolerance}{A non-negative numeric value. The function terminates prematurely if the
 euclidean distance between the current solution and the one from the last
 iteration is smaller than \code{tolerance}.
-Per default, \code{tolerance = 1e-6}.}
+The default is \code{1e-6}.}
 
-\item{minimize}{If \code{TRUE} (the default), minimization, if \code{FALSE}, maximization.}
+\item{print.level}{This argument determines the level of printing which is done during the
+optimization process.
+Three values (analogue to \code{\link[stats]{nlm}}) can be specified:
+\itemize{
+\item \code{0} (the default): no printing
+\item \code{1}: initial and final details are printed
+\item \code{2}: full tracing information is printed
+}}
 
-\item{progress}{If \code{TRUE}, progress is printed. The default is \code{FALSE}.}
-
-\item{plot}{If \code{TRUE}, the parameter updates are plotted.}
+\item{plot}{If \code{TRUE}, the parameter updates are plotted.
+The default is \code{FALSE}.}
 }
 \value{
-An object of class \code{ao}, which is a list of
+A list containing the following components:
 \itemize{
-\item \code{optimum}, the optimal value,
-\item \code{estimate}, the parameter vector that yields the optimum,
-\item \code{sequence}, a \code{data.frame} of the estimates in the single
-iterations,
-\item \code{time}, the total estimation time in seconds.
+\item \code{par}, the optimal set of parameters found,
+\item \code{value}, the value of \code{f} corresponding to \code{par},
+\item \code{seq}, a data frame of the estimates and computation times in the
+single iterations,
+\item amd \code{time}, the overall computation time.
 }
 }
 \description{
-This function performs alternating optimization on the function \code{f}.
+This function carries out alternating optimization of the function \code{f}.
 
 Alternating optimization of (high-dimensional) functions is an iterative
-procedure for minimizing (or maximizing) jointly over all parameters by
-alternately optimizing parameter subsets.
+procedure for optimizing jointly over all parameters by alternately
+optimizing parameter subsets.
+}
+\details{
+For more details see the help vignette:
+\code{vignette("ao", package = "ao")}
 }
 \examples{
+### alternating optimization separately for x_1 and x_2
+### parameter restriction: -5 <= x_1, x_2 <= 5
 himmelblau <- function(x) (x[1]^2 + x[2] - 11)^2 + (x[1] + x[2]^2 - 7)^2
-f <- set_f(f = himmelblau, npar = 2, lower = -5, upper = 5)
-ao(f = f, partition = list(1, 2))
+ao(
+  f = himmelblau, p = c(0,0), partition = list(1, 2),
+  optimizer = set_optimizer_optim(lower = -5, upper = 5, method = "L-BFGS-B")
+)
 
 }
 \seealso{
