@@ -13,7 +13,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-# ao: Alternating Optimization <img src="man/figures/logo.png" align="right" alt="" width="120" />
+# {ao}
 
 <!-- badges: start -->
 [![R-CMD-check](https://github.com/loelschlaeger/ao/workflows/R-CMD-check/badge.svg)](https://github.com/loelschlaeger/ao/actions)
@@ -22,13 +22,16 @@ knitr::opts_chunk$set(
 [![Codecov test coverage](https://codecov.io/gh/loelschlaeger/ao/branch/main/graph/badge.svg)](https://app.codecov.io/gh/loelschlaeger/ao?branch=main)
 <!-- badges: end -->
 
-This package implemented alternating optimization, which is an iterative procedure for optimizing some function jointly over all parameters by alternating restricted optimization over individual parameter subsets. 
+This R package implements alternating optimization, which is an iterative procedure for optimizing some function jointly over all parameters by alternating restricted optimization over individual parameter subsets. 
 
-See the [vignette](https://loelschlaeger.github.io/ao/articles/ao.html) for more details on the method.
+For more details see the help vignette:
+``` r
+vignette("ao", package = "ao")
+```
 
 ## Installation
 
-You can install the released version of ao from [CRAN](https://CRAN.R-project.org) with:
+You can install the released version from [CRAN](https://CRAN.R-project.org) with:
 
 ```{r, install released, eval = FALSE}
 install.packages("ao")
@@ -43,11 +46,13 @@ devtools::install_github("loelschlaeger/ao")
 
 ## Example
 
-```{r, example}
-library(ao)
-himmelblau <- function(x) (x[1]^2+x[2]-11)^2 + (x[1]+x[2]^2-7)^2
-f <- set_f(f = himmelblau, npar = 2, lower = -5, upper = 5)
-ao(f = f, partition = list(1, 2), progress = FALSE, plot = FALSE)
-```
+The following lines perform alternating optimization of the [Himmelblau's function](https://en.wikipedia.org/wiki/Himmelblau%27s_function), separately for $x_1$ and $x_2$, with the parameter restrictions $-5 \leq x_1, x_2 \leq 5$:
 
-This example is explained in detail [here](https://loelschlaeger.github.io/ao/articles/ao.html#application).
+```{r, example}
+library("ao")
+himmelblau <- function(x) (x[1]^2 + x[2] - 11)^2 + (x[1] + x[2]^2 - 7)^2
+ao(
+  f = himmelblau, p = c(0,0), partition = list(1, 2),
+  optimizer = set_optimizer_optim(lower = -5, upper = 5, method = "L-BFGS-B")
+)
+```

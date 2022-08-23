@@ -1,3 +1,13 @@
+# ao 0.2.2
+
+* Removed the `set_f()` interface. The optimization problem is now specified directly in `ao()`.
+
+* The output format of `ao()` has been changed, see the documentation of `ao()`.
+
+* Arbitrary optimizer can now be specified in `ao()` as an `optimizer` object via the framework from the {optimizeR} package.
+
+* Removed utils functions from {ao}. They are imported from the {optimizeR} package.
+
 # ao 0.2.1
 
 * The [Himmelblau's function](https://en.wikipedia.org/wiki/Himmelblau%27s_function) is included as an example.
