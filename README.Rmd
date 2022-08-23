@@ -46,7 +46,7 @@ devtools::install_github("loelschlaeger/ao")
 
 ## Example
 
-The following example carries out alternating optimization of the [Himmelblau's function](https://en.wikipedia.org/wiki/Himmelblau%27s_function), separately for $x_1$ and $x_2$, with parameter restrictions $-5 \leq x_1, x_2 \leq 5$:
+The following lines perform alternating optimization of the [Himmelblau's function](https://en.wikipedia.org/wiki/Himmelblau%27s_function), separately for $x_1$ and $x_2$, with the parameter restrictions $-5 \leq x_1, x_2 \leq 5$:
 
 ```{r, example}
 library("ao")

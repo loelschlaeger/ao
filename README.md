@@ -43,14 +43,14 @@ devtools::install_github("loelschlaeger/ao")
 
 ## Example
 
-The following example carries out alternating optimization of the
+The following lines perform alternating optimization of the
 [Himmelblau’s
 function](https://en.wikipedia.org/wiki/Himmelblau%27s_function),
 separately for
 ![x_1](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;x_1 "x_1")
 and
 ![x_2](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;x_2 "x_2"),
-with parameter restrictions
+with the parameter restrictions
 ![-5 \leq x_1, x_2 \leq 5](https://latex.codecogs.com/png.image?%5Cdpi%7B110%7D&space;%5Cbg_white&space;-5%20%5Cleq%20x_1%2C%20x_2%20%5Cleq%205 "-5 \leq x_1, x_2 \leq 5"):
 
 ``` r
@@ -70,17 +70,17 @@ ao(
 #> $sequence
 #>    iteration partition         time       p1        p2
 #> 1          0         0 0.0000000000 0.000000  0.000000
-#> 2          1         1 0.0068581104 3.395691  0.000000
-#> 3          1         2 0.0002210140 3.395691 -1.803183
-#> 4          2         1 0.0001919270 3.581412 -1.803183
-#> 5          2         2 0.0001709461 3.581412 -1.847412
-#> 6          3         1 0.0002279282 3.584381 -1.847412
-#> 7          3         2 0.0001389980 3.584381 -1.848115
-#> 8          4         1 0.0001389980 3.584427 -1.848115
-#> 9          4         2 0.0001230240 3.584427 -1.848126
-#> 10         5         1 0.0001201630 3.584428 -1.848126
-#> 11         5         2 0.0001270771 3.584428 -1.848126
+#> 2          1         1 0.0314528942 3.395691  0.000000
+#> 3          1         2 0.0003468990 3.395691 -1.803183
+#> 4          2         1 0.0002689362 3.581412 -1.803183
+#> 5          2         2 0.0002470016 3.581412 -1.847412
+#> 6          3         1 0.0003299713 3.584381 -1.847412
+#> 7          3         2 0.0002009869 3.584381 -1.848115
+#> 8          4         1 0.0002000332 3.584427 -1.848115
+#> 9          4         2 0.0001769066 3.584427 -1.848126
+#> 10         5         1 0.0001850128 3.584428 -1.848126
+#> 11         5         2 0.0001809597 3.584428 -1.848126
 #> 
 #> $time
-#> Time difference of 0.01215196 secs
+#> Time difference of 0.03914905 secs
 ```
