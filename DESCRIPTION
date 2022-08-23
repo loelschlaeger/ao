@@ -6,7 +6,7 @@ Authors@R:
     person(given = "Lennart",
            family = "Oelschl\U00E4ger",
            role = c("aut", "cre"),
-           email = "lennart.oelschlaeger@uni-bielefeld.de",
+           email = "oelschlaeger.lennart@gmail.com",
            comment = c(ORCID = "0000-0001-5421-9313"))
 Description: Alternating optimization of (high-dimensional) functions is an 
     iterative procedure for optimizing jointly over all parameters by 
