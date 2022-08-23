@@ -1,4 +1,4 @@
-# ao 0.2.1.9000
+# ao 0.2.2
 
 * Removed the `set_f()` interface. The optimization problem is now specified directly in `ao()`.
 
