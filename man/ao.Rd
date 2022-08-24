@@ -91,7 +91,7 @@ ao(
 \seealso{
 Useful links:
 \itemize{
-  \item \url{https://loelschlaeger.de/ao/}
+  \item \url{https://github.com/loelschlaeger/ao/}
   \item Report bugs at \url{https://github.com/loelschlaeger/ao/issues}
 }
 

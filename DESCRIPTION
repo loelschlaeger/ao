@@ -14,7 +14,7 @@ Description: Alternating optimization of (high-dimensional) functions is an
     For a reference on the method, see Bezdek and Hathaway (2002) 
     "Some Notes on Alternating Optimization" 
     <doi:10.1007/3-540-45631-7_39>. 
-URL: https://loelschlaeger.de/ao/
+URL: https://github.com/loelschlaeger/ao/
 BugReports: https://github.com/loelschlaeger/ao/issues
 License: GPL-3
 Encoding: UTF-8
