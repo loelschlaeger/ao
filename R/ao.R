@@ -123,7 +123,7 @@ ao <- function(
       if (print) {
         cat(
           paste0(
-            "- partition ", part, " of ", length(partition), ": f = ", f(est)
+            "- partition ", part, " of ", length(partition), ": f = ", f(est, ...)
             ), "\n"
         )
       }
@@ -136,11 +136,11 @@ ao <- function(
       if (length(p_ind) == 0) {
         next
       }
-      f_small <- function(theta_small) {
+      f_small <- function(theta_small, ...) {
         theta <- numeric(npar)
         theta[p_ind] <- theta_small
         theta[-p_ind] <- est[-p_ind]
-        out <- f(theta)
+        out <- f(theta, ...)
         if (inherits(out, "gradient")) {
           attr(out, "gradient") <- attr(out, "gradient")[p_ind]
         }
@@ -150,7 +150,7 @@ ao <- function(
         out
       }
       f_small_out <- optimizeR(
-        optimizer = optimizer, f = f_small, p = est[p_ind]#, ...
+        optimizer = optimizer, f = f_small, p = est[p_ind], ...
       )
       est[p_ind] <- f_small_out[["z"]]
       seq <- rbind(seq, c(it, part, f_small_out$time, est))
@@ -165,7 +165,7 @@ ao <- function(
   }
   t_end <- Sys.time()
   list(
-    "optimum" = f(est),
+    "optimum" = f(est, ...),
     "estimate" = est,
     "sequence" = seq,
     "time" = difftime(t_end, t_start)
