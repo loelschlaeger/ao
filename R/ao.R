@@ -46,11 +46,11 @@
 #'
 #' @return
 #' A list containing the following components:
-#' * \code{par}, the optimal set of parameters found,
-#' * \code{value}, the value of \code{f} corresponding to \code{par},
-#' * \code{seq}, a data frame of the estimates and computation times in the
+#' * \code{estimate}, the optimal set of parameters found,
+#' * \code{optimum}, the value of \code{f} corresponding to \code{estimate},
+#' * \code{sequence}, a data frame of the estimates and computation times in the
 #'   single iterations,
-#' * amd \code{time}, the overall computation time.
+#' * and \code{time}, the overall computation time.
 #'
 #' @examples
 #' ### alternating optimization separately for x_1 and x_2

@@ -60,11 +60,11 @@ The default is \code{FALSE}.}
 \value{
 A list containing the following components:
 \itemize{
-\item \code{par}, the optimal set of parameters found,
-\item \code{value}, the value of \code{f} corresponding to \code{par},
-\item \code{seq}, a data frame of the estimates and computation times in the
+\item \code{estimate}, the optimal set of parameters found,
+\item \code{optimum}, the value of \code{f} corresponding to \code{estimate},
+\item \code{sequence}, a data frame of the estimates and computation times in the
 single iterations,
-\item amd \code{time}, the overall computation time.
+\item and \code{time}, the overall computation time.
 }
 }
 \description{
