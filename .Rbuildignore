@@ -9,3 +9,4 @@ sticker/
 ^\.github$
 ^README\.Rmd$
 ^codecov\.yml$
+^CRAN-SUBMISSION$
