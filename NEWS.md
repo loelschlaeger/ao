@@ -1,10 +1,14 @@
+# ao 0.2.3
+
+* Fixed bugs when having `...` arguments for `ao()`.
+
 # ao 0.2.2
 
 * Removed the `set_f()` interface. The optimization problem is now specified directly in `ao()`.
 
 * The output format of `ao()` has been changed, see the documentation of `ao()`.
 
-* Arbitrary optimizer can now be specified in `ao()` as an `optimizer` object via the framework from the {optimizeR} package.
+* Arbitrary optimizer can now be specified in `ao()` as an `optimizer` object via the framework from [the {optimizeR} package](https://CRAN.R-project.org/package=optimizeR).
 
 * Removed utils functions from {ao}. They are imported from the {optimizeR} package.
 
