@@ -13,21 +13,16 @@ knitr::opts_chunk$set(
 )
 ```
 
-# {ao}
+# Alternating Optimization in R with {ao}
 
 <!-- badges: start -->
-[![R-CMD-check](https://github.com/loelschlaeger/ao/workflows/R-CMD-check/badge.svg)](https://github.com/loelschlaeger/ao/actions)
 [![CRAN status](https://www.r-pkg.org/badges/version-last-release/ao)](https://www.r-pkg.org/badges/version-last-release/ao)
-[![CRAN downloads](https://cranlogs.r-pkg.org/badges/grand-total/ao)](https://cranlogs.r-pkg.org/badges/grand-total/ao)
+[![CRAN downloads](https://cranlogs.r-pkg.org/badges/last-month/ao)](https://cranlogs.r-pkg.org/badges/grand-total/ao)
+[![R-CMD-check](https://github.com/loelschlaeger/ao/workflows/R-CMD-check/badge.svg)](https://github.com/loelschlaeger/ao/actions)
 [![Codecov test coverage](https://codecov.io/gh/loelschlaeger/ao/branch/main/graph/badge.svg)](https://app.codecov.io/gh/loelschlaeger/ao?branch=main)
 <!-- badges: end -->
 
-This R package implements alternating optimization, which is an iterative procedure for optimizing some function jointly over all parameters by alternating restricted optimization over individual parameter subsets. 
-
-For more details see the help vignette:
-``` r
-vignette("ao", package = "ao")
-```
+This R package implements alternating optimization, which is an iterative procedure for optimizing some function jointly over all parameters by alternating restricted optimization over individual parameter subsets. For more details, see the [package vignette](https://cran.r-project.org/package=ao/vignettes/ao.html).
 
 ## Installation
 
@@ -53,6 +48,10 @@ library("ao")
 himmelblau <- function(x) (x[1]^2 + x[2] - 11)^2 + (x[1] + x[2]^2 - 7)^2
 ao(
   f = himmelblau, p = c(0,0), partition = list(1, 2),
-  optimizer = set_optimizer_optim(lower = -5, upper = 5, method = "L-BFGS-B")
+  optimizer = optimizer_optim(lower = -5, upper = 5, method = "L-BFGS-B")
 )
 ```
+
+## Contact
+
+Have a question, found a bug, request a feature, want to contribute? [Please file an issue](https://github.com/loelschlaeger/ao/issues/new/choose).
