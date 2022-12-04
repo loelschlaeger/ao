@@ -1,11 +1,7 @@
 ^ao\.Rproj$
 ^\.Rproj\.user$
 LICENSE
-sticker/
 .github
-^_pkgdown\.yml$
-^docs$
-^pkgdown$
 ^\.github$
 ^README\.Rmd$
 ^codecov\.yml$
