@@ -2,5 +2,4 @@
 
 export(ao)
 import(optimizeR)
-importFrom(lifecycle,deprecated)
 importFrom(rlang,.data)

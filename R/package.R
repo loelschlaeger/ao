@@ -15,11 +15,6 @@
 #' @import optimizeR
 "_PACKAGE"
 
-## usethis namespace: start
-#' @importFrom lifecycle deprecated
-## usethis namespace: end
-NULL
-
 #' @noRd
 #' @keywords
 #' internal
