@@ -58,7 +58,7 @@ As an application, we consider minimizing the [Himmelblau's function](https://en
 library("ao")
 himmelblau <- function(x) (x[1]^2 + x[2] - 11)^2 + (x[1] + x[2]^2 - 7)^2
 ao(f = himmelblau, p = c(0,0), partition = list(1, 2),
-   optimizer = set_optimizer_optim(lower = -5, upper = 5, method = "L-BFGS-B"))
+   optimizer = optimizer_optim(lower = -5, upper = 5, method = "L-BFGS-B"))
 ```
 
 The call minimizes `f` by alternating optimizing with respect to each parameter separately, where the parameters all are initialized at the value 0. 
