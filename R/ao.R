@@ -106,7 +106,7 @@ ao <- function(
   t_start <- Sys.time()
   if (plot) {
     data <- data.frame(x = 1:npar, y = est)
-    vis <- ggplot2::ggplot(data, ggplot2::aes(x, y)) +
+    vis <- ggplot2::ggplot(data, ggplot2::aes(.data$x, .data$y)) +
       ggplot2::geom_point() +
       ggplot2::scale_x_discrete(limits = factor(data$x)) +
       ggplot2::theme_minimal() +
