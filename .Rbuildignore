@@ -6,3 +6,4 @@ LICENSE
 ^README\.Rmd$
 ^codecov\.yml$
 ^CRAN-SUBMISSION$
+^cran-comments\.md$
