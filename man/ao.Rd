@@ -4,43 +4,45 @@
 \name{ao}
 \alias{ao}
 \alias{ao-package}
-\title{Alternating optimization}
+\title{Alternating Optimization}
 \usage{
 ao(
   f,
   p,
   ...,
   partition = as.list(1:length(p)),
-  optimizer = set_optimizer_optim(),
-  iterations = 10L,
+  optimizer = optimizer_optim(),
+  iterations = 10,
   tolerance = 1e-06,
   print.level = 0,
   plot = FALSE
 )
 }
 \arguments{
-\item{f}{The function to be optimized, returning a single numeric value. The first
-argument of \code{f} must be a numeric vector of the length of \code{p}
-followed by any other arguments specified by the \code{...} argument.}
+\item{f}{A \code{function} to be optimized, returning a single \code{numeric}.
+The first argument of \code{f} must be a \code{numeric} of the length of
+\code{p} followed by any other arguments specified by the \code{...}
+argument.}
 
-\item{p}{Starting parameter values for the optimization.}
+\item{p}{A \code{numeric} vector, the starting parameter values for the optimization.}
 
 \item{...}{Additional arguments to be passed to \code{f}.}
 
-\item{partition}{A list of vectors of indices of \code{p}, specifying the partition of the
-alternating optimization.
+\item{partition}{A \code{list} of vectors of indices of \code{p}, specifying the partition of
+the alternating optimization.
 The default is \code{as.list(1:length(p))}, i.e. each parameter is
 optimized separately.
 Parameter indices can be members of multiple subsets.}
 
-\item{optimizer}{An object of class \code{optimizer}, which can be specified via
+\item{optimizer}{An \code{optimizer} object, which can be specified via
 \code{\link[optimizeR]{set_optimizer}}.
 The default optimizer is \code{\link[stats]{optim}}.}
 
-\item{iterations}{The number of iterations through the partitions.
+\item{iterations}{An \code{integer}, the number of iterations through the parameter indices in
+\code{partitions}.
 The default is \code{10}.}
 
-\item{tolerance}{A non-negative numeric value. The function terminates prematurely if the
+\item{tolerance}{A non-negative \code{numeric}. The function terminates prematurely if the
 euclidean distance between the current solution and the one from the last
 iteration is smaller than \code{tolerance}.
 The default is \code{1e-6}.}
@@ -58,33 +60,29 @@ Three values (analogue to \code{\link[stats]{nlm}}) can be specified:
 The default is \code{FALSE}.}
 }
 \value{
-A list containing the following components:
+A \code{list} containing the following components:
 \itemize{
-\item \code{estimate}, the optimal set of parameters found,
-\item \code{optimum}, the value of \code{f} corresponding to \code{estimate},
-\item \code{sequence}, a data frame of the estimates and computation times in the
-single iterations,
-\item and \code{time}, the overall computation time.
+\item \code{estimate}: a \code{numeric}, the optimal parameter vector found,
+\item \code{optimum}: a \code{numeric}, the value of \code{f} at \code{estimate},
+\item \code{sequence}: a \code{data.frame} of the estimates and computation times
+in the single iterations,
+\item and \code{time}, a \code{difftime} object, the overall computation time.
 }
 }
 \description{
-This function carries out alternating optimization of the function \code{f}.
+This function performs alternating optimization of the function \code{f}.
 
 Alternating optimization of (high-dimensional) functions is an iterative
 procedure for optimizing jointly over all parameters by alternately
 optimizing parameter subsets.
-}
-\details{
-For more details see the help vignette:
-\code{vignette("ao", package = "ao")}
 }
 \examples{
 ### alternating optimization separately for x_1 and x_2
 ### parameter restriction: -5 <= x_1, x_2 <= 5
 himmelblau <- function(x) (x[1]^2 + x[2] - 11)^2 + (x[1] + x[2]^2 - 7)^2
 ao(
-  f = himmelblau, p = c(0,0), partition = list(1, 2),
-  optimizer = set_optimizer_optim(lower = -5, upper = 5, method = "L-BFGS-B")
+  f = himmelblau, p = c(0,0), partition = list(1, 2), iterations = 10,
+  optimizer = optimizer_optim(lower = -5, upper = 5, method = "L-BFGS-B")
 )
 
 }

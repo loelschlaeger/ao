@@ -1,35 +1,33 @@
-#' Alternating optimization
+#' Alternating Optimization
 #'
 #' @description
-#' This function carries out alternating optimization of the function \code{f}.
-#'
-#' @details
-#' For more details see the help vignette:
-#' \code{vignette("ao", package = "ao")}
+#' This function performs alternating optimization of the function \code{f}.
 #'
 #' @param f
-#' The function to be optimized, returning a single numeric value. The first
-#' argument of \code{f} must be a numeric vector of the length of \code{p}
-#' followed by any other arguments specified by the \code{...} argument.
+#' A \code{function} to be optimized, returning a single \code{numeric}.
+#' The first argument of \code{f} must be a \code{numeric} of the length of
+#' \code{p} followed by any other arguments specified by the \code{...}
+#' argument.
 #' @param p
-#' Starting parameter values for the optimization.
+#' A \code{numeric} vector, the starting parameter values for the optimization.
 #' @param ...
 #' Additional arguments to be passed to \code{f}.
 #' @param partition
-#' A list of vectors of indices of \code{p}, specifying the partition of the
-#' alternating optimization.
+#' A \code{list} of vectors of indices of \code{p}, specifying the partition of
+#' the alternating optimization.
 #' The default is \code{as.list(1:length(p))}, i.e. each parameter is
 #' optimized separately.
 #' Parameter indices can be members of multiple subsets.
 #' @param optimizer
-#' An object of class \code{optimizer}, which can be specified via
+#' An \code{optimizer} object, which can be specified via
 #' \code{\link[optimizeR]{set_optimizer}}.
 #' The default optimizer is \code{\link[stats]{optim}}.
 #' @param iterations
-#' The number of iterations through the partitions.
+#' An \code{integer}, the number of iterations through the parameter indices in
+#' \code{partitions}.
 #' The default is \code{10}.
 #' @param tolerance
-#' A non-negative numeric value. The function terminates prematurely if the
+#' A non-negative \code{numeric}. The function terminates prematurely if the
 #' euclidean distance between the current solution and the one from the last
 #' iteration is smaller than \code{tolerance}.
 #' The default is \code{1e-6}.
@@ -45,20 +43,20 @@
 #' The default is \code{FALSE}.
 #'
 #' @return
-#' A list containing the following components:
-#' * \code{estimate}, the optimal set of parameters found,
-#' * \code{optimum}, the value of \code{f} corresponding to \code{estimate},
-#' * \code{sequence}, a data frame of the estimates and computation times in the
-#'   single iterations,
-#' * and \code{time}, the overall computation time.
+#' A \code{list} containing the following components:
+#' * \code{estimate}: a \code{numeric}, the optimal parameter vector found,
+#' * \code{optimum}: a \code{numeric}, the value of \code{f} at \code{estimate},
+#' * \code{sequence}: a \code{data.frame} of the estimates and computation times
+#'   in the single iterations,
+#' * and \code{time}, a \code{difftime} object, the overall computation time.
 #'
 #' @examples
 #' ### alternating optimization separately for x_1 and x_2
 #' ### parameter restriction: -5 <= x_1, x_2 <= 5
 #' himmelblau <- function(x) (x[1]^2 + x[2] - 11)^2 + (x[1] + x[2]^2 - 7)^2
 #' ao(
-#'   f = himmelblau, p = c(0,0), partition = list(1, 2),
-#'   optimizer = set_optimizer_optim(lower = -5, upper = 5, method = "L-BFGS-B")
+#'   f = himmelblau, p = c(0,0), partition = list(1, 2), iterations = 10,
+#'   optimizer = optimizer_optim(lower = -5, upper = 5, method = "L-BFGS-B")
 #' )
 #'
 #' @export
@@ -67,7 +65,7 @@
 
 ao <- function(
     f, p, ..., partition = as.list(1:length(p)),
-    optimizer = set_optimizer_optim(), iterations = 10L, tolerance = 1e-6,
+    optimizer = optimizer_optim(), iterations = 10, tolerance = 1e-6,
     print.level = 0, plot = FALSE
 ) {
   if (missing(f) || !is.function(f)) {
@@ -81,7 +79,10 @@ ao <- function(
     ao_stop("'partition' must be a list of vectors of indices of 'p'.")
   }
   if (!inherits(optimizer, "optimizer")) {
-    ao_stop("'optimizer' must be an object of class 'optimizer'.")
+    ao_stop(
+      "'optimizer' must be an object of class 'optimizer'.",
+      "Use 'optimizeR::set_optimizer()' to create such an object."
+    )
   }
   if (length(iterations) != 1 || !is_number(iterations)) {
     ao_stop("'iterations' must be a single number.")
@@ -90,10 +91,10 @@ ao <- function(
     ao_stop("'tolerance' must be a single, non-negative numeric.")
   }
   if (length(print.level) != 1 ||  !print.level %in% c(0,1,2)) {
-    ao_stop("'print.level' must be in {0,1,2}.")
+    ao_stop("'print.level' must be one of 0, 1, 2.")
   }
   if (!isTRUE(plot) && !isFALSE(plot)) {
-    ao_stop("'plot' must be a boolean.")
+    ao_stop("'plot' must be either TRUE or FALSE.")
   }
   exit_flag <- FALSE
   est <- p
@@ -105,7 +106,7 @@ ao <- function(
   t_start <- Sys.time()
   if (plot) {
     data <- data.frame(x = 1:npar, y = est)
-    vis <- ggplot2::ggplot(data, ggplot2::aes(rlang::.data$x, rlang::.data$y)) +
+    vis <- ggplot2::ggplot(data, ggplot2::aes(x, y)) +
       ggplot2::geom_point() +
       ggplot2::scale_x_discrete(limits = factor(data$x)) +
       ggplot2::theme_minimal() +
@@ -129,7 +130,8 @@ ao <- function(
       }
       if (plot) {
         vis$data$y <- est
-        vis$labels$title <- paste("iteration", it, "partition", part)
+        vis$labels$title <- paste("iteration", it, "of", iterations)
+        vis$labels$subtitle <- paste("partition", part, "of", length(partition))
         print(vis)
       }
       p_ind <- partition[[part]]
@@ -149,7 +151,7 @@ ao <- function(
         }
         out
       }
-      f_small_out <- optimizeR(
+      f_small_out <- optimizeR::apply_optimizer(
         optimizer = optimizer, f = f_small, p = est[p_ind], ...
       )
       est[p_ind] <- f_small_out[["z"]]
