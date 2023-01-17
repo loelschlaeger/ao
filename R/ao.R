@@ -152,10 +152,10 @@ ao <- function(
         out
       }
       f_small_out <- optimizeR::apply_optimizer(
-        optimizer = optimizer, f = f_small, p = est[p_ind], ...
+        optimizer = optimizer, objective = f_small, initial = est[p_ind], ...
       )
-      est[p_ind] <- f_small_out[["z"]]
-      seq <- rbind(seq, c(it, part, f_small_out$time, est))
+      est[p_ind] <- f_small_out[["parameter"]]
+      seq <- rbind(seq, c(it, part, f_small_out[["seconds"]], est))
       if (nrow(seq) > length(partition)) {
         curr <- as.numeric(seq[nrow(seq) - length(partition), -(1:3)])
         last <- as.numeric(seq[nrow(seq), -(1:3)])
