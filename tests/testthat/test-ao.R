@@ -13,7 +13,7 @@ test_that("ao input checks work", {
     "must be a list of vectors"
   )
   expect_error(
-    ao(f = f, p = 1, optimizer = "not_an_optimizer"),
+    ao(f = f, p = 1, base_optimizer = "not_an_optimizer"),
     "must be an object of class 'optimizer'"
   )
   expect_error(
@@ -37,7 +37,7 @@ test_that("ao input checks work", {
 test_that("ao works", {
   himmelblau <- function(x) (x[1]^2 + x[2] - 11)^2 + (x[1] + x[2]^2 - 7)^2
   out <- ao(f = himmelblau, p = c(0,0), partition = list(1, 2),
-            optimizer = optimizeR::optimizer_optim(
+            base_optimizer = optimizeR::optimizer_optim(
               lower = -5, upper = 5, method = "L-BFGS-B"
             )
   )
@@ -52,7 +52,7 @@ test_that("ao with additional parameters works", {
   }
   out <- ao(f = himmelblau, a = 2, b = 11, c = 7,
             p = c(0,0), partition = list(1, 2),
-            optimizer = optimizeR::optimizer_optim(
+            base_optimizer = optimizeR::optimizer_optim(
               lower = -5, upper = 5, method = "L-BFGS-B"
             )
   )
@@ -64,7 +64,7 @@ test_that("ao with additional parameters works", {
 test_that("NULL elements in partition do not break code", {
   himmelblau <- function(x) (x[1]^2 + x[2] - 11)^2 + (x[1] + x[2]^2 - 7)^2
   out <- ao(f = himmelblau, p = c(0,0), partition = list(1, 2, NULL),
-            optimizer = optimizeR::optimizer_optim(
+            base_optimizer = optimizeR::optimizer_optim(
               lower = -5, upper = 5, method = "L-BFGS-B"
             )
   )
@@ -74,10 +74,10 @@ test_that("NULL elements in partition do not break code", {
 test_that("printing progress works", {
   f <- function(x) (x+2)^2
   expect_output(
-    ao(f = f, p = 0, optimizer = optimizeR::optimizer_nlm(), print.level = 1)
+    ao(f = f, p = 0, base_optimizer = optimizeR::optimizer_nlm(), print.level = 1)
   )
   expect_output(
-    ao(f = f, p = 0, optimizer = optimizeR::optimizer_nlm(), print.level = 2)
+    ao(f = f, p = 0, base_optimizer = optimizeR::optimizer_nlm(), print.level = 2)
   )
 })
 
@@ -85,7 +85,7 @@ test_that("plotting progress works", {
   himmelblau <- function(x) (x[1]^2 + x[2] - 11)^2 + (x[1] + x[2]^2 - 7)^2
   pdf(file = NULL)
   out <- ao(f = himmelblau, p = c(0,0), partition = list(1, 2),
-            optimizer = optimizeR::optimizer_optim(
+            base_optimizer = optimizeR::optimizer_optim(
               lower = -5, upper = 5, method = "L-BFGS-B"
             ), plot = TRUE
   )

@@ -2,6 +2,8 @@
 
 * Updated code to the new {optimizeR} version 0.3.0, which renamed changed some input and output names.
 
+* In particular, in `ao()`, renamed input `optimizer` -> `base_optimizer`.
+
 # ao 0.2.4
 
 * Updated code to the new {optimizeR} version 0.2.0, which renamed some functions.

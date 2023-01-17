@@ -58,7 +58,7 @@ As an application, we consider minimizing the [Himmelblau's function](https://en
 library("ao")
 himmelblau <- function(x) (x[1]^2 + x[2] - 11)^2 + (x[1] + x[2]^2 - 7)^2
 ao(f = himmelblau, p = c(0,0), partition = list(1, 2),
-   optimizer = optimizer_optim(lower = -5, upper = 5, method = "L-BFGS-B"))
+   base_optimizer = optimizer_optim(lower = -5, upper = 5, method = "L-BFGS-B"))
 ```
 
 The call minimizes `f` by alternating optimizing with respect to each parameter separately, where the parameters all are initialized at the value 0. 
@@ -69,7 +69,7 @@ The `ao()` function has the following arguments:
 * `p`: Starting parameter values for the optimization.
 * `...`: Additional arguments to be passed to `f`.
 * `partition`: A list of vectors of indices of `p`, specifying the partition of the alternating optimization. The default is `as.list(1:length(p))`, i.e. each parameter is optimized separately. Parameter indices can be members of multiple subsets.
-* `optimizer`:  An object of class `optimizer`, which can be specified via `optimizeR::set_optimizer()`. The default optimizer is `stats::optim()`.
+* `base_optimizer`:  An object of class `optimizer`, which can be specified via `optimizeR::set_optimizer()`. The default optimizer is `stats::optim()`.
 * `iterations`: The number of iterations through the partitions. The default is `10`.
 * `tolerance`: A non-negative numeric value. The function terminates prematurely if the euclidean distance between the current solution and the one from the last iteration is smaller than `tolerance`. The default is `1e-6`.
 * `print.level`: This argument determines the level of printing which is done during the

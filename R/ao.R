@@ -18,7 +18,7 @@
 #' The default is \code{as.list(1:length(p))}, i.e. each parameter is
 #' optimized separately.
 #' Parameter indices can be members of multiple subsets.
-#' @param optimizer
+#' @param base_optimizer
 #' An \code{optimizer} object, which can be specified via
 #' \code{\link[optimizeR]{set_optimizer}}.
 #' The default optimizer is \code{\link[stats]{optim}}.
@@ -56,7 +56,7 @@
 #' himmelblau <- function(x) (x[1]^2 + x[2] - 11)^2 + (x[1] + x[2]^2 - 7)^2
 #' ao(
 #'   f = himmelblau, p = c(0,0), partition = list(1, 2), iterations = 10,
-#'   optimizer = optimizer_optim(lower = -5, upper = 5, method = "L-BFGS-B")
+#'   base_optimizer = optimizer_optim(lower = -5, upper = 5, method = "L-BFGS-B")
 #' )
 #'
 #' @export
@@ -65,7 +65,7 @@
 
 ao <- function(
     f, p, ..., partition = as.list(1:length(p)),
-    optimizer = optimizer_optim(), iterations = 10, tolerance = 1e-6,
+    base_optimizer = optimizer_optim(), iterations = 10, tolerance = 1e-6,
     print.level = 0, plot = FALSE
 ) {
   if (missing(f) || !is.function(f)) {
@@ -78,9 +78,9 @@ ao <- function(
       !setequal(unlist(partition), seq_along(p))) {
     ao_stop("'partition' must be a list of vectors of indices of 'p'.")
   }
-  if (!inherits(optimizer, "optimizer")) {
+  if (!inherits(base_optimizer, "optimizer")) {
     ao_stop(
-      "'optimizer' must be an object of class 'optimizer'.",
+      "Input 'base_optimizer' must be an object of class 'optimizer'.",
       "Use 'optimizeR::set_optimizer()' to create such an object."
     )
   }
@@ -152,7 +152,7 @@ ao <- function(
         out
       }
       f_small_out <- optimizeR::apply_optimizer(
-        optimizer = optimizer, objective = f_small, initial = est[p_ind], ...
+        optimizer = base_optimizer, objective = f_small, initial = est[p_ind], ...
       )
       est[p_ind] <- f_small_out[["parameter"]]
       seq <- rbind(seq, c(it, part, f_small_out[["seconds"]], est))

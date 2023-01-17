@@ -11,7 +11,7 @@ ao(
   p,
   ...,
   partition = as.list(1:length(p)),
-  optimizer = optimizer_optim(),
+  base_optimizer = optimizer_optim(),
   iterations = 10,
   tolerance = 1e-06,
   print.level = 0,
@@ -34,7 +34,7 @@ The default is \code{as.list(1:length(p))}, i.e. each parameter is
 optimized separately.
 Parameter indices can be members of multiple subsets.}
 
-\item{optimizer}{An \code{optimizer} object, which can be specified via
+\item{base_optimizer}{An \code{optimizer} object, which can be specified via
 \code{\link[optimizeR]{set_optimizer}}.
 The default optimizer is \code{\link[stats]{optim}}.}
 
@@ -82,7 +82,7 @@ optimizing parameter subsets.
 himmelblau <- function(x) (x[1]^2 + x[2] - 11)^2 + (x[1] + x[2]^2 - 7)^2
 ao(
   f = himmelblau, p = c(0,0), partition = list(1, 2), iterations = 10,
-  optimizer = optimizer_optim(lower = -5, upper = 5, method = "L-BFGS-B")
+  base_optimizer = optimizer_optim(lower = -5, upper = 5, method = "L-BFGS-B")
 )
 
 }
