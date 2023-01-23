@@ -71,6 +71,20 @@ test_that("NULL elements in partition do not break code", {
   expect_type(out, "list")
 })
 
+test_that("gradient and Hessian work", {
+  test_fun <- function(x) {
+    structure(
+      x^4 + 2*x - 5,
+      "gradient" = 4*x^3 + 2,
+      "hessian" = as.matrix(12*x^2)
+    )
+  }
+  out <- ao(f = test_fun, p = -3, partition = list(1),
+            base_optimizer = optimizeR::optimizer_nlm()
+  )
+  expect_type(out, "list")
+})
+
 test_that("printing progress works", {
   f <- function(x) (x+2)^2
   expect_output(

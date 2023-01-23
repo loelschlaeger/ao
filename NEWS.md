@@ -4,6 +4,8 @@
 
 * In particular, in `ao()`, renamed input `optimizer` -> `base_optimizer`.
 
+* Fixed bug when using numerical gradient and/or Hessian in target function.
+
 # ao 0.2.4
 
 * Updated code to the new {optimizeR} version 0.2.0, which renamed some functions.

@@ -143,11 +143,17 @@ ao <- function(
         theta[p_ind] <- theta_small
         theta[-p_ind] <- est[-p_ind]
         out <- f(theta, ...)
-        if (inherits(out, "gradient")) {
-          attr(out, "gradient") <- attr(out, "gradient")[p_ind]
+        if ("gradient" %in% names(attributes(out))) {
+          gradient <- attr(out, "gradient")
+          if (is.numeric(gradient) && is.vector(gradient)) {
+            attr(out, "gradient") <- gradient[p_ind]
+          }
         }
-        if (inherits(out, "hessian")) {
-          attr(out, "hessian") <- attr(out, "hessian")[p_ind, p_ind]
+        if ("hessian" %in% names(attributes(out))) {
+          hessian <- attr(out, "hessian")
+          if (is.numeric(hessian) && is.matrix(hessian)) {
+            attr(out, "hessian") <- hessian[p_ind, p_ind, drop = FALSE]
+          }
         }
         out
       }
