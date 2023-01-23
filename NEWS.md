@@ -1,4 +1,4 @@
-# ao 0.2.4.9000
+# ao 0.2.5
 
 * Updated code to the new {optimizeR} version 0.3.0, which renamed changed some input and output names.
 

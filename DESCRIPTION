@@ -1,6 +1,6 @@
 Package: ao
 Title: Alternating Optimization
-Version: 0.2.4.9000
+Version: 0.2.5
 Authors@R: 
     person(given = "Lennart",
            family = "Oelschl\U00E4ger",
@@ -31,4 +31,4 @@ Config/testthat/edition: 3
 VignetteBuilder: knitr
 Depends:
     R (>= 4.0.0),
-    optimizeR (> 0.2.0)
+    optimizeR (>= 0.3.0)
