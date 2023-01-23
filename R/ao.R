@@ -20,7 +20,7 @@
 #' Parameter indices can be members of multiple subsets.
 #' @param base_optimizer
 #' An \code{optimizer} object, which can be specified via
-#' \code{\link[optimizeR]{set_optimizer}}.
+#' \code{\link[optimizeR]{define_optimizer}}.
 #' The default optimizer is \code{\link[stats]{optim}}.
 #' @param iterations
 #' An \code{integer}, the number of iterations through the parameter indices in
@@ -81,7 +81,7 @@ ao <- function(
   if (!inherits(base_optimizer, "optimizer")) {
     ao_stop(
       "Input 'base_optimizer' must be an object of class 'optimizer'.",
-      "Use 'optimizeR::set_optimizer()' to create such an object."
+      "Use 'optimizeR::define_optimizer()' to create such an object."
     )
   }
   if (length(iterations) != 1 || !is_number(iterations)) {

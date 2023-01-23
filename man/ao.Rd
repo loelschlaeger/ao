@@ -35,7 +35,7 @@ optimized separately.
 Parameter indices can be members of multiple subsets.}
 
 \item{base_optimizer}{An \code{optimizer} object, which can be specified via
-\code{\link[optimizeR]{set_optimizer}}.
+\code{\link[optimizeR]{define_optimizer}}.
 The default optimizer is \code{\link[stats]{optim}}.}
 
 \item{iterations}{An \code{integer}, the number of iterations through the parameter indices in
