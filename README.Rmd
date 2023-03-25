@@ -9,13 +9,14 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
+set.seed(1)
 ```
 
 # ao <img src="man/figures/logo.png" align="right" height="139" />
 
 <!-- badges: start -->
-[![CRAN status](https://www.r-pkg.org/badges/version/ao)](https://www.r-pkg.org/badges/version/ao)
-[![CRAN downloads](https://cranlogs.r-pkg.org/badges/last-month/ao)](https://cranlogs.r-pkg.org/badges/grand-total/ao)
+[![CRAN status](https://www.r-pkg.org/badges/version/ao)](https://CRAN.R-project.org/package=ao)
+[![CRAN downloads](https://cranlogs.r-pkg.org/badges/last-month/ao)](https://CRAN.R-project.org/package=ao)
 [![R-CMD-check](https://github.com/loelschlaeger/ao/workflows/R-CMD-check/badge.svg)](https://github.com/loelschlaeger/ao/actions)
 [![Codecov test coverage](https://codecov.io/gh/loelschlaeger/ao/branch/main/graph/badge.svg)](https://app.codecov.io/gh/loelschlaeger/ao?branch=main)
 <!-- badges: end -->
