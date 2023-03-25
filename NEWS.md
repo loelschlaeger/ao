@@ -1,6 +1,6 @@
 # ao 0.2.6
 
-* Just added package logo and created package website (https://loelschlaeger.de/ao) with the [{pkgdown}](https://pkgdown.r-lib.org/) package. No code changes.
+* Just added package logo and created package website (https://loelschlaeger.de/ao/) with the [{pkgdown}](https://pkgdown.r-lib.org/) package. No code changes.
 
 # ao 0.2.5
 
