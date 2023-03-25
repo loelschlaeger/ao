@@ -1,3 +1,7 @@
+# ao 0.2.6
+
+* Just added package logo and created package website (https://loelschlaeger.de/ao) with the [{pkgdown}](https://pkgdown.r-lib.org/) package. No code changes.
+
 # ao 0.2.5
 
 * Updated code to the new {optimizeR} version 0.3.0, which renamed changed some input and output names.
