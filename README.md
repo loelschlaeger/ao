@@ -19,7 +19,7 @@ alternating optimization, which optimizes a function jointly over all
 parameters by alternately performing restricted optimization over
 individual parameter subsets. For additional details on the method,
 please refer to the [package
-vignette](https://cran.r-project.org/package=ao/vignettes/ao.html).
+vignette](https://loelschlaeger.de/ao/articles/ao.html).
 
 ## Installation
 
@@ -61,19 +61,19 @@ ao(
 #> $sequence
 #>    iteration partition         time       p1        p2
 #> 1          0         0 0.0000000000 0.000000  0.000000
-#> 2          1         1 0.0200569630 3.395691  0.000000
-#> 3          1         2 0.0002138615 3.395691 -1.803183
-#> 4          2         1 0.0001759529 3.581412 -1.803183
-#> 5          2         2 0.0001559258 3.581412 -1.847412
-#> 6          3         1 0.0002701283 3.584381 -1.847412
-#> 7          3         2 0.0001249313 3.584381 -1.848115
-#> 8          4         1 0.0001289845 3.584427 -1.848115
-#> 9          4         2 0.0001099110 3.584427 -1.848126
-#> 10         5         1 0.0001108646 3.584428 -1.848126
-#> 11         5         2 0.0001428127 3.584428 -1.848126
+#> 2          1         1 0.0183928013 3.395691  0.000000
+#> 3          1         2 0.0004260540 3.395691 -1.803183
+#> 4          2         1 0.0001771450 3.581412 -1.803183
+#> 5          2         2 0.0001850128 3.581412 -1.847412
+#> 6          3         1 0.0002231598 3.584381 -1.847412
+#> 7          3         2 0.0001780987 3.584381 -1.848115
+#> 8          4         1 0.0001268387 3.584427 -1.848115
+#> 9          4         2 0.0001599789 3.584427 -1.848126
+#> 10         5         1 0.0001139641 3.584428 -1.848126
+#> 11         5         2 0.0001089573 3.584428 -1.848126
 #> 
 #> $time
-#> Time difference of 0.02502704 secs
+#> Time difference of 0.02382994 secs
 ```
 
 ## Contact

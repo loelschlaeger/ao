@@ -4,9 +4,38 @@ font_add_google("Martel", "my_font")
 showtext_auto()
 
 ### build plot
+library("ao")
+himmelblau <- function(x) {
+  ((x[1] - 2)^2 + (x[2] - 2) + 11)^2 + ((x[1] - 2) + (x[2] - 2)^2 + 7)^2 + 10
+}
+init <- c(1.6, 1.2)
+out <- ao(
+  f = himmelblau, p = init, partition = list(1, 2),
+  base_optimizer = optimizer_optim(lower = -5, upper = 5, method = "L-BFGS-B"),
+  tolerance = 0.1
+)
 library("ggplot2")
+df <- expand.grid(x = seq(1.57, 1.8, length.out = 200), y = seq(1.17, 1.4, length.out = 200))
+df$z <- apply(df, 1, himmelblau)
 p <- ggplot() +
-  theme_void()
+  geom_contour(
+    data = df, aes(x = x, y = y, z = z),
+    breaks = c(
+      apply(out$sequence[c("p1", "p2")], 1, himmelblau), 169.65, 169.619
+    ),
+    colour = "#93032E"
+  ) +
+  geom_point(
+    data = out$sequence, aes(x = p1, y = p2),
+    colour = "#E94F37"
+  ) +
+  geom_line(
+    data = out$sequence, aes(x = p1, y = p2),
+    colour = "#E94F37"
+  ) +
+  theme_void() +
+  scale_x_log10()
+plot(p)
 
 ### build sticker
 library("hexSticker")
@@ -14,9 +43,9 @@ sticker_file <- sticker(
   ### image
   subplot = p,
   s_x = 1,
-  s_y = 1,
-  s_width = 0.8,
-  s_height = 1,
+  s_y = 0.8,
+  s_width = 1.7,
+  s_height = 0.8,
   ### package name
   package = "ao",
   p_x = 1,
@@ -27,7 +56,7 @@ sticker_file <- sticker(
   p_size = 40,
   ### sticker
   h_size = 1.2,
-  h_fill = "#C98986",
+  h_fill = "#F6F7EB",
   h_color = "#000000",
   spotlight = FALSE,
   l_x = 0.9,

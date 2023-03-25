@@ -20,7 +20,7 @@ knitr::opts_chunk$set(
 [![Codecov test coverage](https://codecov.io/gh/loelschlaeger/ao/branch/main/graph/badge.svg)](https://app.codecov.io/gh/loelschlaeger/ao?branch=main)
 <!-- badges: end -->
 
-The {ao} R package implements an iterative procedure known as alternating optimization, which optimizes a function jointly over all parameters by alternately performing restricted optimization over individual parameter subsets. For additional details on the method, please refer to the [package vignette](https://cran.r-project.org/package=ao/vignettes/ao.html).
+The {ao} R package implements an iterative procedure known as alternating optimization, which optimizes a function jointly over all parameters by alternately performing restricted optimization over individual parameter subsets. For additional details on the method, please refer to the [package vignette](https://loelschlaeger.de/ao/articles/ao.html).
 
 ## Installation
 
