@@ -14,10 +14,11 @@ downloads](https://cranlogs.r-pkg.org/badges/last-month/ao)](https://cranlogs.r-
 coverage](https://codecov.io/gh/loelschlaeger/ao/branch/main/graph/badge.svg)](https://app.codecov.io/gh/loelschlaeger/ao?branch=main)
 <!-- badges: end -->
 
-This R package implements alternating optimization, which is an
-iterative procedure for optimizing some function jointly over all
-parameters by alternating restricted optimization over individual
-parameter subsets. For more details, see the [package
+The {ao} R package implements an iterative procedure known as
+alternating optimization, which optimizes a function jointly over all
+parameters by alternately performing restricted optimization over
+individual parameter subsets. For additional details on the method,
+please refer to the [package
 vignette](https://cran.r-project.org/package=ao/vignettes/ao.html).
 
 ## Installation
@@ -46,9 +47,6 @@ $-5 \leq x_1, x_2 \leq 5$:
 
 ``` r
 library("ao")
-#> Warning: Paket 'ao' wurde unter R Version 4.2.2 erstellt
-#> Lade nötiges Paket: optimizeR
-#> Thanks for using {optimizeR} 0.3.2.
 himmelblau <- function(x) (x[1]^2 + x[2] - 11)^2 + (x[1] + x[2]^2 - 7)^2
 ao(
   f = himmelblau, p = c(0,0), partition = list(1, 2),
@@ -63,19 +61,19 @@ ao(
 #> $sequence
 #>    iteration partition         time       p1        p2
 #> 1          0         0 0.0000000000 0.000000  0.000000
-#> 2          1         1 0.0181479454 3.395691  0.000000
-#> 3          1         2 0.0002529621 3.395691 -1.803183
-#> 4          2         1 0.0001959801 3.581412 -1.803183
-#> 5          2         2 0.0001718998 3.581412 -1.847412
-#> 6          3         1 0.0002551079 3.584381 -1.847412
-#> 7          3         2 0.0001480579 3.584381 -1.848115
-#> 8          4         1 0.0001461506 3.584427 -1.848115
-#> 9          4         2 0.0001239777 3.584427 -1.848126
-#> 10         5         1 0.0001239777 3.584428 -1.848126
-#> 11         5         2 0.0001330376 3.584428 -1.848126
+#> 2          1         1 0.0223510265 3.395691  0.000000
+#> 3          1         2 0.0002429485 3.395691 -1.803183
+#> 4          2         1 0.0001938343 3.581412 -1.803183
+#> 5          2         2 0.0002140999 3.581412 -1.847412
+#> 6          3         1 0.0002501011 3.584381 -1.847412
+#> 7          3         2 0.0001389980 3.584381 -1.848115
+#> 8          4         1 0.0001490116 3.584427 -1.848115
+#> 9          4         2 0.0001199245 3.584427 -1.848126
+#> 10         5         1 0.0001249313 3.584428 -1.848126
+#> 11         5         2 0.0001530647 3.584428 -1.848126
 #> 
 #> $time
-#> Time difference of 0.023386 secs
+#> Time difference of 0.02758908 secs
 ```
 
 ## Contact

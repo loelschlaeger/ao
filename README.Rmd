@@ -7,9 +7,7 @@ output: github_document
 ```{r, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
-  comment = "#>",
-  fig.path = "man/figures/README-",
-  out.width = "100%"
+  comment = "#>"
 )
 ```
 
@@ -22,7 +20,7 @@ knitr::opts_chunk$set(
 [![Codecov test coverage](https://codecov.io/gh/loelschlaeger/ao/branch/main/graph/badge.svg)](https://app.codecov.io/gh/loelschlaeger/ao?branch=main)
 <!-- badges: end -->
 
-This R package implements alternating optimization, which is an iterative procedure for optimizing some function jointly over all parameters by alternating restricted optimization over individual parameter subsets. For more details, see the [package vignette](https://cran.r-project.org/package=ao/vignettes/ao.html).
+The {ao} R package implements an iterative procedure known as alternating optimization, which optimizes a function jointly over all parameters by alternately performing restricted optimization over individual parameter subsets. For additional details on the method, please refer to the [package vignette](https://cran.r-project.org/package=ao/vignettes/ao.html).
 
 ## Installation
 
@@ -43,7 +41,7 @@ devtools::install_github("loelschlaeger/ao")
 
 The following lines perform alternating optimization of the [Himmelblau's function](https://en.wikipedia.org/wiki/Himmelblau%27s_function), separately for $x_1$ and $x_2$, with the parameter restrictions $-5 \leq x_1, x_2 \leq 5$:
 
-```{r, example}
+```{r, example, message = FALSE, warning = FALSE}
 library("ao")
 himmelblau <- function(x) (x[1]^2 + x[2] - 11)^2 + (x[1] + x[2]^2 - 7)^2
 ao(
