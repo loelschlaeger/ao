@@ -14,7 +14,7 @@ knitr::opts_chunk$set(
 # ao <img src="man/figures/logo.png" align="right" height="139" />
 
 <!-- badges: start -->
-[![CRAN status](https://www.r-pkg.org/badges/version-last-release/ao)](https://www.r-pkg.org/badges/version-last-release/ao)
+[![CRAN status](https://www.r-pkg.org/badges/version/ao)](https://www.r-pkg.org/badges/version/ao)
 [![CRAN downloads](https://cranlogs.r-pkg.org/badges/last-month/ao)](https://cranlogs.r-pkg.org/badges/grand-total/ao)
 [![R-CMD-check](https://github.com/loelschlaeger/ao/workflows/R-CMD-check/badge.svg)](https://github.com/loelschlaeger/ao/actions)
 [![Codecov test coverage](https://codecov.io/gh/loelschlaeger/ao/branch/main/graph/badge.svg)](https://app.codecov.io/gh/loelschlaeger/ao?branch=main)
@@ -45,7 +45,7 @@ The following lines perform alternating optimization of the [Himmelblau's functi
 library("ao")
 himmelblau <- function(x) (x[1]^2 + x[2] - 11)^2 + (x[1] + x[2]^2 - 7)^2
 ao(
-  f = himmelblau, p = c(0,0), partition = list(1, 2),
+  f = himmelblau, p = c(0, 0), partition = list(1, 2),
   base_optimizer = optimizer_optim(lower = -5, upper = 5, method = "L-BFGS-B")
 )
 ```
