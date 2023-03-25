@@ -28,4 +28,4 @@ Config/testthat/edition: 3
 VignetteBuilder: knitr
 Depends:
     R (>= 4.0.0),
-    optimizeR (>= 0.3.0)
+    optimizeR (>= 0.3.2)
