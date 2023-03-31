@@ -10,7 +10,7 @@ Authors@R:
 Description: Alternating optimization of (high-dimensional) functions is an 
     iterative procedure for optimizing jointly over all parameters by 
     alternately optimizing parameter subsets.
-URL: https://loelschlaeger.de/ao/ https://github.com/loelschlaeger/ao/
+URL: https://loelschlaeger.de/ao/, https://github.com/loelschlaeger/ao/
 BugReports: https://github.com/loelschlaeger/ao/issues
 License: GPL-3
 Encoding: UTF-8
