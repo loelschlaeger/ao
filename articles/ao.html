@@ -98,14 +98,14 @@ optimization is as follows:</p>
 <li><p>Assign an initial value for <span class="math inline">\(x\)</span>.</p></li>
 <li><p>Optimize <span class="math inline">\(f\)</span> with respect to a
 subset of parameters <span class="math inline">\(\tilde{x}\)</span>
-while holding the other parameters constant. (Note that alternating
+while holding the other parameters constant. Note that alternating
 optimization is a generalization of joint optimization, where the only
-parameter subset would be the whole set of parameters.)</p></li>
+parameter subset would be the whole set of parameters.</p></li>
 <li><p>Replace the values in <span class="math inline">\(x\)</span> by
 the optimal values for <span class="math inline">\(\tilde{x}\)</span>
 found in step 2.</p></li>
 <li><p>Repeat from step 2 with another parameter subset.</p></li>
-<li><p>Stop when the process has converged or reached an iteration
+<li><p>Stop when the process has converged or reached the iteration
 limit.</p></li>
 </ol>
 </div>
@@ -113,13 +113,13 @@ limit.</p></li>
 <h3 id="when-is-alternating-optimization-a-good-idea">When is alternating optimization a good idea?<a class="anchor" aria-label="anchor" href="#when-is-alternating-optimization-a-good-idea"></a>
 </h3>
 <ul>
-<li><p>When the joint optimization is (numerically) difficult (or not
-feasible).</p></li>
+<li><p>When the joint optimization is numerically difficult or not
+feasible.</p></li>
 <li><p>When there is a natural division of the parameters. That is the
-case, e.g., for likelihood functions, where the parameter space
-naturally divides into parameter subsets corresponding to linear
-effects, variances and covariances with different influence on the
-likelihood value.</p></li>
+case for likelihood functions, where the parameter space naturally
+divides into parameter subsets, e.g. corresponding to linear effects,
+variances and covariances with different influence on the likelihood
+value.</p></li>
 <li><p>To improve optimization time in some cases, see <span class="citation">(<a href="#ref-hu:2002" role="doc-biblioref">Hu and
 Hathaway 2002</a>)</span> for an example.</p></li>
 <li><p>Compared to joint optimization, alternating optimization may be
@@ -130,11 +130,11 @@ Hathaway 2002</a>)</span>.</p></li>
 <div class="section level3">
 <h3 id="what-are-the-properties-of-alternating-optimization">What are the properties of alternating optimization?<a class="anchor" aria-label="anchor" href="#what-are-the-properties-of-alternating-optimization"></a>
 </h3>
-<p>Alternating optimization (under certain conditions on <span class="math inline">\(f\)</span>) can convergence to the global optimum.
+<p>Alternating optimization under certain conditions on <span class="math inline">\(f\)</span> can convergence to the global optimum.
 However, the set of possible solutions also contains saddle points <span class="citation">(<a href="#ref-bezdek:1987" role="doc-biblioref">James
-C. Bezdek et al. 1987</a>)</span>.</p>
-<p><span class="citation">J. Bezdek and Hathaway (<a href="#ref-bezdek:2003" role="doc-biblioref">2003</a>)</span> shows that
-alternating optimization under reasonable assumptions is locally <span class="math inline">\(q\)</span>-linearly convergent.</p>
+C. Bezdek et al. 1987</a>)</span>. <span class="citation">J. Bezdek and
+Hathaway (<a href="#ref-bezdek:2003" role="doc-biblioref">2003</a>)</span> provides additional details on the
+convergence rate.</p>
 </div>
 </div>
 <div class="section level2">
@@ -160,70 +160,147 @@ with parameter constraints <span class="math inline">\(-5 \leq x_1, x_2
 <span><span class="co">#&gt; $sequence</span></span>
 <span><span class="co">#&gt;    iteration partition        value      seconds       p1        p2</span></span>
 <span><span class="co">#&gt; 1          0        NA 1.700000e+02 0.0000000000 0.000000  0.000000</span></span>
-<span><span class="co">#&gt; 2          1         1 1.327270e+01 0.0061964989 3.395691  0.000000</span></span>
-<span><span class="co">#&gt; 3          1         2 1.743666e+00 0.0002529621 3.395691 -1.803183</span></span>
-<span><span class="co">#&gt; 4          2         1 2.847292e-02 0.0002021790 3.581412 -1.803183</span></span>
-<span><span class="co">#&gt; 5          2         2 4.687472e-04 0.0001683235 3.581412 -1.847412</span></span>
-<span><span class="co">#&gt; 6          3         1 7.368063e-06 0.0002517700 3.584381 -1.847412</span></span>
-<span><span class="co">#&gt; 7          3         2 1.157612e-07 0.0001304150 3.584381 -1.848115</span></span>
-<span><span class="co">#&gt; 8          4         1 1.900153e-09 0.0001263618 3.584427 -1.848115</span></span>
-<span><span class="co">#&gt; 9          4         2 4.221429e-11 0.0001127720 3.584427 -1.848126</span></span>
-<span><span class="co">#&gt; 10         5         1 3.598278e-12 0.0001857281 3.584428 -1.848126</span></span>
-<span><span class="co">#&gt; 11         5         2 1.940035e-12 0.0001404285 3.584428 -1.848126</span></span>
+<span><span class="co">#&gt; 2          1         1 1.327270e+01 0.0067267418 3.395691  0.000000</span></span>
+<span><span class="co">#&gt; 3          1         2 1.743666e+00 0.0002493858 3.395691 -1.803183</span></span>
+<span><span class="co">#&gt; 4          2         1 2.847292e-02 0.0002145767 3.581412 -1.803183</span></span>
+<span><span class="co">#&gt; 5          2         2 4.687472e-04 0.0001924038 3.581412 -1.847412</span></span>
+<span><span class="co">#&gt; 6          3         1 7.368063e-06 0.0002727509 3.584381 -1.847412</span></span>
+<span><span class="co">#&gt; 7          3         2 1.157612e-07 0.0001552105 3.584381 -1.848115</span></span>
+<span><span class="co">#&gt; 8          4         1 1.900153e-09 0.0001552105 3.584427 -1.848115</span></span>
+<span><span class="co">#&gt; 9          4         2 4.221429e-11 0.0001330376 3.584427 -1.848126</span></span>
+<span><span class="co">#&gt; 10         5         1 3.598278e-12 0.0002272129 3.584428 -1.848126</span></span>
+<span><span class="co">#&gt; 11         5         2 1.940035e-12 0.0001368523 3.584428 -1.848126</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $seconds</span></span>
-<span><span class="co">#&gt; [1] 0.007767439</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] 0.008463383</span></span></code></pre></div>
 <p>The call minimizes <code>f</code> by alternating optimizing with
 respect to each parameter separately, where the parameters all are
 initialized at the value 0.</p>
-<p>The <code><a href="../reference/ao.html">ao()</a></code> function has the following arguments:</p>
+<div class="r-help-page">
+<div class="container">
+
+<table style="width: 100%;" class="table"><tr>
+<td>ao</td>
+<td style="text-align: right;">R Documentation</td>
+</tr></table>
+<h2 id="ao">Alternating Optimization</h2>
+
+<h3>Arguments</h3>
+
+<table class="table">
+<tr>
+<td><code id="ao_:_f">f</code></td>
+<td>
+<p>A <code>function</code> to be optimized, returning a single <code>numeric</code>.
+The first argument of <code>f</code> must be a <code>numeric</code> of the same length as
+<code>p</code> followed by any other arguments specified by the <code>...</code>
+argument.</p>
+</td>
+</tr>
+<tr>
+<td><code id="ao_:_p">p</code></td>
+<td>
+<p>A <code>numeric</code> vector, the starting parameter values for the optimization.</p>
+</td>
+</tr>
+<tr>
+<td><code id="ao_:_...">...</code></td>
+<td>
+<p>Additional arguments to be passed to <code>f</code>.</p>
+</td>
+</tr>
+<tr>
+<td><code id="ao_:_partition">partition</code></td>
+<td>
+<p>A <code>list</code> of vectors of indices of <code>p</code>, specifying the partition in
+the alternating optimization process.
+The default is <code>as.list(1:length(p))</code>, i.e. each parameter is
+optimized separately.
+Parameter indices can be members of multiple subsets.</p>
+</td>
+</tr>
+<tr>
+<td><code id="ao_:_base_optimizer">base_optimizer</code></td>
+<td>
+<p>An <code>optimizer</code> object, which can be specified via
+<code>define_optimizer</code>.
+It numerically solves the optimization problems in the partitions.
+The default optimizer is <code>optimizer_optim</code>.</p>
+</td>
+</tr>
+<tr>
+<td><code id="ao_:_iterations">iterations</code></td>
+<td>
+<p>An <code>integer</code>, the maximum number of iterations through
+<code>partitions</code> before the alternating optimization process is terminated.
+Can also be <code>Inf</code>, in which case <code>tolerance</code> is responsible for the
+termination.
+The default is <code>10</code>.</p>
+</td>
+</tr>
+<tr>
+<td><code id="ao_:_tolerance">tolerance</code></td>
+<td>
+<p>A non-negative <code>numeric</code>. The alternating optimization terminates
+prematurely (i.e., before <code>interations</code> is reached) if the euclidean
+distance between the current estimate and the one from the last iteration is
+smaller than <code>tolerance</code>.
+The default is <code>1e-6</code>.</p>
+</td>
+</tr>
+<tr>
+<td><code id="ao_:_f_partition">f_partition</code></td>
+<td>
+<p>A <code>list</code> of the same length as <code>partition</code>.
+The <code>i</code>-th element can be a <code>function</code> that computes the value of
+<code>f</code> for the <code>i</code>-th parameter set defined in <code>partition</code>.
+The <code>function</code> must be of the form
+<code>function(theta_part, theta_rest, ...)</code>, where
+</p>
+
 <ul>
-<li>
-<code>f</code>: The function to be optimized, returning a single
-numeric value. The first argument of <code>f</code> must be a numeric
-vector of the length of <code>p</code> followed by any other arguments
-specified by the <code>...</code> argument.</li>
-<li>
-<code>p</code>: Starting parameter values for the optimization.</li>
-<li>
-<code>...</code>: Additional arguments to be passed to
-<code>f</code>.</li>
-<li>
-<code>partition</code>: A list of vectors of indices of
-<code>p</code>, specifying the partition of the alternating
-optimization. The default is <code>as.list(1:length(p))</code>,
-i.e. each parameter is optimized separately. Parameter indices can be
-members of multiple subsets.</li>
-<li>
-<code>base_optimizer</code>: An object of class
-<code>optimizer</code>, which can be specified via
-<code>optimizeR::set_optimizer()</code>. The default optimizer is
-<code><a href="https://rdrr.io/r/stats/optim.html" class="external-link">stats::optim()</a></code>.</li>
-<li>
-<code>iterations</code>: The number of iterations through the
-partitions. The default is <code>10</code>.</li>
-<li>
-<code>tolerance</code>: A non-negative numeric value. The function
-terminates prematurely if the euclidean distance between the current
-solution and the one from the last iteration is smaller than
-<code>tolerance</code>. The default is <code>1e-6</code>.</li>
-<li>
-<code>print.level</code>: This argument determines the level of
-printing which is done during the optimization process. Three values
-(analogue to <code><a href="https://rdrr.io/r/stats/nlm.html" class="external-link">stats::nlm()</a></code>) can be specified:
-<ul>
-<li>
-<code>0</code> (the default): no printing</li>
-<li>
-<code>1</code>: initial and final details are printed</li>
-<li>
-<code>2</code>: full tracing information is printed</li>
-</ul>
+<li> <p><code>theta_part</code> receives the parameter set for the current partition
+(this argument can be named differently),
+</p>
 </li>
-<li>
-<code>plot</code>: If <code>TRUE</code>, the parameter updates are
-plotted. The default is <code>FALSE</code>.</li>
+<li> <p><code>theta_rest</code> receives the remaining parameters
+(this argument must be named <code>theta_rest</code>),
+</p>
+</li>
+<li> <p><code>...</code> receives the additional arguments to <code>f</code>.
+Alternatively, it can be <code>NULL</code>, in which case <code>f</code> is used.
+</p>
+</li>
 </ul>
+</td>
+</tr>
+<tr>
+<td><code id="ao_:_joint_end">joint_end</code></td>
+<td>
+<p>If <code>TRUE</code>, the parameter set is optimized jointly after the alternating
+optimization process is terminated.
+The default is <code>FALSE</code>.</p>
+</td>
+</tr>
+<tr>
+<td><code id="ao_:_verbose">verbose</code></td>
+<td>
+<p>If <code>TRUE</code>, full tracing details are printed during the alternating
+optimization process.
+The default is <code>FALSE</code>.</p>
+</td>
+</tr>
+<tr>
+<td><code id="ao_:_plot">plot</code></td>
+<td>
+<p>If <code>TRUE</code>, parameter updates are plotted during the alternating
+optimization process.
+The default is <code>FALSE</code>.</p>
+</td>
+</tr>
+</table>
+</div>
+</div>
 </div>
 <div class="section level2 unnumbered">
 <h2 class="unnumbered" id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
