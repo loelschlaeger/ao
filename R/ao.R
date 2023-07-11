@@ -199,6 +199,9 @@ ao <- function(
   iteration <- 1
   while (iteration <= iterations) {
     if (exit_flag) {
+      if (verbose) {
+        cat("tolerance reached")
+      }
       break
     }
     if (verbose) {
@@ -232,9 +235,6 @@ ao <- function(
         dist <- sqrt(sum(curr - last)^2)
         if (dist < tolerance) {
           exit_flag <- TRUE
-          if (verbose) {
-            cat("tolerance reached : distance =", dist, "<", tolerance, "\n")
-          }
         }
       }
     }

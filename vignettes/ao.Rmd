@@ -27,19 +27,19 @@ More precisely, consider minimizing or maximizing $f:\mathbb{R}^n \to \mathbb{R}
 
 1. Assign an initial value for $x$.
 
-2. Optimize $f$ with respect to a subset of parameters $\tilde{x}$ while holding the other parameters constant. (Note that alternating optimization is a generalization of joint optimization, where the only parameter subset would be the whole set of parameters.)
+2. Optimize $f$ with respect to a subset of parameters $\tilde{x}$ while holding the other parameters constant. Note that alternating optimization is a generalization of joint optimization, where the only parameter subset would be the whole set of parameters.
 
 3. Replace the values in $x$ by the optimal values for $\tilde{x}$ found in step 2.
 
 4. Repeat from step 2 with another parameter subset.
 
-5. Stop when the process has converged or reached an iteration limit.
+5. Stop when the process has converged or reached the iteration limit.
 
 ### When is alternating optimization a good idea?
 
-- When the joint optimization is (numerically) difficult (or not feasible).
+- When the joint optimization is numerically difficult or not feasible.
 
-- When there is a natural division of the parameters. That is the case, e.g., for likelihood functions, where the parameter space naturally divides into parameter subsets corresponding to linear effects, variances and covariances with different influence on the likelihood value.
+- When there is a natural division of the parameters. That is the case for likelihood functions, where the parameter space naturally divides into parameter subsets, e.g. corresponding to linear effects, variances and covariances with different influence on the likelihood value.
 
 - To improve optimization time in some cases, see [@hu:2002] for an example.
 
@@ -47,9 +47,7 @@ More precisely, consider minimizing or maximizing $f:\mathbb{R}^n \to \mathbb{R}
 
 ### What are the properties of alternating optimization?
 
-Alternating optimization (under certain conditions on $f$) can convergence to the global optimum. However, the set of possible solutions also contains saddle points [@bezdek:1987].
-
-@bezdek:2003 shows that alternating optimization under reasonable assumptions is locally $q$-linearly convergent.
+Alternating optimization under certain conditions on $f$ can convergence to the global optimum. However, the set of possible solutions also contains saddle points [@bezdek:1987]. @bezdek:2003 provides additional details on the convergence rate.
 
 ## Application
 
@@ -64,20 +62,9 @@ ao(f = himmelblau, p = c(0,0), partition = list(1, 2),
 
 The call minimizes `f` by alternating optimizing with respect to each parameter separately, where the parameters all are initialized at the value 0. 
 
-The `ao()` function has the following arguments:
-
-* `f`: The function to be optimized, returning a single numeric value. The first argument of `f` must be a numeric vector of the length of `p` followed by any other arguments specified by the `...` argument.
-* `p`: Starting parameter values for the optimization.
-* `...`: Additional arguments to be passed to `f`.
-* `partition`: A list of vectors of indices of `p`, specifying the partition of the alternating optimization. The default is `as.list(1:length(p))`, i.e. each parameter is optimized separately. Parameter indices can be members of multiple subsets.
-* `base_optimizer`:  An object of class `optimizer`, which can be specified via `optimizeR::set_optimizer()`. The default optimizer is `stats::optim()`.
-* `iterations`: The number of iterations through the partitions. The default is `10`.
-* `tolerance`: A non-negative numeric value. The function terminates prematurely if the euclidean distance between the current solution and the one from the last iteration is smaller than `tolerance`. The default is `1e-6`.
-* `print.level`: This argument determines the level of printing which is done during the
-optimization process. Three values (analogue to `stats::nlm()`) can be specified:
-  * `0` (the default): no printing
-  * `1`: initial and final details are printed
-  * `2`: full tracing information is printed
-* `plot`: If `TRUE`, the parameter updates are plotted. The default is `FALSE`.
+```{r, help page, printr.help.sections = c('arguments'), echo = FALSE, message = FALSE}
+library(printr)
+?ao
+```
 
 ## References

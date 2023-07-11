@@ -11,7 +11,7 @@ knitr::opts_chunk$set(
 )
 ```
 
-# Alternating Optimization <img src="man/figures/logo.png" align="right" height="139" />
+# Alternating optimization <img src="man/figures/logo.png" align="right" height="139" />
 
 <!-- badges: start -->
 [![CRAN status](https://www.r-pkg.org/badges/version/ao)](https://CRAN.R-project.org/package=ao)

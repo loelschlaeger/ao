@@ -796,6 +796,16 @@
       "Repository": "CRAN",
       "Hash": "a555924add98c99d2f411e37e7d25e9f"
     },
+    "printr": {
+      "Package": "printr",
+      "Version": "0.3",
+      "Source": "Repository",
+      "Repository": "CRAN",
+      "Requirements": [
+        "knitr"
+      ],
+      "Hash": "03e0d4cc8152eed9515f517a8153c085"
+    },
     "processx": {
       "Package": "processx",
       "Version": "3.8.2",
