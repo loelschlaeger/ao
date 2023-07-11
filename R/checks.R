@@ -10,13 +10,8 @@
 #' @return
 #' A logical vector of the same length as \code{x}.
 #'
-#' @examples
-#' \dontrun{
-#' is_number(c(0, 1, 1.5))
-#' }
-#'
 #' @keywords
-#' internal utils
+#' internal
 
 is_number <- function(x) {
   sapply(x, function(x) is.numeric(x) && x > 0 && x %% 1 == 0, USE.NAMES = F)

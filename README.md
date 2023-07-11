@@ -1,7 +1,7 @@
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-# ao <img src="man/figures/logo.png" align="right" height="139" />
+# Alternating Optimization <img src="man/figures/logo.png" align="right" height="139" />
 
 <!-- badges: start -->
 
@@ -14,11 +14,13 @@ downloads](https://cranlogs.r-pkg.org/badges/last-month/ao)](https://CRAN.R-proj
 coverage](https://codecov.io/gh/loelschlaeger/ao/branch/main/graph/badge.svg)](https://app.codecov.io/gh/loelschlaeger/ao?branch=main)
 <!-- badges: end -->
 
-The {ao} R package implements an iterative procedure known as
-alternating optimization, which optimizes a function jointly over all
-parameters by alternately performing restricted optimization over
-individual parameter subsets. For additional details on the method,
-please refer to the [package
+The `{ao}` package implements alternating optimization in `R`.
+
+Alternating optimization is an iterative procedure which optimizes a
+function jointly over all parameters by alternately performing
+restricted optimization over individual parameter subsets.
+
+For additional details on the method, please refer to the [package
 vignette](https://loelschlaeger.de/ao/articles/ao.html).
 
 ## Installation
@@ -39,8 +41,8 @@ devtools::install_github("loelschlaeger/ao")
 
 ## Example
 
-The following lines perform alternating optimization of the
-[Himmelblau’s
+The following is a simple example to perform alternating optimization of
+the [Himmelblau’s
 function](https://en.wikipedia.org/wiki/Himmelblau%27s_function),
 separately for $x_1$ and $x_2$, with the parameter restrictions
 $-5 \leq x_1, x_2 \leq 5$:
@@ -52,28 +54,28 @@ ao(
   f = himmelblau, p = c(0, 0), partition = list(1, 2),
   base_optimizer = optimizer_optim(lower = -5, upper = 5, method = "L-BFGS-B")
 )
-#> $optimum
+#> $value
 #> [1] 1.940035e-12
 #> 
 #> $estimate
 #> [1]  3.584428 -1.848126
 #> 
 #> $sequence
-#>    iteration partition         time       p1        p2
-#> 1          0         0 0.0000000000 0.000000  0.000000
-#> 2          1         1 0.0211861134 3.395691  0.000000
-#> 3          1         2 0.0002582073 3.395691 -1.803183
-#> 4          2         1 0.0002069473 3.581412 -1.803183
-#> 5          2         2 0.0001850128 3.581412 -1.847412
-#> 6          3         1 0.0002598763 3.584381 -1.847412
-#> 7          3         2 0.0001449585 3.584381 -1.848115
-#> 8          4         1 0.0001430511 3.584427 -1.848115
-#> 9          4         2 0.0001301765 3.584427 -1.848126
-#> 10         5         1 0.0001349449 3.584428 -1.848126
-#> 11         5         2 0.0001239777 3.584428 -1.848126
+#>    iteration partition        value      seconds       p1        p2
+#> 1          0        NA 1.700000e+02 0.000000e+00 0.000000  0.000000
+#> 2          1         1 1.327270e+01 2.636909e-03 3.395691  0.000000
+#> 3          1         2 1.743666e+00 1.060963e-04 3.395691 -1.803183
+#> 4          2         1 2.847292e-02 8.106232e-05 3.581412 -1.803183
+#> 5          2         2 4.687472e-04 6.794930e-05 3.581412 -1.847412
+#> 6          3         1 7.368063e-06 9.703636e-05 3.584381 -1.847412
+#> 7          3         2 1.157612e-07 5.507469e-05 3.584381 -1.848115
+#> 8          4         1 1.900153e-09 5.006790e-05 3.584427 -1.848115
+#> 9          4         2 4.221429e-11 4.291534e-05 3.584427 -1.848126
+#> 10         5         1 3.598278e-12 4.196167e-05 3.584428 -1.848126
+#> 11         5         2 1.940035e-12 4.100800e-05 3.584428 -1.848126
 #> 
-#> $time
-#> Time difference of 0.02668214 secs
+#> $seconds
+#> [1] 0.003220081
 ```
 
 ## Contact

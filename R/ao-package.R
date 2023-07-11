@@ -1,4 +1,4 @@
-#' ao: Alternating Optimization
+#' Alternating Optimization
 #'
 #' @description
 #' Alternating optimization of (high-dimensional) functions is an iterative
@@ -28,7 +28,9 @@ ao_stop <- function(event, debug = character(), call. = FALSE) {
 #' @keywords
 #' internal
 
-ao_warn <- function(event, debug = character(), call. = FALSE, immediate. = FALSE) {
+ao_warn <- function(
+    event, debug = character(), call. = FALSE, immediate. = FALSE
+  ) {
   msg <- paste(event, debug, sep = "\n", collapse = "")
   warning(msg, call. = call., immediate. = immediate.)
 }

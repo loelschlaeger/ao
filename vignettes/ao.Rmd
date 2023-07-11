@@ -1,8 +1,8 @@
 ---
-title: "Alternating optimization with {ao}"
+title: "Alternating optimization"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Alternating optimization with {ao}}
+  %\VignetteIndexEntry{Alternating optimization}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 bibliography: ref.bib

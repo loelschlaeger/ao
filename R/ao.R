@@ -5,7 +5,7 @@
 #'
 #' @param f
 #' A \code{function} to be optimized, returning a single \code{numeric}.
-#' The first argument of \code{f} must be a \code{numeric} of the length of
+#' The first argument of \code{f} must be a \code{numeric} of the same length as
 #' \code{p} followed by any other arguments specified by the \code{...}
 #' argument.
 #' @param p
@@ -13,60 +13,83 @@
 #' @param ...
 #' Additional arguments to be passed to \code{f}.
 #' @param partition
-#' A \code{list} of vectors of indices of \code{p}, specifying the partition of
-#' the alternating optimization.
+#' A \code{list} of vectors of indices of \code{p}, specifying the partition in
+#' the alternating optimization process.
 #' The default is \code{as.list(1:length(p))}, i.e. each parameter is
 #' optimized separately.
 #' Parameter indices can be members of multiple subsets.
 #' @param base_optimizer
 #' An \code{optimizer} object, which can be specified via
 #' \code{\link[optimizeR]{define_optimizer}}.
-#' The default optimizer is \code{\link[stats]{optim}}.
+#' It numerically solves the optimization problems in the partitions.
+#' The default optimizer is \code{\link[optimizeR]{optimizer_optim}}.
 #' @param iterations
-#' An \code{integer}, the number of iterations through the parameter indices in
-#' \code{partitions}.
+#' An \code{integer}, the maximum number of iterations through
+#' \code{partitions} before the alternating optimization process is terminated.
+#' Can also be \code{Inf}, in which case \code{tolerance} is responsible for the
+#' termination.
 #' The default is \code{10}.
 #' @param tolerance
-#' A non-negative \code{numeric}. The function terminates prematurely if the
-#' euclidean distance between the current solution and the one from the last
-#' iteration is smaller than \code{tolerance}.
+#' A non-negative \code{numeric}. The alternating optimization terminates
+#' prematurely (i.e., before \code{interations} is reached) if the euclidean
+#' distance between the current estimate and the one from the last iteration is
+#' smaller than \code{tolerance}.
 #' The default is \code{1e-6}.
-#' @param print.level
-#' This argument determines the level of printing which is done during the
+#' @param f_partition
+#' A \code{list} of the same length as \code{partition}.
+#' The \code{i}-th element can be a \code{function} that computes the value of
+#' \code{f} for the \code{i}-th parameter set defined in \code{partition}.
+#' The \code{function} must be of the form
+#' \code{function(theta_part, theta_rest, ...)}, where
+#' - \code{theta_part} receives the parameter set for the current partition
+#'   (this argument can be named differently),
+#' - \code{theta_rest} receives the remaining parameters
+#'   (this argument must be named \code{theta_rest}),
+#' - \code{...} receives the additional arguments to \code{f}.
+#' Alternatively, it can be \code{NULL}, in which case \code{f} is used.
+#' @param joint_end
+#' If \code{TRUE}, the parameter set is optimized jointly after the alternating
+#' optimization process is terminated.
+#' The default is \code{FALSE}.
+#' @param verbose
+#' If \code{TRUE}, full tracing details are printed during the alternating
 #' optimization process.
-#' Three values (analogue to \code{\link[stats]{nlm}}) can be specified:
-#' * \code{0} (the default): no printing
-#' * \code{1}: initial and final details are printed
-#' * \code{2}: full tracing information is printed
+#' The default is \code{FALSE}.
 #' @param plot
-#' If \code{TRUE}, the parameter updates are plotted.
+#' If \code{TRUE}, parameter updates are plotted during the alternating
+#' optimization process.
 #' The default is \code{FALSE}.
 #'
 #' @return
-#' A \code{list} containing the following components:
-#' * \code{estimate}: a \code{numeric}, the optimal parameter vector found,
-#' * \code{optimum}: a \code{numeric}, the value of \code{f} at \code{estimate},
-#' * \code{sequence}: a \code{data.frame} of the estimates and computation times
-#'   in the single iterations,
-#' * and \code{time}, a \code{difftime} object, the overall computation time.
+#' A \code{list} with the elements
+#' * \code{estimate}, the optimal parameter vector found,
+#' * \code{value}, the value of \code{f} at \code{estimate},
+#' * \code{sequence}, a \code{data.frame} of the function values, estimates and
+#'   computation times in the single iterations and partitions,
+#' * and \code{seconds}, the overall computation time in seconds.
 #'
 #' @examples
+#' ### minimization of the Himmelblau function
 #' ### alternating optimization separately for x_1 and x_2
 #' ### parameter restriction: -5 <= x_1, x_2 <= 5
 #' himmelblau <- function(x) (x[1]^2 + x[2] - 11)^2 + (x[1] + x[2]^2 - 7)^2
 #' ao(
-#'   f = himmelblau, p = c(0,0), partition = list(1, 2), iterations = 10,
+#'   f = himmelblau, p = c(0, 0), partition = list(1, 2), iterations = Inf,
 #'   base_optimizer = optimizer_optim(lower = -5, upper = 5, method = "L-BFGS-B")
 #' )
 #'
 #' @export
 #'
+#' @importFrom optimizeR optimizer_optim apply_optimizer
 #' @importFrom rlang .data
+#' @importFrom ggplot2 ggplot aes geom_point scale_x_discrete theme_minimal labs
 
 ao <- function(
     f, p, ..., partition = as.list(1:length(p)),
-    base_optimizer = optimizer_optim(), iterations = 10, tolerance = 1e-6,
-    print.level = 0, plot = FALSE
+    base_optimizer = optimizeR::optimizer_optim(),
+    iterations = 10, tolerance = 1e-6,
+    f_partition = vector(mode = "list", length = length(partition)),
+    joint_end = FALSE, verbose = FALSE, plot = FALSE
 ) {
   if (missing(f) || !is.function(f)) {
     ao_stop("'f' must be a function.")
@@ -75,7 +98,8 @@ ao <- function(
     ao_stop("'p' must be a numeric vector.")
   }
   if (!is.list(partition) || any(!is_number(unlist(partition))) ||
-      !setequal(unlist(partition), seq_along(p))) {
+      !setequal(unlist(partition), seq_along(p)) ||
+      any(sapply(partition, length) == 0)) {
     ao_stop("'partition' must be a list of vectors of indices of 'p'.")
   }
   if (!inherits(base_optimizer, "optimizer")) {
@@ -84,64 +108,38 @@ ao <- function(
       "Use 'optimizeR::define_optimizer()' to create such an object."
     )
   }
-  if (length(iterations) != 1 || !is_number(iterations)) {
+  if (length(iterations) != 1 ||
+      !(is_number(iterations) || identical(iterations, Inf))) {
     ao_stop("'iterations' must be a single number.")
   }
   if (length(tolerance) != 1 || !is.numeric(tolerance) || tolerance < 0) {
     ao_stop("'tolerance' must be a single, non-negative numeric.")
   }
-  if (length(print.level) != 1 ||  !print.level %in% c(0,1,2)) {
-    ao_stop("'print.level' must be one of 0, 1, 2.")
+  if (tolerance == 0 && identical(iterations, Inf)) {
+    ao_stop("'tolerance' cannot be 0 while 'iterations' is infinite.")
+  }
+  if (!is.list(f_partition)) {
+    ao_stop("'f_partition' must be a list.")
+  }
+  if (length(f_partition) != length(partition)) {
+    ao_stop("'f_partition' must have the same length as 'partition'.")
+  }
+  if (!isTRUE(joint_end) && !isFALSE(joint_end)) {
+    ao_stop("'joint_end' must be either TRUE or FALSE.")
+  }
+  if (!isTRUE(verbose) && !isFALSE(verbose)) {
+    ao_stop("'verbose' must be either TRUE or FALSE.")
   }
   if (!isTRUE(plot) && !isFALSE(plot)) {
     ao_stop("'plot' must be either TRUE or FALSE.")
   }
-  exit_flag <- FALSE
-  est <- p
-  npar <- length(p)
-  seq <- structure(
-    data.frame(t(c(0, 0, 0, est))),
-    names = c("iteration", "partition", "time", paste0("p", 1:npar))
-  )
-  t_start <- Sys.time()
-  if (plot) {
-    data <- data.frame(x = 1:npar, y = est)
-    vis <- ggplot2::ggplot(data, ggplot2::aes(.data$x, .data$y)) +
-      ggplot2::geom_point() +
-      ggplot2::scale_x_discrete(limits = factor(data$x)) +
-      ggplot2::theme_minimal() +
-      ggplot2::labs(x = "Parameter index", y = "", title = "")
-  }
-  for (it in seq_len(iterations)) {
-    print <- (print.level == 2 || (print.level == 1 && it %in% c(1, iterations)))
-    if (exit_flag) {
-      break
-    }
-    if (print) {
-      cat("iteration", it, "of", iterations, "\n")
-    }
-    for (part in seq_along(partition)) {
-      if (print) {
-        cat(
-          paste0(
-            "- partition ", part, " of ", length(partition), ": f = ", f(est, ...)
-            ), "\n"
-        )
-      }
-      if (plot) {
-        vis$data$y <- est
-        vis$labels$title <- paste("iteration", it, "of", iterations)
-        vis$labels$subtitle <- paste("partition", part, "of", length(partition))
-        print(vis)
-      }
-      p_ind <- partition[[part]]
-      if (length(p_ind) == 0) {
-        next
-      }
-      f_small <- function(theta_small, ...) {
+  for (part in seq_along(partition)) {
+    if (!is.function(f_partition[[part]])) {
+      f_partition[[part]] <- function(theta_part, theta_rest, ...) {
+        p_ind <- partition[[part]]
         theta <- numeric(npar)
-        theta[p_ind] <- theta_small
-        theta[-p_ind] <- est[-p_ind]
+        theta[p_ind] <- theta_part
+        theta[-p_ind] <- theta_rest
         out <- f(theta, ...)
         if ("gradient" %in% names(attributes(out))) {
           gradient <- attr(out, "gradient")
@@ -157,26 +155,117 @@ ao <- function(
         }
         out
       }
-      f_small_out <- optimizeR::apply_optimizer(
-        optimizer = base_optimizer, objective = f_small, initial = est[p_ind], ...
-      )
-      est[p_ind] <- f_small_out[["parameter"]]
-      seq <- rbind(seq, c(it, part, f_small_out[["seconds"]], est))
-      if (nrow(seq) > length(partition)) {
-        curr <- as.numeric(seq[nrow(seq) - length(partition), -(1:3)])
-        last <- as.numeric(seq[nrow(seq), -(1:3)])
-        if (sqrt(sum(curr - last)^2) < tolerance) {
-          exit_flag <- TRUE
-        }
+    } else {
+      add_arguments_exist <- length(list(...)) > 0
+      if (length(formals(f_partition[[part]])) < 2 + add_arguments_exist) {
+        ao_stop(
+          paste0(
+            "'f_partition[[", part, "]]' must have two arguments",
+            if (add_arguments_exist) " and the ... argument." else "."
+          )
+        )
+      }
+      if (!identical(names(formals(f_partition[[part]]))[2], "theta_rest")) {
+        ao_stop(
+          paste0(
+            "'f_partition[[", part,
+            "]]' must have a second argumend named 'theta_rest'."
+          )
+        )
       }
     }
   }
-  t_end <- Sys.time()
+  exit_flag <- FALSE
+  est <- p
+  npar <- length(p)
+  seq <- structure(
+    data.frame(t(c(0, NA_integer_, f(est, ...), 0, est))),
+    names = c("iteration", "partition", "value", "seconds", paste0("p", 1:npar))
+  )
+  if (plot) {
+    data <- data.frame(x = 1:npar, y = est)
+    vis <- ggplot2::ggplot(data, ggplot2::aes(.data$x, .data$y)) +
+      ggplot2::geom_point() +
+      ggplot2::scale_x_discrete(limits = factor(data$x)) +
+      ggplot2::theme_minimal() +
+      ggplot2::labs(x = "Parameter index", y = "Parameter estimate", title = "")
+  }
+  plot_update <- function(est, title, subtitle) {
+    vis$data$y <- est
+    vis$labels$title <- title
+    vis$labels$subtitle <- subtitle
+    print(vis)
+  }
+  iteration <- 1
+  while (iteration <= iterations) {
+    if (exit_flag) {
+      break
+    }
+    if (verbose) {
+      cat("iteration", iteration, "of", iterations, "\n")
+    }
+    for (part in seq_along(partition)) {
+      if (verbose) {
+        cat("- partition", part, "of", length(partition), ": ")
+      }
+      if (plot) {
+        plot_update(
+          est = est,
+          title = paste("iteration", iteration, "of", iterations),
+          subtitle = paste("partition", part, "of", length(partition))
+        )
+      }
+      p_ind <- partition[[part]]
+      f_part_out <- optimizeR::apply_optimizer(
+        optimizer = base_optimizer, objective = f_partition[[part]],
+        initial = est[p_ind], theta_rest = est[-p_ind], ...
+      )
+      est[p_ind] <- f_part_out[["parameter"]]
+      value <- f_part_out[["value"]]
+      if (verbose) {
+        cat("f =", value, "\n")
+      }
+      seq <- rbind(seq, c(iteration, part, value, f_part_out[["seconds"]], est))
+      if (nrow(seq) > length(partition)) {
+        curr <- as.numeric(seq[nrow(seq) - length(partition), -(1:4)])
+        last <- as.numeric(seq[nrow(seq), -(1:4)])
+        dist <- sqrt(sum(curr - last)^2)
+        if (dist < tolerance) {
+          exit_flag <- TRUE
+          if (verbose) {
+            cat("tolerance reached : distance =", dist, "<", tolerance, "\n")
+          }
+        }
+      }
+    }
+    iteration <- iteration + 1
+  }
+  if (joint_end) {
+    if (verbose) {
+      cat("joint optimization in the end : ")
+    }
+    f_joint_out <- optimizeR::apply_optimizer(
+      optimizer = base_optimizer, objective = f, initial = est, ...
+    )
+    est <- f_joint_out[["parameter"]]
+    value <- f_joint_out[["value"]]
+    seq <- rbind(seq, c(NA_integer_, NA_integer_, value, f_joint_out[["seconds"]], est))
+    if (verbose) {
+      cat("f =", value, "\n")
+    }
+    if (plot) {
+      plot_update(
+        est = est,
+        title = "joint optimization in the end",
+        subtitle = ""
+      )
+    }
+  }
   list(
-    "optimum" = f(est, ...),
+    "value" = value,
     "estimate" = est,
     "sequence" = seq,
-    "time" = difftime(t_end, t_start)
+    "seconds" = sum(seq$seconds)
   )
 }
 
