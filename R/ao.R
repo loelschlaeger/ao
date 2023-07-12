@@ -75,7 +75,9 @@
 #' himmelblau <- function(x) (x[1]^2 + x[2] - 11)^2 + (x[1] + x[2]^2 - 7)^2
 #' ao(
 #'   f = himmelblau, p = c(0, 0), partition = list(1, 2), iterations = Inf,
-#'   base_optimizer = optimizer_optim(lower = -5, upper = 5, method = "L-BFGS-B")
+#'   base_optimizer = optimizer_optim(
+#'     lower = -5, upper = 5, method = "L-BFGS-B"
+#'   )
 #' )
 #'
 #' @export
@@ -133,6 +135,7 @@ ao <- function(
   if (!isTRUE(plot) && !isFALSE(plot)) {
     ao_stop("'plot' must be either TRUE or FALSE.")
   }
+  npar <- length(p)
   for (part in seq_along(partition)) {
     if (!is.function(f_partition[[part]])) {
       f_partition[[part]] <- function(theta_part, theta_rest, ...) {
@@ -177,7 +180,6 @@ ao <- function(
   }
   exit_flag <- FALSE
   est <- p
-  npar <- length(p)
   seq <- structure(
     data.frame(t(c(0, NA_integer_, f(est, ...), 0, est))),
     names = c("iteration", "partition", "value", "seconds", paste0("p", 1:npar))
@@ -199,9 +201,6 @@ ao <- function(
   iteration <- 1
   while (iteration <= iterations) {
     if (exit_flag) {
-      if (verbose) {
-        cat("tolerance reached")
-      }
       break
     }
     if (verbose) {
@@ -235,6 +234,10 @@ ao <- function(
         dist <- sqrt(sum(curr - last)^2)
         if (dist < tolerance) {
           exit_flag <- TRUE
+          if (verbose) {
+            cat("tolerance reached : distance =" , dist, "<", tolerance, "\n")
+          }
+          break
         }
       }
     }
@@ -249,7 +252,9 @@ ao <- function(
     )
     est <- f_joint_out[["parameter"]]
     value <- f_joint_out[["value"]]
-    seq <- rbind(seq, c(NA_integer_, NA_integer_, value, f_joint_out[["seconds"]], est))
+    seq <- rbind(
+      seq, c(NA_integer_, NA_integer_, value, f_joint_out[["seconds"]], est)
+    )
     if (verbose) {
       cat("f =", value, "\n")
     }
