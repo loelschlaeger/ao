@@ -31,8 +31,8 @@ jobs:
 
       - name: Commit and push changes
         run: |
-          git config --local user.name "Lennart Oelschläger"
-          git config --local user.email "oelschlaeger.lennart@gmail.com"
+          git config --local user.name "$GITHUB_ACTOR"
+          git config --local user.email "$GITHUB_ACTOR@users.noreply.github.com"
           git add README.md
-          git commit README.md -m 'Rendered README' || echo "No changes to commit"
+          git commit README.md -m 'rendered README file' || echo "No changes to commit"
           git push origin || echo "No changes to commit"
