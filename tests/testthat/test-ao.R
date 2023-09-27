@@ -49,7 +49,7 @@ test_that("ao input checks work", {
 test_that("ao works", {
   himmelblau <- function(x) (x[1]^2 + x[2] - 11)^2 + (x[1] + x[2]^2 - 7)^2
   out <- ao(
-    f = himmelblau, p = c(0,0), partition = list(1, 2),
+    f = himmelblau, p = c(0, 0), partition = list(1, 2),
     base_optimizer = optimizeR::optimizer_optim(
       lower = -5, upper = 5, method = "L-BFGS-B"
     )
@@ -65,7 +65,7 @@ test_that("ao with additional parameters works", {
   }
   out <- ao(
     f = himmelblau, a = 2, b = 11, c = 7,
-    p = c(0,0), partition = list(1, 2),
+    p = c(0, 0), partition = list(1, 2),
     base_optimizer = optimizeR::optimizer_optim(
       lower = -5, upper = 5, method = "L-BFGS-B"
     )
@@ -85,27 +85,27 @@ test_that("ao works with partition functions", {
   }
   expect_error(
     ao(
-      f = himmelblau, p = c(0,0),
+      f = himmelblau, p = c(0, 0),
       f_partition = list(function() {}, himmelblau_2)
     ),
     "must have two arguments."
   )
   expect_error(
     ao(
-      f = himmelblau, p = c(0,0), tmp = "tmp",
+      f = himmelblau, p = c(0, 0), tmp = "tmp",
       f_partition = list(NULL, himmelblau_2)
     ),
     "must have two arguments and the ... argument."
   )
   expect_error(
     ao(
-      f = himmelblau, p = c(0,0), tmp = "tmp",
+      f = himmelblau, p = c(0, 0), tmp = "tmp",
       f_partition = list(himmelblau_1, NULL)
     ),
     "must have a second argumend named 'theta_rest'."
   )
   out <- ao(
-    f = himmelblau, p = c(0,0), partition = list(1, 2),
+    f = himmelblau, p = c(0, 0), partition = list(1, 2),
     base_optimizer = optimizeR::optimizer_optim(
       lower = -5, upper = 5, method = "L-BFGS-B"
     ), f_partition = list(NULL, himmelblau_2)
@@ -119,7 +119,7 @@ test_that("NULL elements in partition are detected", {
   himmelblau <- function(x) (x[1]^2 + x[2] - 11)^2 + (x[1] + x[2]^2 - 7)^2
   expect_error(
     ao(
-      f = himmelblau, p = c(0,0), partition = list(1, 2, NULL),
+      f = himmelblau, p = c(0, 0), partition = list(1, 2, NULL),
       base_optimizer = optimizeR::optimizer_optim(
         lower = -5, upper = 5, method = "L-BFGS-B"
       )
@@ -131,9 +131,9 @@ test_that("NULL elements in partition are detected", {
 test_that("gradient and Hessian work", {
   test_fun <- function(x) {
     structure(
-      x^4 + 2*x - 5,
-      "gradient" = 4*x^3 + 2,
-      "hessian" = as.matrix(12*x^2)
+      x^4 + 2 * x - 5,
+      "gradient" = 4 * x^3 + 2,
+      "hessian" = as.matrix(12 * x^2)
     )
   }
   out <- ao(
@@ -144,7 +144,7 @@ test_that("gradient and Hessian work", {
 })
 
 test_that("printing progress works", {
-  f <- function(x) (x+2)^2
+  f <- function(x) (x + 2)^2
   expect_output(
     ao(
       f = f, p = 0, base_optimizer = optimizeR::optimizer_nlm(), verbose = TRUE,
@@ -152,4 +152,3 @@ test_that("printing progress works", {
     )
   )
 })
-
