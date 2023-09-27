@@ -2,15 +2,15 @@ test_that("ao input checks work", {
   f <- function(x) x
   expect_error(
     ao(),
-    "'f' must be a function."
+    "Please specify 'f'."
   )
   expect_error(
     ao(f = f),
-    "'p' must be a numeric vector."
+    "Please specify 'p'."
   )
   expect_error(
     ao(f = f, p = 1, partition = "a"),
-    "'partition' must be a list of vectors of indices of 'p'."
+    "Must be of type 'list', not 'character'."
   )
   expect_error(
     ao(f = f, p = 1, base_optimizer = "not_an_optimizer"),
@@ -18,7 +18,7 @@ test_that("ao input checks work", {
   )
   expect_error(
     ao(f = f, p = 1, partition = list(1), iterations = "1"),
-    "'iterations' must be a single number."
+    "Must be of type 'number', not 'character'."
   )
   expect_error(
     ao(f = f, p = 1, partition = list(1), iterations = 1, tolerance = -1),
@@ -43,10 +43,6 @@ test_that("ao input checks work", {
   expect_error(
     ao(f = f, p = 1, verbose = "bad"),
     "'verbose' must be either TRUE or FALSE."
-  )
-  expect_error(
-    ao(f = f, p = 1, plot = "bad"),
-    "'plot' must be either TRUE or FALSE."
   )
 })
 
@@ -128,7 +124,7 @@ test_that("NULL elements in partition are detected", {
         lower = -5, upper = 5, method = "L-BFGS-B"
       )
     ),
-    "'partition' must be a list of vectors of indices of 'p'."
+    "The list 'partition' must only contain vectors of indices of 'p'."
   )
 })
 
@@ -157,16 +153,3 @@ test_that("printing progress works", {
   )
 })
 
-test_that("plotting progress works", {
-  himmelblau <- function(x) (x[1]^2 + x[2] - 11)^2 + (x[1] + x[2]^2 - 7)^2
-  pdf(file = NULL)
-  out <- ao(
-    f = himmelblau, p = c(0,0), partition = list(1, 2),
-    base_optimizer = optimizeR::optimizer_optim(
-      lower = -5, upper = 5, method = "L-BFGS-B"
-    ),
-    joint_end = TRUE, plot = TRUE
-  )
-  dev.off()
-  expect_type(out, "list")
-})

@@ -1,6 +1,6 @@
 Package: ao
 Title: Alternating Optimization
-Version: 0.2.6.9000
+Version: 0.2.7
 Authors@R: 
     person(given = "Lennart",
            family = "Oelschl\U00E4ger",
@@ -17,17 +17,13 @@ Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.2.3
 Imports:
-    ggplot2,
-    rlang
+    checkmate
 Suggests:
-    covr,
-    devtools,
     knitr,
-    printr,
     rmarkdown,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 VignetteBuilder: knitr
 Depends:
     R (>= 4.0.0),
-    optimizeR (>= 0.3.2)
+    optimizeR (>= 0.3.3)

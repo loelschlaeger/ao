@@ -62,9 +62,4 @@ ao(f = himmelblau, p = c(0,0), partition = list(1, 2),
 
 The call minimizes `f` by alternating optimizing with respect to each parameter separately, where the parameters all are initialized at the value 0. 
 
-```{r, help page, printr.help.sections = c('arguments'), echo = FALSE, message = FALSE}
-library(printr)
-?ao
-```
-
 ## References

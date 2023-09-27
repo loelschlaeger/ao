@@ -55,10 +55,6 @@
 #' If \code{TRUE}, full tracing details are printed during the alternating
 #' optimization process.
 #' The default is \code{FALSE}.
-#' @param plot
-#' If \code{TRUE}, parameter updates are plotted during the alternating
-#' optimization process.
-#' The default is \code{FALSE}.
 #'
 #' @return
 #' A \code{list} with the elements
@@ -75,66 +71,65 @@
 #' himmelblau <- function(x) (x[1]^2 + x[2] - 11)^2 + (x[1] + x[2]^2 - 7)^2
 #' ao(
 #'   f = himmelblau, p = c(0, 0), partition = list(1, 2), iterations = Inf,
-#'   base_optimizer = optimizer_optim(
+#'   base_optimizer = optimizeR::optimizer_optim(
 #'     lower = -5, upper = 5, method = "L-BFGS-B"
 #'   )
 #' )
 #'
 #' @export
-#'
-#' @importFrom optimizeR optimizer_optim apply_optimizer
-#' @importFrom rlang .data
-#' @importFrom ggplot2 ggplot aes geom_point scale_x_discrete theme_minimal labs
 
 ao <- function(
     f, p, ..., partition = as.list(1:length(p)),
     base_optimizer = optimizeR::optimizer_optim(),
     iterations = 10, tolerance = 1e-6,
     f_partition = vector(mode = "list", length = length(partition)),
-    joint_end = FALSE, verbose = FALSE, plot = FALSE
+    joint_end = FALSE, verbose = FALSE
 ) {
-  if (missing(f) || !is.function(f)) {
-    ao_stop("'f' must be a function.")
+
+  ### input checks
+  if (missing(f)) {
+    stop("Please specify 'f'.")
   }
-  if (missing(p) || !is.numeric(p)) {
-    ao_stop("'p' must be a numeric vector.")
+  checkmate::assert_function(f)
+  if (missing(p)) {
+    stop("Please specify 'p'.")
   }
-  if (!is.list(partition) || any(!is_number(unlist(partition))) ||
-      !setequal(unlist(partition), seq_along(p)) ||
+  checkmate::assert_numeric(p)
+  checkmate::assert_list(partition)
+  if (!setequal(unlist(partition), seq_along(p)) ||
       any(sapply(partition, length) == 0)) {
-    ao_stop("'partition' must be a list of vectors of indices of 'p'.")
+    stop("The list 'partition' must only contain vectors of indices of 'p'.")
   }
   if (!inherits(base_optimizer, "optimizer")) {
-    ao_stop(
+    stop(
       "Input 'base_optimizer' must be an object of class 'optimizer'.",
       "Use 'optimizeR::define_optimizer()' to create such an object."
     )
   }
-  if (length(iterations) != 1 ||
-      !(is_number(iterations) || identical(iterations, Inf))) {
-    ao_stop("'iterations' must be a single number.")
+  checkmate::assert_number(iterations, lower = 1)
+  if (is.finite(iterations)) {
+    iterations <- as.integer(iterations)
   }
   if (length(tolerance) != 1 || !is.numeric(tolerance) || tolerance < 0) {
-    ao_stop("'tolerance' must be a single, non-negative numeric.")
+    stop("'tolerance' must be a single, non-negative numeric.")
   }
   if (tolerance == 0 && identical(iterations, Inf)) {
-    ao_stop("'tolerance' cannot be 0 while 'iterations' is infinite.")
+    stop("'tolerance' cannot be 0 while 'iterations' is infinite.")
   }
   if (!is.list(f_partition)) {
-    ao_stop("'f_partition' must be a list.")
+    stop("'f_partition' must be a list.")
   }
   if (length(f_partition) != length(partition)) {
-    ao_stop("'f_partition' must have the same length as 'partition'.")
+    stop("'f_partition' must have the same length as 'partition'.")
   }
   if (!isTRUE(joint_end) && !isFALSE(joint_end)) {
-    ao_stop("'joint_end' must be either TRUE or FALSE.")
+    stop("'joint_end' must be either TRUE or FALSE.")
   }
   if (!isTRUE(verbose) && !isFALSE(verbose)) {
-    ao_stop("'verbose' must be either TRUE or FALSE.")
+    stop("'verbose' must be either TRUE or FALSE.")
   }
-  if (!isTRUE(plot) && !isFALSE(plot)) {
-    ao_stop("'plot' must be either TRUE or FALSE.")
-  }
+
+  ### ?
   npar <- length(p)
   for (part in seq_along(partition)) {
     if (!is.function(f_partition[[part]])) {
@@ -161,7 +156,7 @@ ao <- function(
     } else {
       add_arguments_exist <- length(list(...)) > 0
       if (length(formals(f_partition[[part]])) < 2 + add_arguments_exist) {
-        ao_stop(
+        stop(
           paste0(
             "'f_partition[[", part, "]]' must have two arguments",
             if (add_arguments_exist) " and the ... argument." else "."
@@ -169,7 +164,7 @@ ao <- function(
         )
       }
       if (!identical(names(formals(f_partition[[part]]))[2], "theta_rest")) {
-        ao_stop(
+        stop(
           paste0(
             "'f_partition[[", part,
             "]]' must have a second argumend named 'theta_rest'."
@@ -178,26 +173,14 @@ ao <- function(
       }
     }
   }
+
+  ### ?
   exit_flag <- FALSE
   est <- p
   seq <- structure(
     data.frame(t(c(0, NA_integer_, f(est, ...), 0, est))),
     names = c("iteration", "partition", "value", "seconds", paste0("p", 1:npar))
   )
-  if (plot) {
-    data <- data.frame(x = 1:npar, y = est)
-    vis <- ggplot2::ggplot(data, ggplot2::aes(.data$x, .data$y)) +
-      ggplot2::geom_point() +
-      ggplot2::scale_x_discrete(limits = factor(data$x)) +
-      ggplot2::theme_minimal() +
-      ggplot2::labs(x = "Parameter index", y = "Parameter estimate", title = "")
-  }
-  plot_update <- function(est, title, subtitle) {
-    vis$data$y <- est
-    vis$labels$title <- title
-    vis$labels$subtitle <- subtitle
-    print(vis)
-  }
   iteration <- 1
   while (iteration <= iterations) {
     if (exit_flag) {
@@ -209,13 +192,6 @@ ao <- function(
     for (part in seq_along(partition)) {
       if (verbose) {
         cat("- partition", part, "of", length(partition), ": ")
-      }
-      if (plot) {
-        plot_update(
-          est = est,
-          title = paste("iteration", iteration, "of", iterations),
-          subtitle = paste("partition", part, "of", length(partition))
-        )
       }
       p_ind <- partition[[part]]
       f_part_out <- optimizeR::apply_optimizer(
@@ -258,14 +234,9 @@ ao <- function(
     if (verbose) {
       cat("f =", value, "\n")
     }
-    if (plot) {
-      plot_update(
-        est = est,
-        title = "joint optimization in the end",
-        subtitle = ""
-      )
-    }
   }
+
+  ### return results
   list(
     "value" = value,
     "estimate" = est,

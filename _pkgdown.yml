@@ -9,8 +9,3 @@ home:
 authors:
   Lennart Oelschläger:
     href: https://loelschlaeger.de
-
-navbar:
-  structure:
-    left:  [intro, news]
-    right: [search, github]
