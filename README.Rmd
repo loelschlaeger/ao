@@ -4,7 +4,7 @@ output: github_document
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
 
-```{r, include = FALSE}
+```{r setup, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
@@ -30,13 +30,13 @@ For additional details on the method, please refer to the [package vignette](htt
 
 You can install the released version of `{ao}` from [CRAN](https://CRAN.R-project.org) with:
 
-```{r, install released, eval = FALSE}
+```{r install released, eval = FALSE}
 install.packages("ao")
 ```
 
 And the development version from [GitHub](https://github.com/) with:
 
-```{r, install dev, eval = FALSE}
+```{r install dev, eval = FALSE}
 # install.packages("devtools")
 devtools::install_github("loelschlaeger/ao")
 ```
@@ -45,7 +45,7 @@ devtools::install_github("loelschlaeger/ao")
 
 The following is a simple example to perform alternating optimization of the [Himmelblau's function](https://en.wikipedia.org/wiki/Himmelblau%27s_function), separately for $x_1$ and $x_2$, with the parameter restrictions $-5 \leq x_1, x_2 \leq 5$:
 
-```{r, example, message = FALSE, warning = FALSE}
+```{r example, message = FALSE, warning = FALSE}
 library("ao")
 himmelblau <- function(x) (x[1]^2 + x[2] - 11)^2 + (x[1] + x[2]^2 - 7)^2
 ao(

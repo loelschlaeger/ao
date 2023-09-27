@@ -24,7 +24,9 @@ jobs:
       - uses: r-lib/actions/setup-renv@v2
 
       - name: Render README
-        run: rmarkdown::render("README.Rmd")
+        run: |
+          devtools::install()
+          rmarkdown::render("README.Rmd")
         shell: Rscript {0}
 
       - name: Commit and push changes
