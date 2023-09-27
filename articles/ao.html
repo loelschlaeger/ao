@@ -33,7 +33,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">ao</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.6.9000</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.7</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -44,6 +44,9 @@
       <ul class="navbar-nav me-auto">
 <li class="active nav-item">
   <a class="nav-link" href="../articles/ao.html">Get started</a>
+</li>
+<li class="nav-item">
+  <a class="nav-link" href="../reference/index.html">Reference</a>
 </li>
 <li class="nav-item">
   <a class="nav-link" href="../news/index.html">Changelog</a>
@@ -159,147 +162,22 @@ with parameter constraints <span class="math inline">\(-5 \leq x_1, x_2
 <span><span class="co">#&gt; $sequence</span></span>
 <span><span class="co">#&gt;    iteration partition        value      seconds       p1        p2</span></span>
 <span><span class="co">#&gt; 1          0        NA 1.700000e+02 0.0000000000 0.000000  0.000000</span></span>
-<span><span class="co">#&gt; 2          1         1 1.327270e+01 0.0068485737 3.395691  0.000000</span></span>
-<span><span class="co">#&gt; 3          1         2 1.743666e+00 0.0002818108 3.395691 -1.803183</span></span>
-<span><span class="co">#&gt; 4          2         1 2.847292e-02 0.0002441406 3.581412 -1.803183</span></span>
-<span><span class="co">#&gt; 5          2         2 4.687472e-04 0.0002138615 3.581412 -1.847412</span></span>
-<span><span class="co">#&gt; 6          3         1 7.368063e-06 0.0046353340 3.584381 -1.847412</span></span>
-<span><span class="co">#&gt; 7          3         2 1.157612e-07 0.0001959801 3.584381 -1.848115</span></span>
-<span><span class="co">#&gt; 8          4         1 1.900153e-09 0.0001721382 3.584427 -1.848115</span></span>
-<span><span class="co">#&gt; 9          4         2 4.221429e-11 0.0001511574 3.584427 -1.848126</span></span>
-<span><span class="co">#&gt; 10         5         1 3.598278e-12 0.0001640320 3.584428 -1.848126</span></span>
-<span><span class="co">#&gt; 11         5         2 1.940035e-12 0.0001575947 3.584428 -1.848126</span></span>
+<span><span class="co">#&gt; 2          1         1 1.327270e+01 0.0262491703 3.395691  0.000000</span></span>
+<span><span class="co">#&gt; 3          1         2 1.743666e+00 0.0003626347 3.395691 -1.803183</span></span>
+<span><span class="co">#&gt; 4          2         1 2.847292e-02 0.0003054142 3.581412 -1.803183</span></span>
+<span><span class="co">#&gt; 5          2         2 4.687472e-04 0.0002853870 3.581412 -1.847412</span></span>
+<span><span class="co">#&gt; 6          3         1 7.368063e-06 0.0003678799 3.584381 -1.847412</span></span>
+<span><span class="co">#&gt; 7          3         2 1.157612e-07 0.0002014637 3.584381 -1.848115</span></span>
+<span><span class="co">#&gt; 8          4         1 1.900153e-09 0.0002028942 3.584427 -1.848115</span></span>
+<span><span class="co">#&gt; 9          4         2 4.221429e-11 0.0001847744 3.584427 -1.848126</span></span>
+<span><span class="co">#&gt; 10         5         1 3.598278e-12 0.0001785755 3.584428 -1.848126</span></span>
+<span><span class="co">#&gt; 11         5         2 1.940035e-12 0.0001928806 3.584428 -1.848126</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $seconds</span></span>
-<span><span class="co">#&gt; [1] 0.01306462</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] 0.02853107</span></span></code></pre></div>
 <p>The call minimizes <code>f</code> by alternating optimizing with
 respect to each parameter separately, where the parameters all are
 initialized at the value 0.</p>
-<div class="r-help-page">
-<div class="container">
-
-<table style="width: 100%;" class="table"><tr>
-<td>ao</td>
-<td style="text-align: right;">R Documentation</td>
-</tr></table>
-<h2 id="ao">Alternating Optimization</h2>
-
-<h3>Arguments</h3>
-
-<table class="table">
-<tr>
-<td><code id="ao_:_f">f</code></td>
-<td>
-<p>A <code>function</code> to be optimized, returning a single <code>numeric</code>.
-The first argument of <code>f</code> must be a <code>numeric</code> of the same length as
-<code>p</code> followed by any other arguments specified by the <code>...</code>
-argument.</p>
-</td>
-</tr>
-<tr>
-<td><code id="ao_:_p">p</code></td>
-<td>
-<p>A <code>numeric</code> vector, the starting parameter values for the optimization.</p>
-</td>
-</tr>
-<tr>
-<td><code id="ao_:_...">...</code></td>
-<td>
-<p>Additional arguments to be passed to <code>f</code>.</p>
-</td>
-</tr>
-<tr>
-<td><code id="ao_:_partition">partition</code></td>
-<td>
-<p>A <code>list</code> of vectors of indices of <code>p</code>, specifying the partition in
-the alternating optimization process.
-The default is <code>as.list(1:length(p))</code>, i.e. each parameter is
-optimized separately.
-Parameter indices can be members of multiple subsets.</p>
-</td>
-</tr>
-<tr>
-<td><code id="ao_:_base_optimizer">base_optimizer</code></td>
-<td>
-<p>An <code>optimizer</code> object, which can be specified via
-<code>define_optimizer</code>.
-It numerically solves the optimization problems in the partitions.
-The default optimizer is <code>optimizer_optim</code>.</p>
-</td>
-</tr>
-<tr>
-<td><code id="ao_:_iterations">iterations</code></td>
-<td>
-<p>An <code>integer</code>, the maximum number of iterations through
-<code>partitions</code> before the alternating optimization process is terminated.
-Can also be <code>Inf</code>, in which case <code>tolerance</code> is responsible for the
-termination.
-The default is <code>10</code>.</p>
-</td>
-</tr>
-<tr>
-<td><code id="ao_:_tolerance">tolerance</code></td>
-<td>
-<p>A non-negative <code>numeric</code>. The alternating optimization terminates
-prematurely (i.e., before <code>interations</code> is reached) if the euclidean
-distance between the current estimate and the one from the last iteration is
-smaller than <code>tolerance</code>.
-The default is <code>1e-6</code>.</p>
-</td>
-</tr>
-<tr>
-<td><code id="ao_:_f_partition">f_partition</code></td>
-<td>
-<p>A <code>list</code> of the same length as <code>partition</code>.
-The <code>i</code>-th element can be a <code>function</code> that computes the value of
-<code>f</code> for the <code>i</code>-th parameter set defined in <code>partition</code>.
-The <code>function</code> must be of the form
-<code>function(theta_part, theta_rest, ...)</code>, where
-</p>
-
-<ul>
-<li> <p><code>theta_part</code> receives the parameter set for the current partition
-(this argument can be named differently),
-</p>
-</li>
-<li> <p><code>theta_rest</code> receives the remaining parameters
-(this argument must be named <code>theta_rest</code>),
-</p>
-</li>
-<li> <p><code>...</code> receives the additional arguments to <code>f</code>.
-Alternatively, it can be <code>NULL</code>, in which case <code>f</code> is used.
-</p>
-</li>
-</ul>
-</td>
-</tr>
-<tr>
-<td><code id="ao_:_joint_end">joint_end</code></td>
-<td>
-<p>If <code>TRUE</code>, the parameter set is optimized jointly after the alternating
-optimization process is terminated.
-The default is <code>FALSE</code>.</p>
-</td>
-</tr>
-<tr>
-<td><code id="ao_:_verbose">verbose</code></td>
-<td>
-<p>If <code>TRUE</code>, full tracing details are printed during the alternating
-optimization process.
-The default is <code>FALSE</code>.</p>
-</td>
-</tr>
-<tr>
-<td><code id="ao_:_plot">plot</code></td>
-<td>
-<p>If <code>TRUE</code>, parameter updates are plotted during the alternating
-optimization process.
-The default is <code>FALSE</code>.</p>
-</td>
-</tr>
-</table>
-</div>
-</div>
 </div>
 <div class="section level2 unnumbered">
 <h2 class="unnumbered" id="references">References<a class="anchor" aria-label="anchor" href="#references"></a>
