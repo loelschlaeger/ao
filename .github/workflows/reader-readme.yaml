@@ -23,11 +23,11 @@ jobs:
 
       - uses: r-lib/actions/setup-renv@v2
 
-      - name: Render README and Commit Results
+      - name: Render README
         run: rmarkdown::render("README.Rmd")
         shell: Rscript {0}
 
-      - name: commit and push changes
+      - name: Commit and push changes
         run: |
           git config --local user.name "$GITHUB_ACTOR"
           git config --local user.email "$GITHUB_ACTOR@users.noreply.github.com"
