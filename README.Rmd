@@ -20,7 +20,7 @@ knitr::opts_chunk$set(
 [![Codecov test coverage](https://codecov.io/gh/loelschlaeger/ao/branch/main/graph/badge.svg)](https://app.codecov.io/gh/loelschlaeger/ao?branch=main)
 <!-- badges: end -->
 
-The `{ao}` package implements a numerical optimization algorithm called alternating optimization. 
+The `{ao}` package implements a numerical optimization algorithm called alternating optimization in `R`. 
 
 Alternating optimization is an iterative procedure which optimizes a function jointly over all parameters by alternately performing restricted optimization over individual parameter subsets. 
 
