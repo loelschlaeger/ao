@@ -28,7 +28,7 @@ For additional details on the method, please refer to the [package vignette](htt
 
 ## Installation
 
-You can install the released version from [CRAN](https://CRAN.R-project.org) with:
+You can install the released version of `{ao}` from [CRAN](https://CRAN.R-project.org) with:
 
 ```{r, install released, eval = FALSE}
 install.packages("ao")
