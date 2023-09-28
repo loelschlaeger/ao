@@ -18,7 +18,7 @@ jobs:
       - uses: r-lib/actions/setup-pandoc@v2
 
       - name: Install styler
-        run: Rscript -e 'install.packages("styler")'
+        run: Rscript -e 'install.packages(c("styler", "roxygen2"))'
 
       - name: Style
         run: Rscript -e 'styler::style_pkg()'
