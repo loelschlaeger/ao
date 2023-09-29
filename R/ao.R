@@ -83,9 +83,7 @@ ao <- function(
     base_optimizer = optimizeR::optimizer_optim(),
     iterations = 10, tolerance = 1e-6,
     f_partition = vector(mode = "list", length = length(partition)),
-    joint_end = FALSE, verbose = FALSE
-) {
-
+    joint_end = FALSE, verbose = FALSE) {
   ### input checks
   if (missing(f)) {
     stop("Please specify 'f'.")
@@ -97,7 +95,7 @@ ao <- function(
   checkmate::assert_numeric(p)
   checkmate::assert_list(partition)
   if (!setequal(unlist(partition), seq_along(p)) ||
-      any(sapply(partition, length) == 0)) {
+    any(sapply(partition, length) == 0)) {
     stop("The list 'partition' must only contain vectors of indices of 'p'.")
   }
   if (!inherits(base_optimizer, "optimizer")) {
@@ -211,7 +209,7 @@ ao <- function(
         if (dist < tolerance) {
           exit_flag <- TRUE
           if (verbose) {
-            cat("tolerance reached : distance =" , dist, "<", tolerance, "\n")
+            cat("tolerance reached : distance =", dist, "<", tolerance, "\n")
           }
           break
         }
@@ -244,4 +242,3 @@ ao <- function(
     "seconds" = sum(seq$seconds)
   )
 }
-
