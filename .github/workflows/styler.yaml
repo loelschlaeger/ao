@@ -20,7 +20,9 @@ jobs:
       - uses: r-lib/actions/setup-renv@v2
 
       - name: Install styler
-        run: Rscript -e 'install.packages("styler")'
+        run: |
+          install.packages("styler")
+        shell: Rscript {0}
 
       - name: Style
         run: Rscript -e 'styler::style_pkg()'
