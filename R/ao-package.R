@@ -3,7 +3,6 @@
 "_PACKAGE"
 
 ## usethis namespace: start
-#' @importFrom optimizeR optimizer_optim
-#' @importFrom optimizeR apply_optimizer
+#' @importFrom optimizeR Optimizer
 ## usethis namespace: end
 NULL

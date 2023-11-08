@@ -19,10 +19,9 @@
 #' optimized separately.
 #' Parameter indices can be members of multiple subsets.
 #' @param base_optimizer
-#' An \code{optimizer} object, which can be specified via
-#' \code{\link[optimizeR]{define_optimizer}}.
+#' An \code{Optimizer} object, which can be created via
+#' \code{\link[optimizeR]{Optimizer}}.
 #' It numerically solves the optimization problems in the partitions.
-#' The default optimizer is \code{\link[optimizeR]{optimizer_optim}}.
 #' @param iterations
 #' An \code{integer}, the maximum number of iterations through
 #' \code{partitions} before the alternating optimization process is terminated.
@@ -65,14 +64,15 @@
 #' * and \code{seconds}, the overall computation time in seconds.
 #'
 #' @examples
-#' ### minimization of the Himmelblau function
-#' ### alternating optimization separately for x_1 and x_2
-#' ### parameter restriction: -5 <= x_1, x_2 <= 5
+#' # definition of the Himmelblau function
 #' himmelblau <- function(x) (x[1]^2 + x[2] - 11)^2 + (x[1] + x[2]^2 - 7)^2
+#'
+#' # alternating minimization separately for x_1 and x_2
+#' # parameter restriction: -5 <= x_1, x_2 <= 5
 #' ao(
 #'   f = himmelblau, p = c(0, 0), partition = list(1, 2), iterations = Inf,
-#'   base_optimizer = optimizeR::optimizer_optim(
-#'     lower = -5, upper = 5, method = "L-BFGS-B"
+#'   base_optimizer = optimizeR::Optimizer$new(
+#'     which = "stats::optim", lower = -5, upper = 5, method = "L-BFGS-B"
 #'   )
 #' )
 #'
@@ -80,10 +80,12 @@
 
 ao <- function(
     f, p, ..., partition = as.list(1:length(p)),
-    base_optimizer = optimizeR::optimizer_optim(),
+    base_optimizer = optimizeR::Optimizer$new("stats::optim"),
     iterations = 10, tolerance = 1e-6,
     f_partition = vector(mode = "list", length = length(partition)),
-    joint_end = FALSE, verbose = FALSE) {
+    joint_end = FALSE, verbose = FALSE
+  ) {
+
   ### input checks
   if (missing(f)) {
     stop("Please specify 'f'.")
@@ -98,10 +100,10 @@ ao <- function(
     any(sapply(partition, length) == 0)) {
     stop("The list 'partition' must only contain vectors of indices of 'p'.")
   }
-  if (!inherits(base_optimizer, "optimizer")) {
+  if (!inherits(base_optimizer, "Optimizer")) {
     stop(
       "Input 'base_optimizer' must be an object of class 'optimizer'.",
-      "Use 'optimizeR::define_optimizer()' to create such an object."
+      "Use 'optimizeR::Optimizer$new()' to create such an object."
     )
   }
   checkmate::assert_number(iterations, lower = 1)
@@ -127,7 +129,7 @@ ao <- function(
     stop("'verbose' must be either TRUE or FALSE.")
   }
 
-  ### ?
+  ### preparing partitions
   npar <- length(p)
   for (part in seq_along(partition)) {
     if (!is.function(f_partition[[part]])) {
@@ -172,7 +174,7 @@ ao <- function(
     }
   }
 
-  ### ?
+  ### alternating optimization
   exit_flag <- FALSE
   est <- p
   seq <- structure(
@@ -192,9 +194,9 @@ ao <- function(
         cat("- partition", part, "of", length(partition), ": ")
       }
       p_ind <- partition[[part]]
-      f_part_out <- optimizeR::apply_optimizer(
-        optimizer = base_optimizer, objective = f_partition[[part]],
-        initial = est[p_ind], theta_rest = est[-p_ind], ...
+      f_part_out <- base_optimizer$minimize(
+        objective = f_partition[[part]], initial = est[p_ind],
+        theta_rest = est[-p_ind], ...
       )
       est[p_ind] <- f_part_out[["parameter"]]
       value <- f_part_out[["value"]]
@@ -221,8 +223,8 @@ ao <- function(
     if (verbose) {
       cat("joint optimization in the end : ")
     }
-    f_joint_out <- optimizeR::apply_optimizer(
-      optimizer = base_optimizer, objective = f, initial = est, ...
+    f_joint_out <- base_optimizer$minimize(
+      objective = f, initial = est, ...
     )
     est <- f_joint_out[["parameter"]]
     value <- f_joint_out[["value"]]

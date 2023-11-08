@@ -9,7 +9,7 @@ bibliography: ref.bib
 link-citations: true
 ---
 
-```{r, include = FALSE}
+```{r, setup, include = FALSE}
 knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>",
@@ -53,12 +53,14 @@ Alternating optimization under certain conditions on $f$ can convergence to the 
 
 As an application, we consider minimizing the [Himmelblau's function](https://en.wikipedia.org/wiki/Himmelblau%27s_function) in $n = 2$ dimensions with parameter constraints $-5 \leq x_1, x_2 \leq 5$:
 
-```{r ao}
+```{r, ao demo}
 library("ao")
 himmelblau <- function(x) (x[1]^2 + x[2] - 11)^2 + (x[1] + x[2]^2 - 7)^2
 ao(
   f = himmelblau, p = c(0, 0), partition = list(1, 2),
-  base_optimizer = optimizer_optim(lower = -5, upper = 5, method = "L-BFGS-B")
+  base_optimizer = optimizeR::Optimizer$new(
+    which = "stats::optim", lower = -5, upper = 5, method = "L-BFGS-B"
+  )
 )
 ```
 

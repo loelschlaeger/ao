@@ -1,4 +1,8 @@
-# version 0.2.7
+# ao 0.3.0
+
+* Updated code to the new `{optimizeR}` version 1.0.1.
+
+# ao 0.2.7
 
 * Renamed input `print.level` -> `verbose`.
 
@@ -16,11 +20,11 @@
 
 * New dependency on `{checkmate}` for input checks.
 
-# version 0.2.6
+# ao 0.2.6
 
 * Added package logo and created package website (https://loelschlaeger.de/ao/) with the [`{pkgdown}`](https://pkgdown.r-lib.org/) package. No code changes.
 
-# version 0.2.5
+# ao 0.2.5
 
 * Updated code to the new `{optimizeR}` version 0.3.0, which renamed changed some input and output names.
 
@@ -28,15 +32,15 @@
 
 * Fixed bug when using numerical gradient and/or Hessian in target function.
 
-# version 0.2.4
+# ao 0.2.4
 
 * Updated code to the new `{optimizeR}` version 0.2.0, which renamed some functions.
 
-# version 0.2.3
+# ao 0.2.3
 
 * Fixed bugs when having `...` arguments for `ao()`.
 
-# version 0.2.2
+# ao 0.2.2
 
 * Removed the `set_f()` interface. The optimization problem is now specified directly in `ao()`.
 
@@ -46,11 +50,11 @@
 
 * Removed utils functions from `{ao}`. They are imported from the `{optimizeR}` package.
 
-# version 0.2.1
+# ao 0.2.1
 
 * The [Himmelblau's function](https://en.wikipedia.org/wiki/Himmelblau%27s_function) is included as an example.
 
-# version 0.2.0
+# ao 0.2.0
 
 * `ao()` now returns the sequence of estimates in the different iterations as a data frame.
 
@@ -66,17 +70,17 @@
 
 * New package sticker.
 
-# version 0.1.4
+# ao 0.1.4
 
 * Updated package metadata.
 
 * Updated package sticker.
 
-# version 0.1.3
+# ao 0.1.3
 
 * Exported method `print.ao()`.
 
-# version 0.1.2
+# ao 0.1.2
 
 * Skip alternation optimization step if a group is empty.
 
@@ -86,10 +90,10 @@
 
 * Implemented method `print.ao()`.
 
-# version 0.1.1
+# ao 0.1.1
 
 * Fixed minor bugs.
 
-# version 0.1.0
+# ao 0.1.0
 
 * Initial release.

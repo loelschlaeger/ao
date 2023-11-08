@@ -50,8 +50,8 @@ test_that("ao works", {
   himmelblau <- function(x) (x[1]^2 + x[2] - 11)^2 + (x[1] + x[2]^2 - 7)^2
   out <- ao(
     f = himmelblau, p = c(0, 0), partition = list(1, 2),
-    base_optimizer = optimizeR::optimizer_optim(
-      lower = -5, upper = 5, method = "L-BFGS-B"
+    base_optimizer = optimizeR::Optimizer$new(
+      which = "stats::optim", lower = -5, upper = 5, method = "L-BFGS-B"
     )
   )
   expect_type(out, "list")
@@ -66,8 +66,8 @@ test_that("ao with additional parameters works", {
   out <- ao(
     f = himmelblau, a = 2, b = 11, c = 7,
     p = c(0, 0), partition = list(1, 2),
-    base_optimizer = optimizeR::optimizer_optim(
-      lower = -5, upper = 5, method = "L-BFGS-B"
+    base_optimizer = optimizeR::Optimizer$new(
+      which = "stats::optim", lower = -5, upper = 5, method = "L-BFGS-B"
     )
   )
   expect_type(out, "list")
@@ -106,8 +106,8 @@ test_that("ao works with partition functions", {
   )
   out <- ao(
     f = himmelblau, p = c(0, 0), partition = list(1, 2),
-    base_optimizer = optimizeR::optimizer_optim(
-      lower = -5, upper = 5, method = "L-BFGS-B"
+    base_optimizer = optimizeR::Optimizer$new(
+      which = "stats::optim", lower = -5, upper = 5, method = "L-BFGS-B"
     ), f_partition = list(NULL, himmelblau_2)
   )
   expect_type(out, "list")
@@ -121,7 +121,7 @@ test_that("NULL elements in partition are detected", {
     ao(
       f = himmelblau, p = c(0, 0), partition = list(1, 2, NULL),
       base_optimizer = optimizeR::optimizer_optim(
-        lower = -5, upper = 5, method = "L-BFGS-B"
+        which = "stats::optim", lower = -5, upper = 5, method = "L-BFGS-B"
       )
     ),
     "The list 'partition' must only contain vectors of indices of 'p'."
@@ -138,7 +138,7 @@ test_that("gradient and Hessian work", {
   }
   out <- ao(
     f = test_fun, p = -3, partition = list(1),
-    base_optimizer = optimizeR::optimizer_nlm()
+    base_optimizer = optimizeR::Optimizer$new(which = "stats::nlm")
   )
   expect_type(out, "list")
 })
@@ -147,7 +147,10 @@ test_that("printing progress works", {
   f <- function(x) (x + 2)^2
   expect_output(
     ao(
-      f = f, p = 0, base_optimizer = optimizeR::optimizer_nlm(), verbose = TRUE,
+      f = f,
+      p = 0,
+      base_optimizer = optimizeR::Optimizer$new(which = "stats::nlm"),
+      verbose = TRUE,
       joint_end = TRUE
     )
   )

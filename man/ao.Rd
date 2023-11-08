@@ -9,7 +9,7 @@ ao(
   p,
   ...,
   partition = as.list(1:length(p)),
-  base_optimizer = optimizeR::optimizer_optim(),
+  base_optimizer = optimizeR::Optimizer$new("stats::optim"),
   iterations = 10,
   tolerance = 1e-06,
   f_partition = vector(mode = "list", length = length(partition)),
@@ -33,10 +33,9 @@ The default is \code{as.list(1:length(p))}, i.e. each parameter is
 optimized separately.
 Parameter indices can be members of multiple subsets.}
 
-\item{base_optimizer}{An \code{optimizer} object, which can be specified via
-\code{\link[optimizeR]{define_optimizer}}.
-It numerically solves the optimization problems in the partitions.
-The default optimizer is \code{\link[optimizeR]{optimizer_optim}}.}
+\item{base_optimizer}{An \code{Optimizer} object, which can be created via
+\code{\link[optimizeR]{Optimizer}}.
+It numerically solves the optimization problems in the partitions.}
 
 \item{iterations}{An \code{integer}, the maximum number of iterations through
 \code{partitions} before the alternating optimization process is terminated.
@@ -86,14 +85,15 @@ computation times in the single iterations and partitions,
 This function performs alternating optimization of the function \code{f}.
 }
 \examples{
-### minimization of the Himmelblau function
-### alternating optimization separately for x_1 and x_2
-### parameter restriction: -5 <= x_1, x_2 <= 5
+# definition of the Himmelblau function
 himmelblau <- function(x) (x[1]^2 + x[2] - 11)^2 + (x[1] + x[2]^2 - 7)^2
+
+# alternating minimization separately for x_1 and x_2
+# parameter restriction: -5 <= x_1, x_2 <= 5
 ao(
   f = himmelblau, p = c(0, 0), partition = list(1, 2), iterations = Inf,
-  base_optimizer = optimizeR::optimizer_optim(
-    lower = -5, upper = 5, method = "L-BFGS-B"
+  base_optimizer = optimizeR::Optimizer$new(
+    which = "stats::optim", lower = -5, upper = 5, method = "L-BFGS-B"
   )
 )
 
