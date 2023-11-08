@@ -83,9 +83,7 @@ ao <- function(
     base_optimizer = optimizeR::Optimizer$new("stats::optim"),
     iterations = 10, tolerance = 1e-6,
     f_partition = vector(mode = "list", length = length(partition)),
-    joint_end = FALSE, verbose = FALSE
-  ) {
-
+    joint_end = FALSE, verbose = FALSE) {
   ### input checks
   if (missing(f)) {
     stop("Please specify 'f'.")
