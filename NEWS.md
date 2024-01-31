@@ -1,3 +1,7 @@
+# ao development
+
+* Added package startup-message.
+
 # ao 0.3.0
 
 * Updated code to the new `{optimizeR}` version 1.0.1.

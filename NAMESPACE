@@ -2,3 +2,4 @@
 
 export(ao)
 importFrom(optimizeR,Optimizer)
+importFrom(utils,packageVersion)
