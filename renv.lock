@@ -1089,13 +1089,8 @@
     "optimizeR": {
       "Package": "optimizeR",
       "Version": "1.0.3",
-      "Source": "GitHub",
-      "RemoteType": "github",
-      "RemoteHost": "api.github.com",
-      "RemoteRepo": "optimizeR",
-      "RemoteUsername": "loelschlaeger",
-      "RemoteRef": "HEAD",
-      "RemoteSha": "ebbf114b0add05f218d30d852cc24c85f0579919",
+      "Source": "Repository",
+      "Repository": "CRAN",
       "Requirements": [
         "R",
         "R6",
@@ -1106,7 +1101,7 @@
         "stats",
         "utils"
       ],
-      "Hash": "f8acb5909c3a2855b635d31548e7ea48"
+      "Hash": "39bd8e8c719cb52ee8bacad523643d12"
     },
     "pillar": {
       "Package": "pillar",

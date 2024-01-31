@@ -1,6 +1,6 @@
 # ao 0.3.1
 
-* Added package startup-message.
+* Added package start up-message.
 
 * Added more details to README file.
 
