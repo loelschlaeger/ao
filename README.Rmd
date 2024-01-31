@@ -34,25 +34,55 @@ You can install the released version of `{ao}` from [CRAN](https://CRAN.R-projec
 install.packages("ao")
 ```
 
-And the development version from [GitHub](https://github.com/) with:
-
-```{r install dev, eval = FALSE}
-# install.packages("devtools")
-devtools::install_github("loelschlaeger/ao")
-```
-
 ## Example
 
-The following is a simple example to perform alternating optimization of the [Himmelblau's function](https://en.wikipedia.org/wiki/Himmelblau%27s_function), separately for $x_1$ and $x_2$, with the parameter restrictions $-5 \leq x_1, x_2 \leq 5$:
+The following is a simple example to perform alternating optimization of the [Himmelblau's function](https://en.wikipedia.org/wiki/Himmelblau%27s_function), separately for $x_1$ and $x_2$, with the parameter restrictions $-5 \leq x_1, x_2 \leq 5$.
 
-```{r example, message = FALSE, warning = FALSE}
+### Step 1: Load the package
+
+```{r load ao package}
 library("ao")
-himmelblau <- function(x) (x[1]^2 + x[2] - 11)^2 + (x[1] + x[2]^2 - 7)^2
-ao(
-  f = himmelblau, p = c(0, 0), partition = list(1, 2),
-  base_optimizer = optimizer_optim(lower = -5, upper = 5, method = "L-BFGS-B")
-)
 ```
+
+### Step 2: Define the function to be optimized
+
+```{r define function}
+himmelblau <- function(x, a, b) (x[1]^2 + x[2] + a)^2 + (x[1] + x[2]^2 + b)^2
+```
+
+The function is optimized over its first argument (`x`), which needs to be a `numeric` `vector`. Other function arguments (`a` and `b` in this case) remain fixed during the optimization. The function should return a single `numeric` value.
+
+### Step 3: Define a base optimizer
+
+Alternating optimization requires a base optimizer that numerically solves the optimization problems in the partitions of the parameter vector. Such an optimizer must be defined through the framework provided by the `{optimizeR}` package, please see [its documentation](https://loelschlaeger.de/optimizeR/) for details.
+
+```{r define optimizer}
+base_optimizer <- optimizeR::Optimizer$new(which = "stats::optim", lower = -5, upper = 5, method = "L-BFGS-B")
+```
+
+### Step 4: Call the `ao()` function
+
+Despite `f` and `base_optimizer`, which have been defined above, the `ao()` function requires the following arguments:
+
+- `p` defines the starting parameter values,
+
+- `a` and `b` are fixed function arguments,
+
+- `partition` defines the parameter subsets (here, the first entry of `x` and the second are optimized separately).
+
+```{r optimize}
+ao(f = himmelblau, p = c(0, 0), a = -11, b = -7, partition = list(1, 2), base_optimizer = base_optimizer)
+```
+
+The output contains:
+
+- the function `value` at convergence,
+
+- the parameter value `estimate` at convergence,
+
+- the optimization time in `seconds`,
+
+- and `sequence` is a `data.frame` which provides information about the updates in the single iterations and partitions.
 
 ## Contact
 

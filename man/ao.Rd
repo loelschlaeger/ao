@@ -27,8 +27,8 @@ argument.}
 
 \item{...}{Additional arguments to be passed to \code{f}.}
 
-\item{partition}{A \code{list} of vectors of indices of \code{p}, specifying the partition in
-the alternating optimization process.
+\item{partition}{A \code{list} of vectors of indices of \code{p}, specifying the partition of
+the parameter vector in the alternating optimization process.
 The default is \code{as.list(1:length(p))}, i.e. each parameter is
 optimized separately.
 Parameter indices can be members of multiple subsets.}

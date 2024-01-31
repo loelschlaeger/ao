@@ -13,8 +13,8 @@
 #' @param ...
 #' Additional arguments to be passed to \code{f}.
 #' @param partition
-#' A \code{list} of vectors of indices of \code{p}, specifying the partition in
-#' the alternating optimization process.
+#' A \code{list} of vectors of indices of \code{p}, specifying the partition of
+#' the parameter vector in the alternating optimization process.
 #' The default is \code{as.list(1:length(p))}, i.e. each parameter is
 #' optimized separately.
 #' Parameter indices can be members of multiple subsets.
@@ -83,25 +83,30 @@ ao <- function(
     base_optimizer = optimizeR::Optimizer$new("stats::optim"),
     iterations = 10, tolerance = 1e-6,
     f_partition = vector(mode = "list", length = length(partition)),
-    joint_end = FALSE, verbose = FALSE) {
+    joint_end = FALSE, verbose = FALSE
+) {
   ### input checks
   if (missing(f)) {
-    stop("Please specify 'f'.")
+    stop("Please specify 'f'.", call. = FALSE)
   }
   checkmate::assert_function(f)
   if (missing(p)) {
-    stop("Please specify 'p'.")
+    stop("Please specify 'p'.", call. = FALSE)
   }
   checkmate::assert_numeric(p)
   checkmate::assert_list(partition)
   if (!setequal(unlist(partition), seq_along(p)) ||
     any(sapply(partition, length) == 0)) {
-    stop("The list 'partition' must only contain vectors of indices of 'p'.")
+    stop(
+      "The list 'partition' must only contain vectors of indices of 'p'.",
+      call. = FALSE
+    )
   }
   if (!inherits(base_optimizer, "Optimizer")) {
     stop(
       "Input 'base_optimizer' must be an object of class 'optimizer'.",
-      "Use 'optimizeR::Optimizer$new()' to create such an object."
+      "Use 'optimizeR::Optimizer$new()' to create such an object.",
+      call. = FALSE
     )
   }
   checkmate::assert_number(iterations, lower = 1)
@@ -109,22 +114,26 @@ ao <- function(
     iterations <- as.integer(iterations)
   }
   if (length(tolerance) != 1 || !is.numeric(tolerance) || tolerance < 0) {
-    stop("'tolerance' must be a single, non-negative numeric.")
+    stop("'tolerance' must be a single, non-negative numeric.", call. = FALSE)
   }
   if (tolerance == 0 && identical(iterations, Inf)) {
-    stop("'tolerance' cannot be 0 while 'iterations' is infinite.")
+    stop(
+      "'tolerance' cannot be 0 while 'iterations' is infinite.", call. = FALSE
+    )
   }
   if (!is.list(f_partition)) {
-    stop("'f_partition' must be a list.")
+    stop("'f_partition' must be a list.", call. = FALSE)
   }
   if (length(f_partition) != length(partition)) {
-    stop("'f_partition' must have the same length as 'partition'.")
+    stop(
+      "'f_partition' must have the same length as 'partition'.", call. = FALSE
+    )
   }
   if (!isTRUE(joint_end) && !isFALSE(joint_end)) {
-    stop("'joint_end' must be either TRUE or FALSE.")
+    stop("'joint_end' must be either TRUE or FALSE.", call. = FALSE)
   }
   if (!isTRUE(verbose) && !isFALSE(verbose)) {
-    stop("'verbose' must be either TRUE or FALSE.")
+    stop("'verbose' must be either TRUE or FALSE.", call. = FALSE)
   }
 
   ### preparing partitions
@@ -196,6 +205,9 @@ ao <- function(
         objective = f_partition[[part]], initial = est[p_ind],
         theta_rest = est[-p_ind], ...
       )
+      if (isTRUE(f_part_out$error)) {
+        stop(f_part_out$error_message, call. = FALSE)
+      }
       est[p_ind] <- f_part_out[["parameter"]]
       value <- f_part_out[["value"]]
       if (verbose) {
