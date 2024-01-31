@@ -80,9 +80,9 @@ The output contains:
 
 - the parameter value `estimate` at convergence,
 
-- the optimization time in `seconds`,
+- `sequence` provides information about the updates in the single iterations and partitions,
 
-- and `sequence` is a `data.frame` which provides information about the updates in the single iterations and partitions.
+- and the optimization time in `seconds`.
 
 ## Contact
 

@@ -46,7 +46,7 @@ $-5 \leq x_1, x_2 \leq 5$.
 ``` r
 library("ao")
 #> Loading required package: optimizeR
-#> Thanks for using {ao} 0.3.0.9000, happy alternating optimization!
+#> Thanks for using {ao} 0.3.1, happy alternating optimization!
 #> Documentation: https://loelschlaeger.de/ao
 ```
 
@@ -94,21 +94,21 @@ ao(f = himmelblau, p = c(0, 0), a = -11, b = -7, partition = list(1, 2), base_op
 #> [1]  3.584428 -1.848126
 #> 
 #> $sequence
-#>    iteration partition        value      seconds       p1        p2
-#> 1          0        NA 1.700000e+02 0.0000000000 0.000000  0.000000
-#> 2          1         1 1.327270e+01 0.0192580223 3.395691  0.000000
-#> 3          1         2 1.743666e+00 0.0025858879 3.395691 -1.803183
-#> 4          2         1 2.847292e-02 0.0019941330 3.581412 -1.803183
-#> 5          2         2 4.687472e-04 0.0015609264 3.581412 -1.847412
-#> 6          3         1 7.368063e-06 0.0027458668 3.584381 -1.847412
-#> 7          3         2 1.157612e-07 0.0012159348 3.584381 -1.848115
-#> 8          4         1 1.900153e-09 0.0011019707 3.584427 -1.848115
-#> 9          4         2 4.221429e-11 0.0008721352 3.584427 -1.848126
-#> 10         5         1 3.598278e-12 0.0016510487 3.584428 -1.848126
-#> 11         5         2 1.940035e-12 0.0080530643 3.584428 -1.848126
+#>    iteration partition        value     seconds       p1        p2
+#> 1          0        NA 1.700000e+02 0.000000000 0.000000  0.000000
+#> 2          1         1 1.327270e+01 0.046111822 3.395691  0.000000
+#> 3          1         2 1.743666e+00 0.007761002 3.395691 -1.803183
+#> 4          2         1 2.847292e-02 0.003965139 3.581412 -1.803183
+#> 5          2         2 4.687472e-04 0.008033037 3.581412 -1.847412
+#> 6          3         1 7.368063e-06 0.015892029 3.584381 -1.847412
+#> 7          3         2 1.157612e-07 0.004492044 3.584381 -1.848115
+#> 8          4         1 1.900153e-09 0.004571915 3.584427 -1.848115
+#> 9          4         2 4.221429e-11 0.003071070 3.584427 -1.848126
+#> 10         5         1 3.598278e-12 0.004384995 3.584428 -1.848126
+#> 11         5         2 1.940035e-12 0.002771139 3.584428 -1.848126
 #> 
 #> $seconds
-#> [1] 0.04103899
+#> [1] 0.1010542
 ```
 
 The output contains:
@@ -117,10 +117,10 @@ The output contains:
 
 - the parameter value `estimate` at convergence,
 
-- the optimization time in `seconds`,
+- `sequence` provides information about the updates in the single
+  iterations and partitions,
 
-- and `sequence` is a `data.frame` which provides information about the
-  updates in the single iterations and partitions.
+- and the optimization time in `seconds`.
 
 ## Contact
 
