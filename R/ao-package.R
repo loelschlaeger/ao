@@ -12,7 +12,7 @@ NULL
 
 .onAttach <- function(lib, pkg) {
   msg <- paste0(
-    "Thanks for using {ao} ", utils::packageVersion('ao'),
+    "Thanks for using {ao} ", utils::packageVersion("ao"),
     ", happy alternating optimization!\n",
     "Documentation: https://loelschlaeger.de/ao"
   )
