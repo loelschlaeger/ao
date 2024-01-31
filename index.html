@@ -16,8 +16,8 @@
 <link rel="apple-touch-icon" type="image/png" sizes="76x76" href="apple-touch-icon-76x76.png">
 <link rel="apple-touch-icon" type="image/png" sizes="60x60" href="apple-touch-icon-60x60.png">
 <script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="deps/bootstrap-5.2.2/bootstrap.min.css" rel="stylesheet">
-<script src="deps/bootstrap-5.2.2/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
+<link href="deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
+<script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
 <!-- bootstrap-toc --><script src="https://cdn.jsdelivr.net/gh/afeld/bootstrap-toc@v1.0.1/dist/bootstrap-toc.min.js" integrity="sha256-4veVQbu7//Lk5TSmc7YV48MxtMy98e26cf5MrgZYnwo=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- search --><script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/6.4.6/fuse.js" integrity="sha512-zv6Ywkjyktsohkbp9bb45V6tEMoWhzFzXis+LrMehmJZZSys19Yxf1dopHx7WzIKxr5tK2dVcYmaCk2uqdjF4A==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/autocomplete.js/0.38.0/autocomplete.jquery.min.js" integrity="sha512-GU9ayf+66Xx2TmpxqJpliWbT5PiGYxpaG8rfnBEk1LL8l1KGkRShhngwdXK1UgqhAzWpZHSiYPc09/NwDQIGyg==" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mark.js/8.11.1/mark.min.js" integrity="sha512-5CYOlHXGh6QpOFA/TeTylKLWfB3ftPsde7AnmhuitiTX4K5SqCLBeKro6sPS8ilsz1Q4NRx3v8Ko2IBiszzdww==" crossorigin="anonymous"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Alternating Optimization">
 <meta property="og:description" content="Alternating optimization of (high-dimensional) functions is an 
@@ -37,7 +37,7 @@
     
     <a class="navbar-brand me-2" href="index.html">ao</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.3.1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -81,31 +81,54 @@
 </div>
 <!-- badges: start -->
 
-<p>The <a href="https://loelschlaeger.de/ao/">ao</a> package implements alternating optimization in <code>R</code>.</p>
+<p>The <a href="https://loelschlaeger.de/ao/">ao</a> package implements a numerical optimization algorithm called alternating optimization in R.</p>
 <p>Alternating optimization is an iterative procedure which optimizes a function jointly over all parameters by alternately performing restricted optimization over individual parameter subsets.</p>
 <p>For additional details on the method, please refer to the <a href="https://loelschlaeger.de/ao/articles/ao.html">package vignette</a>.</p>
 <div class="section level2">
 <h2 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h2>
-<p>You can install the released version from <a href="https://CRAN.R-project.org" class="external-link">CRAN</a> with:</p>
+<p>You can install the released version of <a href="https://loelschlaeger.de/ao/">ao</a> from <a href="https://CRAN.R-project.org" class="external-link">CRAN</a> with:</p>
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"ao"</span><span class="op">)</span></span></code></pre></div>
-<p>And the development version from <a href="https://github.com/" class="external-link">GitHub</a> with:</p>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># install.packages("devtools")</span></span>
-<span><span class="fu">devtools</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"loelschlaeger/ao"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level2">
 <h2 id="example">Example<a class="anchor" aria-label="anchor" href="#example"></a>
 </h2>
-<p>The following is a simple example to perform alternating optimization of the <a href="https://en.wikipedia.org/wiki/Himmelblau%27s_function" class="external-link">Himmelblau’s function</a>, separately for <span class="math inline"><em>x</em><sub>1</sub></span> and <span class="math inline"><em>x</em><sub>2</sub></span>, with the parameter restrictions <span class="math inline"> − 5 ≤ <em>x</em><sub>1</sub>, <em>x</em><sub>2</sub> ≤ 5</span>:</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<p>The following is a simple example to perform alternating optimization of the <a href="https://en.wikipedia.org/wiki/Himmelblau%27s_function" class="external-link">Himmelblau’s function</a>, separately for <span class="math inline"><em>x</em><sub>1</sub></span> and <span class="math inline"><em>x</em><sub>2</sub></span>, with the parameter restrictions <span class="math inline"> − 5 ≤ <em>x</em><sub>1</sub>, <em>x</em><sub>2</sub> ≤ 5</span>.</p>
+<div class="section level3">
+<h3 id="step-1-load-the-package">Step 1: Load the package<a class="anchor" aria-label="anchor" href="#step-1-load-the-package"></a>
+</h3>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="st"><a href="https://loelschlaeger.de/ao/">"ao"</a></span><span class="op">)</span></span>
-<span><span class="va">himmelblau</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span><span class="op">)</span> <span class="op">(</span><span class="va">x</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">^</span><span class="fl">2</span> <span class="op">+</span> <span class="va">x</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span> <span class="op">-</span> <span class="fl">11</span><span class="op">)</span><span class="op">^</span><span class="fl">2</span> <span class="op">+</span> <span class="op">(</span><span class="va">x</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span> <span class="op">+</span> <span class="va">x</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">^</span><span class="fl">2</span> <span class="op">-</span> <span class="fl">7</span><span class="op">)</span><span class="op">^</span><span class="fl">2</span></span>
-<span><span class="fu"><a href="reference/ao.html">ao</a></span><span class="op">(</span></span>
-<span>  f <span class="op">=</span> <span class="va">himmelblau</span>, p <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span>, partition <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span>,</span>
-<span>  base_optimizer <span class="op">=</span> <span class="fu">optimizer_optim</span><span class="op">(</span>lower <span class="op">=</span> <span class="op">-</span><span class="fl">5</span>, upper <span class="op">=</span> <span class="fl">5</span>, method <span class="op">=</span> <span class="st">"L-BFGS-B"</span><span class="op">)</span></span>
-<span><span class="op">)</span></span>
+<span><span class="co">#&gt; Loading required package: optimizeR</span></span>
+<span><span class="co">#&gt; Thanks for using {ao} 0.3.0.9000, happy alternating optimization!</span></span>
+<span><span class="co">#&gt; Documentation: https://loelschlaeger.de/ao</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="step-2-define-the-function-to-be-optimized">Step 2: Define the function to be optimized<a class="anchor" aria-label="anchor" href="#step-2-define-the-function-to-be-optimized"></a>
+</h3>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">himmelblau</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">a</span>, <span class="va">b</span><span class="op">)</span> <span class="op">(</span><span class="va">x</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">^</span><span class="fl">2</span> <span class="op">+</span> <span class="va">x</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span> <span class="op">+</span> <span class="va">a</span><span class="op">)</span><span class="op">^</span><span class="fl">2</span> <span class="op">+</span> <span class="op">(</span><span class="va">x</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span> <span class="op">+</span> <span class="va">x</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">^</span><span class="fl">2</span> <span class="op">+</span> <span class="va">b</span><span class="op">)</span><span class="op">^</span><span class="fl">2</span></span></code></pre></div>
+<p>The function is optimized over its first argument (<code>x</code>), which needs to be a <code>numeric</code> <code>vector</code>. Other function arguments (<code>a</code> and <code>b</code> in this case) remain fixed during the optimization. The function should return a single <code>numeric</code> value.</p>
+</div>
+<div class="section level3">
+<h3 id="step-3-define-a-base-optimizer">Step 3: Define a base optimizer<a class="anchor" aria-label="anchor" href="#step-3-define-a-base-optimizer"></a>
+</h3>
+<p>Alternating optimization requires a base optimizer that numerically solves the optimization problems in the partitions of the parameter vector. Such an optimizer must be defined through the framework provided by the <a href="https://loelschlaeger.de/optimizeR/" class="external-link">optimizeR</a> package, please see <a href="https://loelschlaeger.de/optimizeR/" class="external-link">its documentation</a> for details.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">base_optimizer</span> <span class="op">&lt;-</span> <span class="fu">optimizeR</span><span class="fu">::</span><span class="va"><a href="https://loelschlaeger.de/optimizeR/reference/Optimizer.html" class="external-link">Optimizer</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span>which <span class="op">=</span> <span class="st">"stats::optim"</span>, lower <span class="op">=</span> <span class="op">-</span><span class="fl">5</span>, upper <span class="op">=</span> <span class="fl">5</span>, method <span class="op">=</span> <span class="st">"L-BFGS-B"</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="step-4-call-the-ao-function">Step 4: Call the <code>ao()</code> function<a class="anchor" aria-label="anchor" href="#step-4-call-the-ao-function"></a>
+</h3>
+<p>Despite <code>f</code> and <code>base_optimizer</code>, which have been defined above, the <code><a href="reference/ao.html">ao()</a></code> function requires the following arguments:</p>
+<ul>
+<li><p><code>p</code> defines the starting parameter values,</p></li>
+<li><p><code>a</code> and <code>b</code> are fixed function arguments,</p></li>
+<li><p><code>partition</code> defines the parameter subsets (here, the first entry of <code>x</code> and the second are optimized separately).</p></li>
+</ul>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="reference/ao.html">ao</a></span><span class="op">(</span>f <span class="op">=</span> <span class="va">himmelblau</span>, p <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span>, a <span class="op">=</span> <span class="op">-</span><span class="fl">11</span>, b <span class="op">=</span> <span class="op">-</span><span class="fl">7</span>, partition <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span><span class="fl">1</span>, <span class="fl">2</span><span class="op">)</span>, base_optimizer <span class="op">=</span> <span class="va">base_optimizer</span><span class="op">)</span></span>
 <span><span class="co">#&gt; $value</span></span>
 <span><span class="co">#&gt; [1] 1.940035e-12</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -114,20 +137,28 @@
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $sequence</span></span>
 <span><span class="co">#&gt;    iteration partition        value      seconds       p1        p2</span></span>
-<span><span class="co">#&gt; 1          0        NA 1.700000e+02 0.000000e+00 0.000000  0.000000</span></span>
-<span><span class="co">#&gt; 2          1         1 1.327270e+01 2.765894e-03 3.395691  0.000000</span></span>
-<span><span class="co">#&gt; 3          1         2 1.743666e+00 1.089573e-04 3.395691 -1.803183</span></span>
-<span><span class="co">#&gt; 4          2         1 2.847292e-02 8.606911e-05 3.581412 -1.803183</span></span>
-<span><span class="co">#&gt; 5          2         2 4.687472e-04 7.295609e-05 3.581412 -1.847412</span></span>
-<span><span class="co">#&gt; 6          3         1 7.368063e-06 9.822845e-05 3.584381 -1.847412</span></span>
-<span><span class="co">#&gt; 7          3         2 1.157612e-07 5.006790e-05 3.584381 -1.848115</span></span>
-<span><span class="co">#&gt; 8          4         1 1.900153e-09 5.292892e-05 3.584427 -1.848115</span></span>
-<span><span class="co">#&gt; 9          4         2 4.221429e-11 4.196167e-05 3.584427 -1.848126</span></span>
-<span><span class="co">#&gt; 10         5         1 3.598278e-12 3.981590e-05 3.584428 -1.848126</span></span>
-<span><span class="co">#&gt; 11         5         2 1.940035e-12 4.601479e-05 3.584428 -1.848126</span></span>
+<span><span class="co">#&gt; 1          0        NA 1.700000e+02 0.0000000000 0.000000  0.000000</span></span>
+<span><span class="co">#&gt; 2          1         1 1.327270e+01 0.0192580223 3.395691  0.000000</span></span>
+<span><span class="co">#&gt; 3          1         2 1.743666e+00 0.0025858879 3.395691 -1.803183</span></span>
+<span><span class="co">#&gt; 4          2         1 2.847292e-02 0.0019941330 3.581412 -1.803183</span></span>
+<span><span class="co">#&gt; 5          2         2 4.687472e-04 0.0015609264 3.581412 -1.847412</span></span>
+<span><span class="co">#&gt; 6          3         1 7.368063e-06 0.0027458668 3.584381 -1.847412</span></span>
+<span><span class="co">#&gt; 7          3         2 1.157612e-07 0.0012159348 3.584381 -1.848115</span></span>
+<span><span class="co">#&gt; 8          4         1 1.900153e-09 0.0011019707 3.584427 -1.848115</span></span>
+<span><span class="co">#&gt; 9          4         2 4.221429e-11 0.0008721352 3.584427 -1.848126</span></span>
+<span><span class="co">#&gt; 10         5         1 3.598278e-12 0.0016510487 3.584428 -1.848126</span></span>
+<span><span class="co">#&gt; 11         5         2 1.940035e-12 0.0080530643 3.584428 -1.848126</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $seconds</span></span>
-<span><span class="co">#&gt; [1] 0.003362894</span></span></code></pre></div>
+<span><span class="co">#&gt; [1] 0.04103899</span></span></code></pre></div>
+<p>The output contains:</p>
+<ul>
+<li><p>the function <code>value</code> at convergence,</p></li>
+<li><p>the parameter value <code>estimate</code> at convergence,</p></li>
+<li><p>the optimization time in <code>seconds</code>,</p></li>
+<li><p>and <code>sequence</code> is a <code>data.frame</code> which provides information about the updates in the single iterations and partitions.</p></li>
+</ul>
+</div>
 </div>
 <div class="section level2">
 <h2 id="contact">Contact<a class="anchor" aria-label="anchor" href="#contact"></a>
