@@ -83,8 +83,7 @@ ao <- function(
     base_optimizer = optimizeR::Optimizer$new("stats::optim"),
     iterations = 10, tolerance = 1e-6,
     f_partition = vector(mode = "list", length = length(partition)),
-    joint_end = FALSE, verbose = FALSE
-) {
+    joint_end = FALSE, verbose = FALSE) {
   ### input checks
   if (missing(f)) {
     stop("Please specify 'f'.", call. = FALSE)
@@ -118,7 +117,8 @@ ao <- function(
   }
   if (tolerance == 0 && identical(iterations, Inf)) {
     stop(
-      "'tolerance' cannot be 0 while 'iterations' is infinite.", call. = FALSE
+      "'tolerance' cannot be 0 while 'iterations' is infinite.",
+      call. = FALSE
     )
   }
   if (!is.list(f_partition)) {
@@ -126,7 +126,8 @@ ao <- function(
   }
   if (length(f_partition) != length(partition)) {
     stop(
-      "'f_partition' must have the same length as 'partition'.", call. = FALSE
+      "'f_partition' must have the same length as 'partition'.",
+      call. = FALSE
     )
   }
   if (!isTRUE(joint_end) && !isFALSE(joint_end)) {
