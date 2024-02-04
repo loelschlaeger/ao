@@ -3,7 +3,6 @@
 \docType{package}
 \name{ao-package}
 \alias{ao-package}
-\alias{_PACKAGE}
 \title{ao: Alternating Optimization}
 \description{
 \if{html}{\figure{logo.png}{options: style='float: right' alt='logo' width='120'}}
