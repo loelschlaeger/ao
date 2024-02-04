@@ -1,3 +1,7 @@
+# ao 0.3.2
+
+* Fixed #4 (thanks to S. Chib).
+
 # ao 0.3.1
 
 * Added package start up-message.

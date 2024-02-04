@@ -155,3 +155,26 @@ test_that("printing progress works", {
     )
   )
 })
+
+test_that("ao with NULL values for fixed arguments works", {
+  f <- function(x, a, b, ind) {
+    if (is.null(ind)) {
+      (x[1]^2 + x[2] + a)^2 + (x[1] + x[2]^2 + b)^2 + (x[3] - 1)^2
+    }
+  }
+  partition <- list(1, 2:3)
+  checkmate::expect_list(
+    ao::ao(
+      f = f,
+      p = c(0, 0, 0),
+      a = -11,
+      b = -7,
+      ind = NULL,
+      partition = partition,
+      base_optimizer = optimizeR::optimizer_nlm(),
+      iterations = 10,
+      tolerance = 1e-06,
+      verbose = FALSE
+    )
+  )
+})
