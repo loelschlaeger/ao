@@ -1,1 +1,1 @@
-No comments.
+The reason for this quick update is, that a package user discovered a bug in the code and asked me to fix it quickly so that he can keep using the package. I am aware of the CRAN policies about submission frequency. This quick update will remain an exception. I am very sorry for the inconvenience. 
