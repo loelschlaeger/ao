@@ -5,8 +5,16 @@ test_that("ao input checks work", {
     "Please specify `f`"
   )
   expect_error(
+    ao(f = "not_a_function"),
+    "`f` must be a function"
+  )
+  expect_error(
     ao(f = f),
     "Please specify `p`"
+  )
+  expect_error(
+    ao(f = f, p = "not_a_numeric_vector"),
+    "`p` must be a vector of initial values"
   )
   expect_error(
     ao(f = f, p = 1, partition = "a"),
@@ -43,6 +51,10 @@ test_that("ao input checks work", {
   expect_error(
     ao(f = f, p = 1, verbose = "bad"),
     "`verbose` must be TRUE or FALSE"
+  )
+  expect_error(
+    ao(f = function(x) "not_a_number", p = 1),
+    "not a single, finite number"
   )
 })
 
