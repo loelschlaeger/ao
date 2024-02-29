@@ -83,9 +83,7 @@ ao <- function(
     base_optimizer = optimizeR::Optimizer$new("stats::optim"),
     iterations = 10, tolerance = 1e-6,
     f_partition = vector(mode = "list", length = length(partition)),
-    joint_end = FALSE, verbose = FALSE
-  ) {
-
+    joint_end = FALSE, verbose = FALSE) {
   ### input checks
   if (missing(f)) {
     cli::cli_abort(
@@ -115,7 +113,7 @@ ao <- function(
       call = NULL
     )
   } else if (!setequal(unlist(partition), seq_along(p)) ||
-             any(sapply(partition, length) == 0)) {
+    any(sapply(partition, length) == 0)) {
     cli::cli_abort(
       "{.var partition} must only contain vectors of indices of {.var p}",
       call = NULL
