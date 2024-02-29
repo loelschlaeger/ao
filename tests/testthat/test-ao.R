@@ -2,47 +2,47 @@ test_that("ao input checks work", {
   f <- function(x) x
   expect_error(
     ao(),
-    "Please specify 'f'."
+    "Please specify `f`"
   )
   expect_error(
     ao(f = f),
-    "Please specify 'p'."
+    "Please specify `p`"
   )
   expect_error(
     ao(f = f, p = 1, partition = "a"),
-    "Must be of type 'list', not 'character'."
+    "`partition` must be a"
   )
   expect_error(
     ao(f = f, p = 1, base_optimizer = "not_an_optimizer"),
-    "Input 'base_optimizer' must be an object of class 'optimizer'."
+    "`base_optimizer` must be an"
   )
   expect_error(
     ao(f = f, p = 1, partition = list(1), iterations = "1"),
-    "Must be of type 'number', not 'character'."
+    "`iterations` must be an integer greater or equal 1"
   )
   expect_error(
     ao(f = f, p = 1, partition = list(1), iterations = 1, tolerance = -1),
-    "'tolerance' must be a single, non-negative numeric."
+    "`tolerance` must be a single, non-negative number"
   )
   expect_error(
     ao(f = f, p = 1, partition = list(1), iterations = Inf, tolerance = 0),
-    "'tolerance' cannot be 0 while 'iterations' is infinite."
+    "`tolerance` cannot be 0 if `iterations` is Inf"
   )
   expect_error(
     ao(f = f, p = 1, partition = list(1), f_partition = "bad"),
-    "'f_partition' must be a list."
+    "`f_partition` must be a"
   )
   expect_error(
     ao(f = f, p = 1, partition = list(1), f_partition = list(NULL, NULL)),
-    "'f_partition' must have the same length as 'partition'."
+    "`f_partition` must have the same length as `partition`"
   )
   expect_error(
     ao(f = f, p = 1, joint_end = "bad"),
-    "'joint_end' must be either TRUE or FALSE."
+    "`joint_end` must be TRUE or FALSE"
   )
   expect_error(
     ao(f = f, p = 1, verbose = "bad"),
-    "'verbose' must be either TRUE or FALSE."
+    "`verbose` must be TRUE or FALSE"
   )
 })
 
@@ -88,21 +88,21 @@ test_that("ao works with partition functions", {
       f = himmelblau, p = c(0, 0),
       f_partition = list(function() {}, himmelblau_2)
     ),
-    "must have two arguments."
+    "must have two arguments"
   )
   expect_error(
     ao(
       f = himmelblau, p = c(0, 0), tmp = "tmp",
       f_partition = list(NULL, himmelblau_2)
     ),
-    "must have two arguments and the ... argument."
+    "must have two arguments and the ... argument"
   )
   expect_error(
     ao(
       f = himmelblau, p = c(0, 0), tmp = "tmp",
       f_partition = list(himmelblau_1, NULL)
     ),
-    "must have a second argumend named 'theta_rest'."
+    "must have a second argument named `theta_rest`"
   )
   out <- ao(
     f = himmelblau, p = c(0, 0), partition = list(1, 2),
@@ -124,7 +124,7 @@ test_that("NULL elements in partition are detected", {
         which = "stats::optim", lower = -5, upper = 5, method = "L-BFGS-B"
       )
     ),
-    "The list 'partition' must only contain vectors of indices of 'p'."
+    "`partition` must only contain vectors of indices of `p`"
   )
 })
 

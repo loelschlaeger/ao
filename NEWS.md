@@ -1,3 +1,7 @@
+# ao 0.3.3
+
+* Now using `{cli}` to improve error messages.
+
 # ao 0.3.2
 
 * Fixed #4 (thanks to S. Chib).

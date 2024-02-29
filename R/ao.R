@@ -83,58 +83,94 @@ ao <- function(
     base_optimizer = optimizeR::Optimizer$new("stats::optim"),
     iterations = 10, tolerance = 1e-6,
     f_partition = vector(mode = "list", length = length(partition)),
-    joint_end = FALSE, verbose = FALSE) {
+    joint_end = FALSE, verbose = FALSE
+  ) {
+
   ### input checks
   if (missing(f)) {
-    stop("Please specify 'f'.", call. = FALSE)
+    cli::cli_abort(
+      "Please specify {.var f}",
+      call = NULL
+    )
+  } else if (!checkmate::test_function(f)) {
+    cli::cli_abort(
+      "{.var f} must be a function",
+      call = NULL
+    )
   }
-  checkmate::assert_function(f)
   if (missing(p)) {
-    stop("Please specify 'p'.", call. = FALSE)
+    cli::cli_abort(
+      "Please specify {.var p}",
+      call = NULL
+    )
+  } else if (!oeli::test_numeric_vector(p)) {
+    cli::cli_abort(
+      "{.var p} must be a vector of initial values",
+      call = NULL
+    )
   }
-  checkmate::assert_numeric(p)
-  checkmate::assert_list(partition)
-  if (!setequal(unlist(partition), seq_along(p)) ||
-    any(sapply(partition, length) == 0)) {
-    stop(
-      "The list 'partition' must only contain vectors of indices of 'p'.",
-      call. = FALSE
+  if (!checkmate::test_list(partition)) {
+    cli::cli_abort(
+      "{.var partition} must be a {.cls list}",
+      call = NULL
+    )
+  } else if (!setequal(unlist(partition), seq_along(p)) ||
+             any(sapply(partition, length) == 0)) {
+    cli::cli_abort(
+      "{.var partition} must only contain vectors of indices of {.var p}",
+      call = NULL
     )
   }
   if (!inherits(base_optimizer, "Optimizer")) {
-    stop(
-      "Input 'base_optimizer' must be an object of class 'optimizer'.",
-      "Use 'optimizeR::Optimizer$new()' to create such an object.",
-      call. = FALSE
+    cli::cli_abort(
+      c(
+        "{.var base_optimizer} must be an {.cls Optimizer} object",
+        "i" = "Use {.fun optimizeR::Optimizer} to create such an object"
+      ),
+      call = NULL
     )
   }
-  checkmate::assert_number(iterations, lower = 1)
-  if (is.finite(iterations)) {
+  if (!checkmate::test_number(iterations, lower = 1, finite = FALSE)) {
+    cli::cli_abort(
+      "{.var iterations} must be an integer greater or equal 1",
+      call = NULL
+    )
+  } else if (is.finite(iterations)) {
     iterations <- as.integer(iterations)
   }
-  if (length(tolerance) != 1 || !is.numeric(tolerance) || tolerance < 0) {
-    stop("'tolerance' must be a single, non-negative numeric.", call. = FALSE)
+  if (!checkmate::test_number(tolerance, lower = 0, finite = TRUE)) {
+    cli::cli_abort(
+      "{.var tolerance} must be a single, non-negative number",
+      call = NULL
+    )
+  } else if (tolerance == 0 && identical(iterations, Inf)) {
+    cli::cli_abort(
+      "{.var tolerance} cannot be 0 if {.var iterations} is Inf",
+      call = NULL
+    )
   }
-  if (tolerance == 0 && identical(iterations, Inf)) {
-    stop(
-      "'tolerance' cannot be 0 while 'iterations' is infinite.",
+  if (!checkmate::test_list(f_partition)) {
+    cli::cli_abort(
+      "{.var f_partition} must be a {.cls list}",
+      call = NULL
+    )
+  } else if (length(f_partition) != length(partition)) {
+    cli::cli_abort(
+      "{.var f_partition} must have the same length as {.var partition}",
       call. = FALSE
     )
   }
-  if (!is.list(f_partition)) {
-    stop("'f_partition' must be a list.", call. = FALSE)
-  }
-  if (length(f_partition) != length(partition)) {
-    stop(
-      "'f_partition' must have the same length as 'partition'.",
-      call. = FALSE
+  if (!checkmate::test_flag(joint_end)) {
+    cli::cli_abort(
+      "{.var joint_end} must be TRUE or FALSE",
+      call = NULL
     )
   }
-  if (!isTRUE(joint_end) && !isFALSE(joint_end)) {
-    stop("'joint_end' must be either TRUE or FALSE.", call. = FALSE)
-  }
-  if (!isTRUE(verbose) && !isFALSE(verbose)) {
-    stop("'verbose' must be either TRUE or FALSE.", call. = FALSE)
+  if (!checkmate::test_flag(verbose)) {
+    cli::cli_abort(
+      "{.var verbose} must be TRUE or FALSE",
+      call = NULL
+    )
   }
 
   ### preparing partitions
@@ -164,19 +200,17 @@ ao <- function(
     } else {
       add_arguments_exist <- length(list(...)) > 0
       if (length(formals(f_partition[[part]])) < 2 + add_arguments_exist) {
-        stop(
-          paste0(
-            "'f_partition[[", part, "]]' must have two arguments",
-            if (add_arguments_exist) " and the ... argument." else "."
-          )
+        cli::cli_abort(
+          "{.var f_partition[[{part}]]} must have two arguments
+          {ifelse(add_arguments_exist, 'and the ... argument', '')}",
+          call = NULL
         )
       }
       if (!identical(names(formals(f_partition[[part]]))[2], "theta_rest")) {
-        stop(
-          paste0(
-            "'f_partition[[", part,
-            "]]' must have a second argumend named 'theta_rest'."
-          )
+        cli::cli_abort(
+          "{.var f_partition[[{part}]]} must have a second argument named
+          {.var theta_rest}",
+          call = NULL
         )
       }
     }
@@ -185,8 +219,15 @@ ao <- function(
   ### alternating optimization
   exit_flag <- FALSE
   est <- p
+  f_initial <- try(f(est, ...), silent = TRUE)
+  if (!checkmate::test_number(f_initial, finite = TRUE)) {
+    cli::cli_abort(
+      "{.var f(p)} is not a single, finite number",
+      call = NULL
+    )
+  }
   seq <- structure(
-    data.frame(t(c(0, NA_integer_, f(est, ...), 0, est))),
+    data.frame(t(c(0, NA_integer_, f_initial, 0, est))),
     names = c("iteration", "partition", "value", "seconds", paste0("p", 1:npar))
   )
   iteration <- 1
@@ -207,7 +248,10 @@ ao <- function(
         theta_rest = est[-p_ind], ...
       )
       if (isTRUE(f_part_out$error)) {
-        stop(f_part_out$error_message, call. = FALSE)
+        cli::cli_abort(
+          f_part_out$error_message,
+          call = NULL
+        )
       }
       est[p_ind] <- f_part_out[["parameter"]]
       value <- f_part_out[["value"]]
