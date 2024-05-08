@@ -6,9 +6,7 @@
 #' @export
 
 Partition <- R6::R6Class("Partition",
-
   cloneable = FALSE,
-
   public = list(
 
     #' @description
@@ -24,21 +22,16 @@ Partition <- R6::R6Class("Partition",
     initialize = function(n, type = "random") {
 
     },
-
     print = function() {
 
     },
-
     define = function() {
 
     },
-
     validate = function() {
 
     }
-
   ),
-
   active = list(
 
     #' @field partitions (`list`)\cr
@@ -52,19 +45,14 @@ Partition <- R6::R6Class("Partition",
     random = function() {
 
     }
-
   ),
-
   private = list(
-
     .partitions = list(),
     .random = numeric(),
     .all = list(),
-
     .generate = function() {
 
     }
-
   )
 )
 
@@ -79,25 +67,23 @@ Partition <- R6::R6Class("Partition",
 
 #' @author Siddhartha Chib
 
-rndblocks <- function(x = x,p = .3) {
-
-  x = sample(x,replace = F);
-  n = length(x);
-  y = sample(0:1,n,replace = T,prob = c(1-p,p))
-  y[1] = 1;
-  ind = which(y %in% 1)
-  B = length(ind);
-  blocksls = vector("list",B)
+rndblocks <- function(x = x, p = .3) {
+  x <- sample(x, replace = F)
+  n <- length(x)
+  y <- sample(0:1, n, replace = T, prob = c(1 - p, p))
+  y[1] <- 1
+  ind <- which(y %in% 1)
+  B <- length(ind)
+  blocksls <- vector("list", B)
   for (j in 1:B) {
-    s = ind[j];
+    s <- ind[j]
     if (j < B) {
-      e = ind[(j+1)]-1;
+      e <- ind[(j + 1)] - 1
     } else {
-      e = n;
+      e <- n
     }
-    xj = x[s:e]
-    blocksls[[j]] = xj[order(xj)]
+    xj <- x[s:e]
+    blocksls[[j]] <- xj[order(xj)]
   }
   return(blocksls)
 }
-
