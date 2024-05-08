@@ -78,6 +78,12 @@
 #'
 #' @export
 
+# ao <- function(
+#  partition = Partition$new(f, p, ..., type = "random"),
+#  optimizer = Optimizer$new("stats::optim")
+#  iterations = 10, tolerance = 1e-6, joint_end = FALSE, verbose = FALSE
+#}
+
 ao <- function(
     f, p, ..., partition = as.list(1:length(p)),
     base_optimizer = optimizeR::Optimizer$new("stats::optim"),

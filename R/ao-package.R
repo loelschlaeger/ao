@@ -11,6 +11,7 @@
 #' @importFrom cli style_hyperlink
 #' @importFrom oeli test_numeric_vector
 #' @importFrom optimizeR Optimizer
+#' @importFrom R6 R6Class
 #' @importFrom utils packageVersion
 ## usethis namespace: end
 NULL
