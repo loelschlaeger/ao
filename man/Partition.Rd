@@ -6,14 +6,28 @@
 \description{
 Partition of the target argument for alternating optimization.
 }
+\examples{
+# TODO
+
+}
 \section{Active bindings}{
 \if{html}{\out{<div class="r6-active-bindings">}}
 \describe{
-\item{\code{partitions}}{(\code{list})\cr
-description}
+\item{\code{npar}}{(\code{integer(1)})\cr
+The length of the target argument.}
 
-\item{\code{random}}{(\code{numeric(1)})\cr
-description}
+\item{\code{type}}{The partition type, either \code{"random"}, \code{"fixed"}, \code{"sequential"}, or
+\code{"none"}. Supports partial matching.}
+
+\item{\code{new_block_probability}}{(\code{numeric(1)})\cr
+Only relevant for \code{type = "random"}.
+The probability for a new parameter block in random partitions.
+Values close to 0 result in larger parameter blocks, values close to 1
+result in smaller parameter blocks.}
+
+\item{\code{minimum_block_number}}{(\code{integer(1)})\cr
+Only relevant for \code{type = "random"}.
+The minimum number of blocks in random partitions.}
 }
 \if{html}{\out{</div>}}
 }
@@ -22,31 +36,36 @@ description}
 \itemize{
 \item \href{#method-Partition-new}{\code{Partition$new()}}
 \item \href{#method-Partition-print}{\code{Partition$print()}}
-\item \href{#method-Partition-define}{\code{Partition$define()}}
-\item \href{#method-Partition-validate}{\code{Partition$validate()}}
+\item \href{#method-Partition-get}{\code{Partition$get()}}
+\item \href{#method-Partition-define_fixed_partition}{\code{Partition$define_fixed_partition()}}
+\item \href{#method-Partition-define_closed_form}{\code{Partition$define_closed_form()}}
+\item \href{#method-Partition-remove_closed_form}{\code{Partition$remove_closed_form()}}
+\item \href{#method-Partition-define_attribute}{\code{Partition$define_attribute()}}
+\item \href{#method-Partition-remove_attribute}{\code{Partition$remove_attribute()}}
 }
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Partition-new"></a>}}
 \if{latex}{\out{\hypertarget{method-Partition-new}{}}}
 \subsection{Method \code{new()}}{
-Creates a new instance of this \link[R6:R6Class]{R6} class.
+Creates a new object of this \link[R6:R6Class]{R6} class.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Partition$new(n, type = "random")}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Partition$new(npar, type)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{n}}{(\code{integer(1)})\cr
-The length of the target vector.}
+\item{\code{npar}}{(\code{integer(1)})\cr
+The length of the target argument.}
 
 \item{\code{type}}{(\code{character(1)})\cr
+The partition type, one of:
 \itemize{
-\item \code{"random"}
-\item \code{"fixed"}
-\item \code{"sequential"}
-\item \code{"none"}
+\item \code{"random"} (random partition in each iteration)
+\item \code{"fixed"} (partition defined via \verb{$define_fixed_partition()} method)
+\item \code{"sequential"} (each parameter alone)
+\item \code{"none"} (no partition, i.e. standard joint optimization)
 }}
 }
 \if{html}{\out{</div>}}
@@ -56,27 +75,132 @@ The length of the target vector.}
 \if{html}{\out{<a id="method-Partition-print"></a>}}
 \if{latex}{\out{\hypertarget{method-Partition-print}{}}}
 \subsection{Method \code{print()}}{
+Print details about this object.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Partition$print()}\if{html}{\out{</div>}}
 }
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Partition-define"></a>}}
-\if{latex}{\out{\hypertarget{method-Partition-define}{}}}
-\subsection{Method \code{define()}}{
+\if{html}{\out{<a id="method-Partition-get"></a>}}
+\if{latex}{\out{\hypertarget{method-Partition-get}{}}}
+\subsection{Method \code{get()}}{
+Return partition.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Partition$define()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Partition$get(type = self$type)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{type}}{(\code{character(1)})\cr
+The partition type, one of:
+\itemize{
+\item \code{"random"} (random partition in each iteration)
+\item \code{"fixed"} (partition defined via \verb{$define_fixed_partition()} method)
+\item \code{"sequential"} (each parameter alone)
+\item \code{"none"} (no partition, i.e. standard joint optimization)
+}}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Partition-validate"></a>}}
-\if{latex}{\out{\hypertarget{method-Partition-validate}{}}}
-\subsection{Method \code{validate()}}{
+\if{html}{\out{<a id="method-Partition-define_fixed_partition"></a>}}
+\if{latex}{\out{\hypertarget{method-Partition-define_fixed_partition}{}}}
+\subsection{Method \code{define_fixed_partition()}}{
+TODO
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Partition$validate()}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Partition$define_fixed_partition(fixed_partition = list())}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{fixed_partition}}{(\code{list()})\cr
+Only relevant for \code{type = "fixed"}.
+A \code{list} of \code{integer} (vectors), specifying the partition of the
+target parameter vector.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Partition-define_closed_form"></a>}}
+\if{latex}{\out{\hypertarget{method-Partition-define_closed_form}{}}}
+\subsection{Method \code{define_closed_form()}}{
+TODO
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Partition$define_closed_form(parameter_block, closed_form)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{parameter_block}}{()\cr
+TODO}
+
+\item{\code{closed_form}}{()\cr
+TODO}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Partition-remove_closed_form"></a>}}
+\if{latex}{\out{\hypertarget{method-Partition-remove_closed_form}{}}}
+\subsection{Method \code{remove_closed_form()}}{
+TODO
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Partition$remove_closed_form(parameter_block)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{parameter_block}}{()\cr
+TODO}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Partition-define_attribute"></a>}}
+\if{latex}{\out{\hypertarget{method-Partition-define_attribute}{}}}
+\subsection{Method \code{define_attribute()}}{
+TODO
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Partition$define_attribute(attribute_name, attribute_definition)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{attribute_name}}{()\cr
+TODO}
+
+\item{\code{attribute_definition}}{()\cr
+TODO}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Partition-remove_attribute"></a>}}
+\if{latex}{\out{\hypertarget{method-Partition-remove_attribute}{}}}
+\subsection{Method \code{remove_attribute()}}{
+TODO
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Partition$remove_attribute(attribute_name)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{attribute_name}}{()\cr
+TODO}
+}
+\if{html}{\out{</div>}}
+}
 }
 }

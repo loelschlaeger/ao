@@ -2,74 +2,105 @@
 % Please edit documentation in R/ao.R
 \name{ao}
 \alias{ao}
+\alias{ao_fixed}
+\alias{ao_random}
 \title{Alternating Optimization}
 \usage{
 ao(
-  f,
-  p,
-  ...,
-  partition = as.list(1:length(p)),
-  base_optimizer = optimizeR::Optimizer$new("stats::optim"),
+  objective,
+  partition = Partition$new(npar = sum(objective$npar), type = "sequential"),
+  optimizer = Optimizer$new("stats::optim"),
+  initial = stats::rnorm(sum(objective$npar)),
+  minimize = TRUE,
   iterations = 10,
   tolerance = 1e-06,
-  f_partition = vector(mode = "list", length = length(partition)),
+  joint_end = FALSE,
+  verbose = TRUE
+)
+
+ao_fixed(
+  f,
+  initial,
+  ...,
+  fixed_partition = as.list(1:length(initial)),
+  minimize = TRUE,
+  iterations = 10,
+  tolerance = 1e-06,
+  joint_end = FALSE,
+  verbose = FALSE
+)
+
+ao_random(
+  f,
+  initial,
+  ...,
+  new_block_probability = 0.3,
+  minimum_block_number = 1,
+  minimize = TRUE,
+  iterations = 10,
+  tolerance = 1e-06,
   joint_end = FALSE,
   verbose = FALSE
 )
 }
 \arguments{
-\item{f}{A \code{function} to be optimized, returning a single \code{numeric}.
-The first argument of \code{f} must be a \code{numeric} of the same length as
-\code{p} followed by any other arguments specified by the \code{...}
-argument.}
+\item{objective}{(\code{numeric()})\cr
+The definition of the objective function to be optimized via alternating
+optimization, can be created via \code{\link[optimizeR]{Objective}}.}
 
-\item{p}{A \code{numeric} vector, the starting parameter values for the optimization.}
+\item{partition}{(\code{numeric()})\cr
+The definition of the target argument partition for alternating optimization,
+can be created via \code{\link{Partition}}.}
+
+\item{optimizer}{(\code{Optimizer})\cr
+The definition of the base optimizer that solves the optimization problems in
+the partitions, can be created via \code{\link[optimizeR]{Optimizer}}.}
+
+\item{initial}{(\code{numeric()})\cr
+The starting parameter values for the optimization.}
+
+\item{minimize}{(\code{logical(1)})\cr
+Perform minimization? Alternatively, maximization is performed.}
+
+\item{iterations}{(\code{integer(1)})\cr
+The maximum number of iterations through the parameter partition before the
+alternating optimization process is terminated. Can also be \code{Inf}, in
+which case \code{tolerance} is responsible for the termination.}
+
+\item{tolerance}{(\code{numeric(1)})\cr
+A non-negative tolerance value. The alternating optimization terminates
+prematurely (i.e., before \code{iterations} is reached) if the euclidean
+distance between the current estimate and the one from the last iteration is
+smaller than \code{tolerance}.}
+
+\item{joint_end}{(\code{logical(1)})\cr
+Optimize the parameter set jointly after the alternating optimization process
+is terminated?}
+
+\item{verbose}{(\code{logical(1)})\cr
+Print tracing details during the alternating optimization process?}
+
+\item{f}{(\code{function})\cr
+A \code{function} to be optimized, returning a single \code{numeric}.
+The first argument of \code{f} must be a \code{numeric} of the same length as
+\code{initial} followed by any other arguments specified by the \code{...}
+argument.}
 
 \item{...}{Additional arguments to be passed to \code{f}.}
 
-\item{partition}{A \code{list} of vectors of indices of \code{p}, specifying the partition of
-the parameter vector in the alternating optimization process.
-The default is \code{as.list(1:length(p))}, i.e. each parameter is
-optimized separately.
-Parameter indices can be members of multiple subsets.}
+\item{fixed_partition}{(\code{list()})\cr
+A \code{list} of vectors of indices of \code{initial}, specifying the
+partition of the parameter vector in the alternating optimization process.
+The default is \code{as.list(1:length(initial))}, i.e. each parameter is
+optimized separately. Parameter indices can be members of multiple blocks.}
 
-\item{base_optimizer}{An \code{Optimizer} object, which can be created via
-\code{\link[optimizeR]{Optimizer}}.
-It numerically solves the optimization problems in the partitions.}
+\item{new_block_probability}{(\code{numeric(1)})\cr
+The probability for a new parameter block in random partitions.
+Values close to 0 result in larger parameter blocks, values close to 1
+result in smaller parameter blocks.}
 
-\item{iterations}{An \code{integer}, the maximum number of iterations through
-\code{partitions} before the alternating optimization process is terminated.
-Can also be \code{Inf}, in which case \code{tolerance} is responsible for the
-termination.
-The default is \code{10}.}
-
-\item{tolerance}{A non-negative \code{numeric}. The alternating optimization terminates
-prematurely (i.e., before \code{interations} is reached) if the euclidean
-distance between the current estimate and the one from the last iteration is
-smaller than \code{tolerance}.
-The default is \code{1e-6}.}
-
-\item{f_partition}{A \code{list} of the same length as \code{partition}.
-The \code{i}-th element can be a \code{function} that computes the value of
-\code{f} for the \code{i}-th parameter set defined in \code{partition}.
-The \code{function} must be of the form
-\code{function(theta_part, theta_rest, ...)}, where
-\itemize{
-\item \code{theta_part} receives the parameter set for the current partition
-(this argument can be named differently),
-\item \code{theta_rest} receives the remaining parameters
-(this argument must be named \code{theta_rest}),
-\item \code{...} receives the additional arguments to \code{f}.
-Alternatively, it can be \code{NULL}, in which case \code{f} is used.
-}}
-
-\item{joint_end}{If \code{TRUE}, the parameter set is optimized jointly after the alternating
-optimization process is terminated.
-The default is \code{FALSE}.}
-
-\item{verbose}{If \code{TRUE}, full tracing details are printed during the alternating
-optimization process.
-The default is \code{FALSE}.}
+\item{minimum_block_number}{(\code{integer(1)})\cr
+The minimum number of blocks in random partitions.}
 }
 \value{
 A \code{list} with the elements
@@ -77,24 +108,44 @@ A \code{list} with the elements
 \item \code{estimate}, the optimal parameter vector found,
 \item \code{value}, the value of \code{f} at \code{estimate},
 \item \code{sequence}, a \code{data.frame} of the function values, estimates and
-computation times in the single iterations and partitions,
+computation times in the single iterations and parameter blocks,
 \item and \code{seconds}, the overall computation time in seconds.
 }
 }
 \description{
-This function performs alternating optimization of the function \code{f}.
+Performing alternating optimization of the function \code{f}.
+\itemize{
+\item \code{ao} is the most general function
+\item \code{ao_fixed} is the special case of a fixed partition
+\item \code{ao_random} is the special case of random partitions
+}
 }
 \examples{
-# definition of the Himmelblau function
-himmelblau <- function(x) (x[1]^2 + x[2] - 11)^2 + (x[1] + x[2]^2 - 7)^2
+# definition of the 'Himmelblau' objective function with two parameters
+objective <- Objective$new(
+  f = function(x) (x[1]^2 + x[2] - 11)^2 + (x[1] + x[2]^2 - 7)^2,
+  npar = 2
+)
 
-# alternating minimization separately for x_1 and x_2
-# parameter restriction: -5 <= x_1, x_2 <= 5
+# definition of the partition: one parameter conditional on the other
+partition <- Partition$new(npar = 2, type = "sequential")
+
+# definition of the optimizer with parameter restriction: -5 <= x_1, x_2 <= 5
+optimizer <- Optimizer$new(
+  which = "stats::optim", lower = -5, upper = 5, method = "L-BFGS-B"
+)
+
+# alternating optimization
 ao(
-  f = himmelblau, p = c(0, 0), partition = list(1, 2), iterations = Inf,
-  base_optimizer = optimizeR::Optimizer$new(
-    which = "stats::optim", lower = -5, upper = 5, method = "L-BFGS-B"
-  )
+  objective = objective,
+  partition = partition,
+  optimizer = optimizer,
+  initial = c(0, 0),     # initial parameter values
+  minimize = TRUE,       # minimization
+  iterations = Inf,      # no restriction on the number of iterations
+  tolerance = 1e-6,      # stop if change in parameters is within tolerance
+  joint_end = TRUE,      # finally perform joint optimization
+  verbose = TRUE         # print progress
 )
 
 }

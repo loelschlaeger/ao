@@ -1,142 +1,168 @@
 #' Alternating Optimization
 #'
 #' @description
-#' This function performs alternating optimization of the function \code{f}.
+#' Performing alternating optimization of the function \code{f}.
 #'
-#' @param f
-#' A \code{function} to be optimized, returning a single \code{numeric}.
-#' The first argument of \code{f} must be a \code{numeric} of the same length as
-#' \code{p} followed by any other arguments specified by the \code{...}
-#' argument.
-#' @param p
-#' A \code{numeric} vector, the starting parameter values for the optimization.
-#' @param ...
-#' Additional arguments to be passed to \code{f}.
-#' @param partition
-#' A \code{list} of vectors of indices of \code{p}, specifying the partition of
-#' the parameter vector in the alternating optimization process.
-#' The default is \code{as.list(1:length(p))}, i.e. each parameter is
-#' optimized separately.
-#' Parameter indices can be members of multiple subsets.
-#' @param base_optimizer
-#' An \code{Optimizer} object, which can be created via
-#' \code{\link[optimizeR]{Optimizer}}.
-#' It numerically solves the optimization problems in the partitions.
-#' @param iterations
-#' An \code{integer}, the maximum number of iterations through
-#' \code{partitions} before the alternating optimization process is terminated.
-#' Can also be \code{Inf}, in which case \code{tolerance} is responsible for the
-#' termination.
-#' The default is \code{10}.
-#' @param tolerance
-#' A non-negative \code{numeric}. The alternating optimization terminates
-#' prematurely (i.e., before \code{interations} is reached) if the euclidean
+#' - `ao` is the most general function
+#' - `ao_fixed` is the special case of a fixed partition
+#' - `ao_random` is the special case of random partitions
+#'
+#' @param objective (`numeric()`)\cr
+#' The definition of the objective function to be optimized via alternating
+#' optimization, can be created via \code{\link[optimizeR]{Objective}}.
+#'
+#' @param partition (`numeric()`)\cr
+#' The definition of the target argument partition for alternating optimization,
+#' can be created via \code{\link{Partition}}.
+#'
+#' @param optimizer (`Optimizer`)\cr
+#' The definition of the base optimizer that solves the optimization problems in
+#' the partitions, can be created via \code{\link[optimizeR]{Optimizer}}.
+#'
+#' @param initial (`numeric()`)\cr
+#' The starting parameter values for the optimization.
+#'
+#' @param minimize (`logical(1)`)\cr
+#' Perform minimization? Alternatively, maximization is performed.
+#'
+#' @param iterations (`integer(1)`)\cr
+#' The maximum number of iterations through the parameter partition before the
+#' alternating optimization process is terminated. Can also be \code{Inf}, in
+#' which case \code{tolerance} is responsible for the termination.
+#'
+#' @param tolerance (`numeric(1)`)\cr
+#' A non-negative tolerance value. The alternating optimization terminates
+#' prematurely (i.e., before \code{iterations} is reached) if the euclidean
 #' distance between the current estimate and the one from the last iteration is
 #' smaller than \code{tolerance}.
-#' The default is \code{1e-6}.
-#' @param f_partition
-#' A \code{list} of the same length as \code{partition}.
-#' The \code{i}-th element can be a \code{function} that computes the value of
-#' \code{f} for the \code{i}-th parameter set defined in \code{partition}.
-#' The \code{function} must be of the form
-#' \code{function(theta_part, theta_rest, ...)}, where
-#' - \code{theta_part} receives the parameter set for the current partition
-#'   (this argument can be named differently),
-#' - \code{theta_rest} receives the remaining parameters
-#'   (this argument must be named \code{theta_rest}),
-#' - \code{...} receives the additional arguments to \code{f}.
-#' Alternatively, it can be \code{NULL}, in which case \code{f} is used.
-#' @param joint_end
-#' If \code{TRUE}, the parameter set is optimized jointly after the alternating
-#' optimization process is terminated.
-#' The default is \code{FALSE}.
-#' @param verbose
-#' If \code{TRUE}, full tracing details are printed during the alternating
-#' optimization process.
-#' The default is \code{FALSE}.
+#'
+#' @param joint_end (`logical(1)`)\cr
+#' Optimize the parameter set jointly after the alternating optimization process
+#' is terminated?
+#'
+#' @param verbose (`logical(1)`)\cr
+#' Print tracing details during the alternating optimization process?
+#'
+#' @param f (`function`)\cr
+#' A \code{function} to be optimized, returning a single \code{numeric}.
+#' The first argument of \code{f} must be a \code{numeric} of the same length as
+#' \code{initial} followed by any other arguments specified by the \code{...}
+#' argument.
+#'
+#' @param ...
+#' Additional arguments to be passed to \code{f}.
+#'
+#' @param fixed_partition (`list()`)\cr
+#' A \code{list} of vectors of indices of \code{initial}, specifying the
+#' partition of the parameter vector in the alternating optimization process.
+#' The default is \code{as.list(1:length(initial))}, i.e. each parameter is
+#' optimized separately. Parameter indices can be members of multiple blocks.
+#'
+#' @param new_block_probability (`numeric(1)`)\cr
+#' The probability for a new parameter block in random partitions.
+#' Values close to 0 result in larger parameter blocks, values close to 1
+#' result in smaller parameter blocks.
+#'
+#' @param minimum_block_number (`integer(1)`)\cr
+#' The minimum number of blocks in random partitions.
 #'
 #' @return
 #' A \code{list} with the elements
 #' * \code{estimate}, the optimal parameter vector found,
 #' * \code{value}, the value of \code{f} at \code{estimate},
 #' * \code{sequence}, a \code{data.frame} of the function values, estimates and
-#'   computation times in the single iterations and partitions,
+#'   computation times in the single iterations and parameter blocks,
 #' * and \code{seconds}, the overall computation time in seconds.
 #'
 #' @examples
-#' # definition of the Himmelblau function
-#' himmelblau <- function(x) (x[1]^2 + x[2] - 11)^2 + (x[1] + x[2]^2 - 7)^2
+#' # definition of the 'Himmelblau' objective function with two parameters
+#' objective <- Objective$new(
+#'   f = function(x) (x[1]^2 + x[2] - 11)^2 + (x[1] + x[2]^2 - 7)^2,
+#'   npar = 2
+#' )
 #'
-#' # alternating minimization separately for x_1 and x_2
-#' # parameter restriction: -5 <= x_1, x_2 <= 5
+#' # definition of the partition: one parameter conditional on the other
+#' partition <- Partition$new(npar = 2, type = "sequential")
+#'
+#' # definition of the optimizer with parameter restriction: -5 <= x_1, x_2 <= 5
+#' optimizer <- Optimizer$new(
+#'   which = "stats::optim", lower = -5, upper = 5, method = "L-BFGS-B"
+#' )
+#'
+#' # alternating optimization
 #' ao(
-#'   f = himmelblau, p = c(0, 0), partition = list(1, 2), iterations = Inf,
-#'   base_optimizer = optimizeR::Optimizer$new(
-#'     which = "stats::optim", lower = -5, upper = 5, method = "L-BFGS-B"
-#'   )
+#'   objective = objective,
+#'   partition = partition,
+#'   optimizer = optimizer,
+#'   initial = c(0, 0),     # initial parameter values
+#'   minimize = TRUE,       # minimization
+#'   iterations = Inf,      # no restriction on the number of iterations
+#'   tolerance = 1e-6,      # stop if change in parameters is within tolerance
+#'   joint_end = TRUE,      # finally perform joint optimization
+#'   verbose = TRUE         # print progress
 #' )
 #'
 #' @export
 
-# ao <- function(
-#  partition = Partition$new(f, p, ..., type = "random"),
-#  optimizer = Optimizer$new("stats::optim")
-#  iterations = 10, tolerance = 1e-6, joint_end = FALSE, verbose = FALSE
-# }
-
 ao <- function(
-    f, p, ..., partition = as.list(1:length(p)),
-    base_optimizer = optimizeR::Optimizer$new("stats::optim"),
-    iterations = 10, tolerance = 1e-6,
-    f_partition = vector(mode = "list", length = length(partition)),
-    joint_end = FALSE, verbose = FALSE) {
+  objective,
+  partition = Partition$new(npar = sum(objective$npar), type = "sequential"),
+  optimizer = Optimizer$new("stats::optim"),
+  initial = stats::rnorm(sum(objective$npar)),
+  minimize = TRUE,
+  iterations = 10,
+  tolerance = 1e-6,
+  joint_end = FALSE,
+  verbose = TRUE
+) {
+
   ### input checks
-  if (missing(f)) {
+  if (!checkmate::test_class(objective, "Objective")) {
     cli::cli_abort(
-      "Please specify {.var f}",
-      call = NULL
-    )
-  } else if (!checkmate::test_function(f)) {
-    cli::cli_abort(
-      "{.var f} must be a function",
+      "{.var objective} must be an
+      {.help [{.cls Objective}](optimizeR::Objective)} object",
       call = NULL
     )
   }
-  if (missing(p)) {
+  if (!checkmate::test_class(partition, "Partition")) {
     cli::cli_abort(
-      "Please specify {.var p}",
-      call = NULL
-    )
-  } else if (!oeli::test_numeric_vector(p)) {
-    cli::cli_abort(
-      "{.var p} must be a vector of initial values",
+      "{.var partition} must be an
+      {.help [{.cls Partition}](ao::Partition)} object",
       call = NULL
     )
   }
-  if (!checkmate::test_list(partition)) {
+  if (sum(objective$npar) != partition$npar) {
     cli::cli_abort(
-      "{.var partition} must be a {.cls list}",
-      call = NULL
-    )
-  } else if (!setequal(unlist(partition), seq_along(p)) ||
-    any(sapply(partition, length) == 0)) {
-    cli::cli_abort(
-      "{.var partition} must only contain vectors of indices of {.var p}",
+      "parameter number implied by {.var objective}
+      ({.num {sum(objective$npar)}}) does not match parameter number
+      implied by {.var partition} ({.num {partition$npar}})",
       call = NULL
     )
   }
-  if (!inherits(base_optimizer, "Optimizer")) {
+  npar <- partition$npar
+  if (!checkmate::test_class(optimizer, "Optimizer")) {
     cli::cli_abort(
-      c(
-        "{.var base_optimizer} must be an {.cls Optimizer} object",
-        "i" = "Use {.fun optimizeR::Optimizer} to create such an object"
-      ),
+      "{.var optimizer} must be an
+      {.help [{.cls Optimizer}](optimizeR::Optimizer)} object",
+      call = NULL
+    )
+  }
+  if (!oeli::test_numeric_vector(initial, len = npar)) {
+    cli::cli_abort(
+      "{.var initial} must be a vector of initial values of length
+      {.num {npar}}",
+      call = NULL
+    )
+  }
+  if (!checkmate::test_flag(minimize)) {
+    cli::cli_abort(
+      "{.var minimize} must be TRUE or FALSE",
       call = NULL
     )
   }
   if (!checkmate::test_number(iterations, lower = 1, finite = FALSE)) {
     cli::cli_abort(
-      "{.var iterations} must be an integer greater or equal 1",
+      "{.var iterations} must be an integer greater or equal {.num 1}",
       call = NULL
     )
   } else if (is.finite(iterations)) {
@@ -149,19 +175,8 @@ ao <- function(
     )
   } else if (tolerance == 0 && identical(iterations, Inf)) {
     cli::cli_abort(
-      "{.var tolerance} cannot be 0 if {.var iterations} is Inf",
+      "{.var tolerance} cannot be {.num 0} if {.var iterations} is {.num Inf}",
       call = NULL
-    )
-  }
-  if (!checkmate::test_list(f_partition)) {
-    cli::cli_abort(
-      "{.var f_partition} must be a {.cls list}",
-      call = NULL
-    )
-  } else if (length(f_partition) != length(partition)) {
-    cli::cli_abort(
-      "{.var f_partition} must have the same length as {.var partition}",
-      call. = FALSE
     )
   }
   if (!checkmate::test_flag(joint_end)) {
@@ -177,129 +192,192 @@ ao <- function(
     )
   }
 
-  ### preparing partitions
-  npar <- length(p)
-  for (part in seq_along(partition)) {
-    if (!is.function(f_partition[[part]])) {
-      f_partition[[part]] <- function(theta_part, theta_rest, ...) {
-        p_ind <- partition[[part]]
-        theta <- numeric(npar)
-        theta[p_ind] <- theta_part
-        theta[-p_ind] <- theta_rest
-        out <- f(theta, ...)
-        if ("gradient" %in% names(attributes(out))) {
-          gradient <- attr(out, "gradient")
-          if (is.numeric(gradient) && is.vector(gradient)) {
-            attr(out, "gradient") <- gradient[p_ind]
-          }
-        }
-        if ("hessian" %in% names(attributes(out))) {
-          hessian <- attr(out, "hessian")
-          if (is.numeric(hessian) && is.matrix(hessian)) {
-            attr(out, "hessian") <- hessian[p_ind, p_ind, drop = FALSE]
-          }
-        }
-        out
-      }
-    } else {
-      add_arguments_exist <- length(list(...)) > 0
-      if (length(formals(f_partition[[part]])) < 2 + add_arguments_exist) {
-        cli::cli_abort(
-          "{.var f_partition[[{part}]]} must have two arguments
-          {ifelse(add_arguments_exist, 'and the ... argument', '')}",
-          call = NULL
-        )
-      }
-      if (!identical(names(formals(f_partition[[part]]))[2], "theta_rest")) {
-        cli::cli_abort(
-          "{.var f_partition[[{part}]]} must have a second argument named
-          {.var theta_rest}",
-          call = NULL
-        )
-      }
+  ### prepare block objective function
+  block_objective <- function(block) {
+    function(theta_block, theta_rest) {
+      theta <- numeric(npar)
+      theta[block] <- theta_block
+      theta[-block] <- theta_rest
+      out <- objective$evaluate(theta)
+
+      # if ("gradient" %in% names(attributes(out))) {
+      #   gradient <- attr(out, "gradient")
+      #   if (is.numeric(gradient) && is.vector(gradient)) {
+      #     attr(out, "gradient") <- gradient[p_ind]
+      #   }
+      # }
+      # if ("hessian" %in% names(attributes(out))) {
+      #   hessian <- attr(out, "hessian")
+      #   if (is.numeric(hessian) && is.matrix(hessian)) {
+      #     attr(out, "hessian") <- hessian[p_ind, p_ind, drop = FALSE]
+      #   }
+      # }
+      out
     }
   }
 
-  ### alternating optimization
-  exit_flag <- FALSE
-  est <- p
-  f_initial <- try(f(est, ...), silent = TRUE)
-  if (!checkmate::test_number(f_initial, finite = TRUE)) {
-    cli::cli_abort(
-      "{.var f(p)} is not a single, finite number",
-      call = NULL
+  ### prepare output
+  f_initial <- objective$evaluate(initial)
+  sequence <- structure(
+    data.frame(
+      t(c(0L, f_initial, 0, initial, rep(NA, npar)))
+    ),
+    names = c(
+      "iteration", "value", "seconds", paste0("p", seq_len(npar)),
+      paste0("b", seq_len(npar))
     )
-  }
-  seq <- structure(
-    data.frame(t(c(0, NA_integer_, f_initial, 0, est))),
-    names = c("iteration", "partition", "value", "seconds", paste0("p", 1:npar))
   )
-  iteration <- 1
+  parameter_columns <- which(startsWith(colnames(sequence), "p"))
+
+  ### start alternating optimization
+  if (verbose) {
+    cat("start alternating optimization \n")
+  }
+  est <- initial
+  exit_flag <- FALSE
+  iteration <- 1L
   while (iteration <= iterations) {
+
     if (exit_flag) {
       break
     }
     if (verbose) {
       cat("iteration", iteration, "of", iterations, "\n")
     }
-    for (part in seq_along(partition)) {
+    current_parameter <- unlist(sequence[nrow(sequence), parameter_columns])
+    current_partition <- partition$get()
+
+    ### optimize over each parameter block in current partition
+    for (block in current_partition) {
       if (verbose) {
-        cat("- partition", part, "of", length(partition), ": ")
+        cat("- block {", paste(block, sep = ","), "} : ")
       }
-      p_ind <- partition[[part]]
-      f_part_out <- base_optimizer$minimize(
-        objective = f_partition[[part]], initial = est[p_ind],
-        theta_rest = est[-p_ind], ...
+      block_objective_out <- optimizer$minimize(
+        objective = block_objective(block),
+        initial = est[block],
+        theta_rest = est[-block]
       )
-      if (isTRUE(f_part_out$error)) {
-        cli::cli_abort(
-          f_part_out$error_message,
-          call = NULL
-        )
-      }
-      est[p_ind] <- f_part_out[["parameter"]]
-      value <- f_part_out[["value"]]
+      # if (isTRUE(block_objective_out$error)) {
+      #   cli::cli_abort(block_objective_out$error_message, call = NULL)
+      # }
+
+      ### update output
+      est[block] <- block_objective_out[["parameter"]]
+      value <- block_objective_out[["value"]]
+      seconds <- block_objective_out[["seconds"]]
+      sequence[nrow(sequence) + 1, ] <-
+        c(iteration, value, seconds, est, seq_len(npar) %in% block)
       if (verbose) {
-        cat("f =", value, "\n")
-      }
-      seq <- rbind(seq, c(iteration, part, value, f_part_out[["seconds"]], est))
-      if (nrow(seq) > length(partition)) {
-        curr <- as.numeric(seq[nrow(seq) - length(partition), -(1:4)])
-        last <- as.numeric(seq[nrow(seq), -(1:4)])
-        dist <- sqrt(sum(curr - last)^2)
-        if (dist < tolerance) {
-          exit_flag <- TRUE
-          if (verbose) {
-            cat("tolerance reached : distance =", dist, "<", tolerance, "\n")
-          }
-          break
-        }
+        cat("value =", value, "\n")
       }
     }
-    iteration <- iteration + 1
+
+    ### check for break
+    latest_parameter <- unlist(sequence[nrow(sequence), parameter_columns])
+    dist <- sqrt(sum(current_parameter - latest_parameter)^2)
+    if (dist < tolerance) {
+      exit_flag <- TRUE
+      if (verbose) {
+        cat("tolerance reached : distance =", dist, "<", tolerance, "\n")
+      }
+      break
+    } else {
+      iteration <- iteration + 1
+    }
   }
+
+  ### joint end
   if (joint_end) {
     if (verbose) {
       cat("joint optimization in the end : ")
     }
-    f_joint_out <- base_optimizer$minimize(
-      objective = f, initial = est, ...
+    joint_objective_out <- optimizer$minimize(
+      objective = objective,
+      initial = est
     )
-    est <- f_joint_out[["parameter"]]
-    value <- f_joint_out[["value"]]
-    seq <- rbind(
-      seq, c(NA_integer_, NA_integer_, value, f_joint_out[["seconds"]], est)
-    )
+    est <- joint_objective_out[["parameter"]]
+    value <- joint_objective_out[["value"]]
+    seconds <- joint_objective_out[["seconds"]]
+    sequence[nrow(sequence) + 1, ] <-
+      c(NA_integer_, value, seconds, est, rep(1, npar))
     if (verbose) {
-      cat("f =", value, "\n")
+      cat("value =", value, "\n")
     }
   }
 
   ### return results
+  if (verbose) {
+    cat("finished alternating optimization \n")
+  }
   list(
     "value" = value,
     "estimate" = est,
-    "sequence" = seq,
-    "seconds" = sum(seq$seconds)
+    "sequence" = sequence,
+    "seconds" = sum(sequence$seconds)
   )
 }
+
+#' @rdname ao
+#' @export
+
+ao_fixed <- function(
+    f,
+    initial,
+    ...,
+    fixed_partition = as.list(1:length(initial)),
+    minimize = TRUE,
+    iterations = 10,
+    tolerance = 1e-6,
+    joint_end = FALSE,
+    verbose = FALSE
+) {
+  objective <- Objective$new(f = f, npar = length(initial), ...)
+  partition <- Partition$new(npar = length(initial), type = "fixed")$
+    define_fixed_partition(fixed_partition = fixed_partition)
+  optimizer <- Optimizer$new("stats::nlm")
+  ao(
+    objective = objective,
+    partition = partition,
+    optimizer = optimizer,
+    initial = initial,
+    minimize = minimize,
+    iterations = iterations,
+    tolerance = tolerance,
+    joint_end = joint_end,
+    verbose = verbose
+  )
+}
+
+#' @rdname ao
+#' @export
+
+ao_random <- function(
+    f,
+    initial,
+    ...,
+    new_block_probability = 0.3,
+    minimum_block_number = 1,
+    minimize = TRUE,
+    iterations = 10,
+    tolerance = 1e-6,
+    joint_end = FALSE,
+    verbose = FALSE
+) {
+  objective <- Objective$new(objective = f, npar = length(initial), ...)
+  partition <- Partition$new(npar = length(initial), type = "random")
+  partition$new_block_probability <- new_block_probability
+  partition$minimum_block_number <- minimum_block_number
+  optimizer <- Optimizer$new("stats::nlm")
+  ao(
+    objective = objective,
+    partition = partition,
+    optimizer = optimizer,
+    initial = initial,
+    minimize = minimize,
+    iterations = iterations,
+    tolerance = tolerance,
+    joint_end = joint_end,
+    verbose = verbose
+  )
+}
+

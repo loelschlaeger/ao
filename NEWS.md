@@ -1,3 +1,7 @@
+# ao 1.0.0
+
+*
+
 # ao 0.3.3
 
 * Now using `{cli}` to improve error messages.
