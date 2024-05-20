@@ -217,10 +217,10 @@ ao <- function(
   }
 
   ### prepare output
-  f_initial <- objective$evaluate(initial)
+  value <- objective$evaluate(initial)
   sequence <- structure(
     data.frame(
-      t(c(0L, f_initial, 0, initial, rep(NA, npar)))
+      t(c(0L, value, 0, initial, rep(NA, npar)))
     ),
     names = c(
       "iteration", "value", "seconds", paste0("p", seq_len(npar)),
@@ -252,9 +252,10 @@ ao <- function(
       if (verbose) {
         cat("- block {", paste(block, sep = ","), "} : ")
       }
-      block_objective_out <- optimizer$minimize(
+      block_objective_out <- optimizer$optimize(
         objective = block_objective(block),
         initial = est[block],
+        direction = ifelse(minimize, "min", "max"),
         theta_rest = est[-block]
       )
       # if (isTRUE(block_objective_out$error)) {
@@ -262,9 +263,12 @@ ao <- function(
       # }
 
       ### update output
-      est[block] <- block_objective_out[["parameter"]]
-      value <- block_objective_out[["value"]]
       seconds <- block_objective_out[["seconds"]]
+      value_new <- block_objective_out[["value"]]
+      if (checkmate::test_number(value_new, finite = TRUE)) {
+        value <- value_new
+        est[block] <- block_objective_out[["parameter"]]
+      }
       sequence[nrow(sequence) + 1, ] <-
         c(iteration, value, seconds, est, seq_len(npar) %in% block)
       if (verbose) {
@@ -291,9 +295,10 @@ ao <- function(
     if (verbose) {
       cat("joint optimization in the end : ")
     }
-    joint_objective_out <- optimizer$minimize(
+    joint_objective_out <- optimizer$optimize(
       objective = objective,
-      initial = est
+      initial = est,
+      direction = ifelse(minimize, "min", "max")
     )
     est <- joint_objective_out[["parameter"]]
     value <- joint_objective_out[["value"]]
@@ -313,7 +318,7 @@ ao <- function(
     "value" = value,
     "estimate" = est,
     "sequence" = sequence,
-    "seconds" = sum(sequence$seconds)
+    "seconds" = sum(sequence$seconds, na.rm = TRUE)
   )
 }
 
@@ -363,7 +368,7 @@ ao_random <- function(
     joint_end = FALSE,
     verbose = FALSE
 ) {
-  objective <- Objective$new(objective = f, npar = length(initial), ...)
+  objective <- Objective$new(f = f, npar = length(initial), ...)
   partition <- Partition$new(npar = length(initial), type = "random")
   partition$new_block_probability <- new_block_probability
   partition$minimum_block_number <- minimum_block_number

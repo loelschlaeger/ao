@@ -231,7 +231,7 @@ Partition <- R6::R6Class("Partition",
       p = self$new_block_probability,
       min = self$minimum_block_number
     ) {
-      if (min == length(x)) {
+      if (min == x) {
         return(as.list(seq_len(x)))
       }
       x <- sample(x, replace = F)
