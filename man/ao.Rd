@@ -8,7 +8,7 @@
 \usage{
 ao(
   objective,
-  partition = Partition$new(npar = sum(objective$npar), type = "sequential"),
+  partition = Partition$new(npar = sum(objective$npar), type = "random"),
   optimizer = Optimizer$new("stats::optim"),
   initial = stats::rnorm(sum(objective$npar)),
   minimize = TRUE,

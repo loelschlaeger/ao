@@ -106,283 +106,59 @@
 
 ao <- function(
   objective,
-  partition = Partition$new(npar = sum(objective$npar), type = "sequential"),
+  partition = Partition$new(npar = sum(objective$npar), type = "random"),
   optimizer = Optimizer$new("stats::optim"),
   initial = stats::rnorm(sum(objective$npar)),
-  minimize = TRUE,
-  iterations = 10,
-  tolerance = 1e-6,
-  joint_end = FALSE,
-  verbose = TRUE
+  procedure = Procedure$new(verbose = TRUE, minimize = TRUE)
 ) {
 
-  ### input checks
-  if (!checkmate::test_class(objective, "Objective")) {
-    cli::cli_abort(
-      "{.var objective} must be an
-      {.help [{.cls Objective}](optimizeR::Objective)} object",
-      call = NULL
-    )
-  }
-  if (!checkmate::test_class(partition, "Partition")) {
-    cli::cli_abort(
-      "{.var partition} must be an
-      {.help [{.cls Partition}](ao::Partition)} object",
-      call = NULL
-    )
-  }
-  if (sum(objective$npar) != partition$npar) {
-    cli::cli_abort(
-      "parameter number implied by {.var objective}
-      ({.num {sum(objective$npar)}}) does not match parameter number
-      implied by {.var partition} ({.num {partition$npar}})",
-      call = NULL
-    )
-  }
-  npar <- partition$npar
-  if (!checkmate::test_class(optimizer, "Optimizer")) {
-    cli::cli_abort(
-      "{.var optimizer} must be an
-      {.help [{.cls Optimizer}](optimizeR::Optimizer)} object",
-      call = NULL
-    )
-  }
-  if (!oeli::test_numeric_vector(initial, len = npar)) {
-    cli::cli_abort(
-      "{.var initial} must be a vector of initial values of length
-      {.num {npar}}",
-      call = NULL
-    )
-  }
-  if (!checkmate::test_flag(minimize)) {
-    cli::cli_abort(
-      "{.var minimize} must be TRUE or FALSE",
-      call = NULL
-    )
-  }
-  if (!checkmate::test_number(iterations, lower = 1, finite = FALSE)) {
-    cli::cli_abort(
-      "{.var iterations} must be an integer greater or equal {.num 1}",
-      call = NULL
-    )
-  } else if (is.finite(iterations)) {
-    iterations <- as.integer(iterations)
-  }
-  if (!checkmate::test_number(tolerance, lower = 0, finite = TRUE)) {
-    cli::cli_abort(
-      "{.var tolerance} must be a single, non-negative number",
-      call = NULL
-    )
-  } else if (tolerance == 0 && identical(iterations, Inf)) {
-    cli::cli_abort(
-      "{.var tolerance} cannot be {.num 0} if {.var iterations} is {.num Inf}",
-      call = NULL
-    )
-  }
-  if (!checkmate::test_flag(joint_end)) {
-    cli::cli_abort(
-      "{.var joint_end} must be TRUE or FALSE",
-      call = NULL
-    )
-  }
-  if (!checkmate::test_flag(verbose)) {
-    cli::cli_abort(
-      "{.var verbose} must be TRUE or FALSE",
-      call = NULL
-    )
-  }
-
-  ### prepare block objective function
-  block_objective <- function(block) {
-    function(theta_block, theta_rest) {
-      theta <- numeric(npar)
-      theta[block] <- theta_block
-      theta[-block] <- theta_rest
-      out <- objective$evaluate(theta)
-
-      # if ("gradient" %in% names(attributes(out))) {
-      #   gradient <- attr(out, "gradient")
-      #   if (is.numeric(gradient) && is.vector(gradient)) {
-      #     attr(out, "gradient") <- gradient[p_ind]
-      #   }
-      # }
-      # if ("hessian" %in% names(attributes(out))) {
-      #   hessian <- attr(out, "hessian")
-      #   if (is.numeric(hessian) && is.matrix(hessian)) {
-      #     attr(out, "hessian") <- hessian[p_ind, p_ind, drop = FALSE]
-      #   }
-      # }
-      out
-    }
-  }
-
-  ### prepare output
-  value <- objective$evaluate(initial)
-  sequence <- structure(
-    data.frame(
-      t(c(0L, value, 0, initial, rep(NA, npar)))
-    ),
-    names = c(
-      "iteration", "value", "seconds", paste0("p", seq_len(npar)),
-      paste0("b", seq_len(npar))
-    )
+  ### input checks and preliminary preparations
+  ao_input_checks(
+    objective = objective, partition = partition, optimizer = optimizer,
+    initial = initial, procedure = procedure
   )
-  parameter_columns <- which(startsWith(colnames(sequence), "p"))
+  npar <- partition$npar
+  block_objective <- ao_build_block_objective(
 
-  ### start alternating optimization
-  if (verbose) {
-    cat("start alternating optimization \n")
-  }
-  est <- initial
-  exit_flag <- FALSE
-  iteration <- 1L
-  while (iteration <= iterations) {
+  )
+  procedure$initialize_details(
+    initial = initial, value = objective$evaluate(initial), npar = npar
+  )
 
-    if (exit_flag) {
-      break
-    }
-    if (verbose) {
-      cat("iteration", iteration, "of", iterations, "\n")
-    }
-    current_parameter <- unlist(sequence[nrow(sequence), parameter_columns])
-    current_partition <- partition$get()
+  ### alternating optimization
+  procedure$info("start alternating optimization")
+  while (TRUE) {
 
-    ### optimize over each parameter block in current partition
-    for (block in current_partition) {
-      if (verbose) {
-        cat("- block {", paste(block, sep = ","), "} : ")
-      }
+    ### check stopping criteria
+    if (procedure$stopping) break
+    procedure$next_iteration()
+
+    ### generate partition
+    next_partition <- partition$get()
+
+    ### optimize over each parameter block in partition
+    for (block in partition$get()) {
+
+      procedure$next_block()
+
+      ### optimize block objective function
       block_objective_out <- optimizer$optimize(
         objective = block_objective(block),
-        initial = est[block],
-        direction = ifelse(minimize, "min", "max"),
-        theta_rest = est[-block]
+        initial = procedure$parameter[block],
+        direction = ifelse(procedure$minimize, "min", "max"),
+        theta_rest = procedure$parameter[-block]
       )
-      # if (isTRUE(block_objective_out$error)) {
-      #   cli::cli_abort(block_objective_out$error_message, call = NULL)
-      # }
 
-      ### update output
-      seconds <- block_objective_out[["seconds"]]
-      value_new <- block_objective_out[["value"]]
-      if (checkmate::test_number(value_new, finite = TRUE)) {
-        value <- value_new
-        est[block] <- block_objective_out[["parameter"]]
-      }
-      sequence[nrow(sequence) + 1, ] <-
-        c(iteration, value, seconds, est, seq_len(npar) %in% block)
-      if (verbose) {
-        cat("value =", value, "\n")
-      }
-    }
-
-    ### check for break
-    latest_parameter <- unlist(sequence[nrow(sequence), parameter_columns])
-    dist <- sqrt(sum(current_parameter - latest_parameter)^2)
-    if (dist < tolerance) {
-      exit_flag <- TRUE
-      if (verbose) {
-        cat("tolerance reached : distance =", dist, "<", tolerance, "\n")
-      }
-      break
-    } else {
-      iteration <- iteration + 1
-    }
-  }
-
-  ### joint end
-  if (joint_end) {
-    if (verbose) {
-      cat("joint optimization in the end : ")
-    }
-    joint_objective_out <- optimizer$optimize(
-      objective = objective,
-      initial = est,
-      direction = ifelse(minimize, "min", "max")
-    )
-    est <- joint_objective_out[["parameter"]]
-    value <- joint_objective_out[["value"]]
-    seconds <- joint_objective_out[["seconds"]]
-    sequence[nrow(sequence) + 1, ] <-
-      c(NA_integer_, value, seconds, est, rep(1, npar))
-    if (verbose) {
-      cat("value =", value, "\n")
+      ### check acceptance and update
+      procedure$update_details(
+        value = block_objective_out[["value"]],
+        parameter_block = block_objective_out[["parameter"]],
+        seconds = block_objective_out[["seconds"]]
+      )
     }
   }
 
   ### return results
-  if (verbose) {
-    cat("finished alternating optimization \n")
-  }
-  list(
-    "value" = value,
-    "estimate" = est,
-    "sequence" = sequence,
-    "seconds" = sum(sequence$seconds, na.rm = TRUE)
-  )
-}
-
-#' @rdname ao
-#' @export
-
-ao_fixed <- function(
-    f,
-    initial,
-    ...,
-    fixed_partition = as.list(1:length(initial)),
-    minimize = TRUE,
-    iterations = 10,
-    tolerance = 1e-6,
-    joint_end = FALSE,
-    verbose = FALSE
-) {
-  objective <- Objective$new(f = f, npar = length(initial), ...)
-  partition <- Partition$new(npar = length(initial), type = "fixed")$
-    define_fixed_partition(fixed_partition = fixed_partition)
-  optimizer <- Optimizer$new("stats::nlm")
-  ao(
-    objective = objective,
-    partition = partition,
-    optimizer = optimizer,
-    initial = initial,
-    minimize = minimize,
-    iterations = iterations,
-    tolerance = tolerance,
-    joint_end = joint_end,
-    verbose = verbose
-  )
-}
-
-#' @rdname ao
-#' @export
-
-ao_random <- function(
-    f,
-    initial,
-    ...,
-    new_block_probability = 0.3,
-    minimum_block_number = 1,
-    minimize = TRUE,
-    iterations = 10,
-    tolerance = 1e-6,
-    joint_end = FALSE,
-    verbose = FALSE
-) {
-  objective <- Objective$new(f = f, npar = length(initial), ...)
-  partition <- Partition$new(npar = length(initial), type = "random")
-  partition$new_block_probability <- new_block_probability
-  partition$minimum_block_number <- minimum_block_number
-  optimizer <- Optimizer$new("stats::nlm")
-  ao(
-    objective = objective,
-    partition = partition,
-    optimizer = optimizer,
-    initial = initial,
-    minimize = minimize,
-    iterations = iterations,
-    tolerance = tolerance,
-    joint_end = joint_end,
-    verbose = verbose
-  )
+  procedure$output
 }
 
