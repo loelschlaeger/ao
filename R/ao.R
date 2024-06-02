@@ -94,33 +94,29 @@
 #'   objective = objective,
 #'   partition = partition,
 #'   optimizer = optimizer,
-#'   initial = c(0, 0),     # initial parameter values
-#'   minimize = TRUE,       # minimization
-#'   iterations = Inf,      # no restriction on the number of iterations
-#'   tolerance = 1e-6,      # stop if change in parameters is within tolerance
-#'   joint_end = TRUE,      # finally perform joint optimization
-#'   verbose = TRUE         # print progress
+#'   initial = c(0, 0), # initial parameter values
+#'   minimize = TRUE, # minimization
+#'   iterations = Inf, # no restriction on the number of iterations
+#'   tolerance = 1e-6, # stop if change in parameters is within tolerance
+#'   joint_end = TRUE, # finally perform joint optimization
+#'   verbose = TRUE # print progress
 #' )
 #'
 #' @export
 
 ao <- function(
-  objective,
-  partition = Partition$new(npar = sum(objective$npar), type = "random"),
-  optimizer = Optimizer$new("stats::optim"),
-  initial = stats::rnorm(sum(objective$npar)),
-  procedure = Procedure$new(verbose = TRUE, minimize = TRUE)
-) {
-
+    objective,
+    partition = Partition$new(npar = sum(objective$npar), type = "random"),
+    optimizer = Optimizer$new("stats::optim"),
+    initial = stats::rnorm(sum(objective$npar)),
+    procedure = Procedure$new(verbose = TRUE, minimize = TRUE)) {
   ### input checks and preliminary preparations
   ao_input_checks(
     objective = objective, partition = partition, optimizer = optimizer,
     initial = initial, procedure = procedure
   )
   npar <- partition$npar
-  block_objective <- ao_build_block_objective(
-
-  )
+  block_objective <- ao_build_block_objective()
   procedure$initialize_details(
     initial = initial, value = objective$evaluate(initial), npar = npar
   )
@@ -128,7 +124,6 @@ ao <- function(
   ### alternating optimization
   procedure$info("start alternating optimization")
   while (TRUE) {
-
     ### check stopping criteria
     if (procedure$stopping) break
     procedure$next_iteration()
@@ -138,7 +133,6 @@ ao <- function(
 
     ### optimize over each parameter block in partition
     for (block in partition$get()) {
-
       procedure$next_block()
 
       ### optimize block objective function
@@ -161,4 +155,3 @@ ao <- function(
   ### return results
   procedure$output
 }
-

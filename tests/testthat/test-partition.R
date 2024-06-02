@@ -12,5 +12,3 @@ test_that("Partition object can be created", {
   expect_equal(partition$get("sequential"), as.list(1:npar))
   expect_equal(partition$get("none"), list(1:npar))
 })
-
-

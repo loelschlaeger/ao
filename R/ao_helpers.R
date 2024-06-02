@@ -1,6 +1,5 @@
 ao_input_checks <- function(
-    objective, partition, optimizer, initial, procedure
-  ) {
+    objective, partition, optimizer, initial, procedure) {
   if (!checkmate::test_class(objective, "Objective")) {
     cli::cli_abort(
       "{.var objective} must be an
@@ -40,9 +39,7 @@ ao_input_checks <- function(
   invisible(TRUE)
 }
 
-ao_build_block_objective <- function(
-
-  ) {
+ao_build_block_objective <- function() {
   function(block) {
     function(theta_block, theta_rest) {
       theta <- numeric(npar)
@@ -67,4 +64,3 @@ ao_build_block_objective <- function(
     }
   }
 }
-

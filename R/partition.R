@@ -42,7 +42,6 @@ Partition <- R6::R6Class("Partition",
     #' @description
     #' Creates a new object of this [R6][R6::R6Class] class.
     initialize = function(npar, type) {
-
       ### missing arguments
       if (missing(npar)) {
         cli::cli_abort(
@@ -81,10 +80,8 @@ Partition <- R6::R6Class("Partition",
     #' @description
     #' Return partition.
     get = function(type = self$type) {
-
       ### return partition depending on 'type'
-      switch(
-        type,
+      switch(type,
         "random"     = private$.random_partition(),
         "fixed"      = private$.fixed_partition(),
         "sequential" = private$.sequential_partition(),
@@ -95,7 +92,6 @@ Partition <- R6::R6Class("Partition",
     #' @description
     #' TODO
     define_fixed_partition = function(fixed_partition = list()) {
-
       ### 'fixed_partition' must be a list, but can be empty
       if (!checkmate::test_list(fixed_partition)) {
         cli::cli_abort(
@@ -142,9 +138,7 @@ Partition <- R6::R6Class("Partition",
     remove_attribute = function(attribute_name) {
       # TODO
     }
-
   ),
-
   active = list(
 
     #' @field npar (`integer(1)`)\cr
@@ -187,7 +181,8 @@ Partition <- R6::R6Class("Partition",
         private$.new_block_probability
       } else {
         checkmate::assert_number(
-          value, lower = 0, upper = 1, .var.name = "new_block_probability"
+          value,
+          lower = 0, upper = 1, .var.name = "new_block_probability"
         )
         private$.new_block_probability <- value
       }
@@ -201,17 +196,15 @@ Partition <- R6::R6Class("Partition",
         private$.minimum_block_number
       } else {
         checkmate::assert_int(
-          value, lower = 1, upper = self$npar,
+          value,
+          lower = 1, upper = self$npar,
           .var.name = "minimum_block_number"
         )
         private$.minimum_block_number <- value
       }
     }
-
   ),
-
   private = list(
-
     .npar = integer(),
     .type = character(),
     .fixed_partition_definition = list(),
@@ -226,11 +219,9 @@ Partition <- R6::R6Class("Partition",
     # @param min (`integer(1)`)\cr
     # The minimum number of blocks
     # @author Siddhartha Chib
-    .random_partition = function(
-      x = self$npar,
-      p = self$new_block_probability,
-      min = self$minimum_block_number
-    ) {
+    .random_partition = function(x = self$npar,
+                                 p = self$new_block_probability,
+                                 min = self$minimum_block_number) {
       if (min == x) {
         return(as.list(seq_len(x)))
       }
@@ -281,4 +272,3 @@ Partition <- R6::R6Class("Partition",
     }
   )
 )
-

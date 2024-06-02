@@ -60,8 +60,8 @@ objective <- Objective$new(f = himmelblau, npar = 2)
 partition <- Partition$new(npar = 2, type = "fixed")$
   define_fixed_partition(fixed_partition = list(1, 2))
 optimizer <- Optimizer$new(
-    which = "stats::optim", lower = -5, upper = 5, method = "L-BFGS-B"
-  )
+  which = "stats::optim", lower = -5, upper = 5, method = "L-BFGS-B"
+)
 
 ao(
   objective = objective, partition = partition, optimizer = optimizer, initial = c(0, 0)

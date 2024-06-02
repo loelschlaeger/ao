@@ -26,29 +26,21 @@ Procedure <- R6::R6Class("Procedure",
     print = function() {
 
     },
-
     info = function(message, verbose = self$verbose) {
 
     },
-
     next_iteration = function(verbose = self$verbose) {
-
       self$info(
         paste("iteration", self$iteration, "of", self$iterations),
         verbose = verbose
       )
-
     },
-
     next_block = function(block, verbose = self$verbose) {
-
       self$info(
         paste("- block {", paste(block, sep = ","), "} : "),
         verbose = verbose
       )
-
     },
-
     initialize_details = function(initial, value_at_initial, npar) {
       structure(
         data.frame(
@@ -60,11 +52,7 @@ Procedure <- R6::R6Class("Procedure",
         )
       )
     },
-
-    update_details = function(
-      value, parameter, block
-    ) {
-
+    update_details = function(value, parameter, block) {
       seconds <- block_objective_out[["seconds"]]
       value_new <- block_objective_out[["value"]]
       if (checkmate::test_number(value_new, finite = TRUE)) {
@@ -76,111 +64,93 @@ Procedure <- R6::R6Class("Procedure",
       if (verbose) {
         cat("value =", value, "\n")
       }
-
-
     }
-
   ),
-
   active = list(
 
-     #' @field verbose (`logical(1)`)\cr
-     #' Whether to print tracing details during the alternating optimization
-     #' process.
-     verbose = function(value) {
-       if (missing(value)) {
-         private$.verbose
-       } else {
-         if (!checkmate::test_flag(value)) {
-           cli::cli_abort(
-             "{.var verbose} must be TRUE or FALSE",
-             call = NULL
-           )
-         }
-         private$.verbose <- value
-       }
-     },
+    #' @field verbose (`logical(1)`)\cr
+    #' Whether to print tracing details during the alternating optimization
+    #' process.
+    verbose = function(value) {
+      if (missing(value)) {
+        private$.verbose
+      } else {
+        if (!checkmate::test_flag(value)) {
+          cli::cli_abort(
+            "{.var verbose} must be TRUE or FALSE",
+            call = NULL
+          )
+        }
+        private$.verbose <- value
+      }
+    },
 
-     #' @field minimize (`logical(1)`)\cr
-     #' Whether to minimize during the alternating optimization process.
-     #' Alternatively, maximization is performed.
-     minimize = function(value) {
-       if (missing(value)) {
-         private$.minimize
-       } else {
-         if (!checkmate::test_flag(value)) {
-           cli::cli_abort(
-             "{.var minimize} must be TRUE or FALSE",
-             call = NULL
-           )
-         }
-         private$.minimize <- value
-       }
-     },
+    #' @field minimize (`logical(1)`)\cr
+    #' Whether to minimize during the alternating optimization process.
+    #' Alternatively, maximization is performed.
+    minimize = function(value) {
+      if (missing(value)) {
+        private$.minimize
+      } else {
+        if (!checkmate::test_flag(value)) {
+          cli::cli_abort(
+            "{.var minimize} must be TRUE or FALSE",
+            call = NULL
+          )
+        }
+        private$.minimize <- value
+      }
+    },
 
-     #' @field iterations (`integer(1)`)\cr
-     #' The maximum number of iterations through the parameter partition before
-     #' the alternating optimization process is terminated.
-     iterations = function(value) {
-       if (missing(value)) {
-         private$.iterations
-       } else {
-         if (!checkmate::test_number(value, lower = 1, finite = FALSE)) {
-           cli::cli_abort(
-             "{.var iterations} must be an integer greater or equal {.num 1}",
-             call = NULL
-           )
-         } else if (is.finite(value)) {
-           value <- as.integer(value)
-         }
-         private$.iterations <- value
-       }
-     },
+    #' @field iterations (`integer(1)`)\cr
+    #' The maximum number of iterations through the parameter partition before
+    #' the alternating optimization process is terminated.
+    iterations = function(value) {
+      if (missing(value)) {
+        private$.iterations
+      } else {
+        if (!checkmate::test_number(value, lower = 1, finite = FALSE)) {
+          cli::cli_abort(
+            "{.var iterations} must be an integer greater or equal {.num 1}",
+            call = NULL
+          )
+        } else if (is.finite(value)) {
+          value <- as.integer(value)
+        }
+        private$.iterations <- value
+      }
+    },
+    stopping = function(value) {
+      latest_parameter <- unlist(sequence[nrow(sequence), parameter_columns])
+      dist <- sqrt(sum(current_parameter - latest_parameter)^2)
+      if (dist < tolerance) {
+        exit_flag <- TRUE
+        if (verbose) {
+          cat("tolerance reached : distance =", dist, "<", tolerance, "\n")
+        }
+        break
+      } else {
+        iteration <- iteration + 1
+      }
+    },
+    details = function(value) {
 
-     stopping = function(value) {
-
-
-       latest_parameter <- unlist(sequence[nrow(sequence), parameter_columns])
-       dist <- sqrt(sum(current_parameter - latest_parameter)^2)
-       if (dist < tolerance) {
-         exit_flag <- TRUE
-         if (verbose) {
-           cat("tolerance reached : distance =", dist, "<", tolerance, "\n")
-         }
-         break
-       } else {
-         iteration <- iteration + 1
-       }
-
-     },
-
-     details = function(value) {
-
-     },
-
-     output = function(value) {
-
-       self$info("finished alternating optimization")
-       list(
-         "value" = self$value,
-         "estimate" = self$parameter,
-         "details" = self$details,
-         "seconds" = sum(self$details$seconds, na.rm = TRUE)
-       )
-
-     }
-
-
+    },
+    output = function(value) {
+      self$info("finished alternating optimization")
+      list(
+        "value" = self$value,
+        "estimate" = self$parameter,
+        "details" = self$details,
+        "seconds" = sum(self$details$seconds, na.rm = TRUE)
+      )
+    }
   ),
-
   private = list(
-
     .verbose = logical(),
     .minimize = logical(),
     .iterations = integer(),
-
   )
-
 )
 
 
@@ -202,7 +172,3 @@ if (!checkmate::test_number(tolerance, lower = 0, finite = TRUE)) {
     call = NULL
   )
 }
-
-
-
-
