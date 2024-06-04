@@ -26,21 +26,25 @@ Procedure <- R6::R6Class("Procedure",
     print = function() {
 
     },
+
     info = function(message, verbose = self$verbose) {
 
     },
+
     next_iteration = function(verbose = self$verbose) {
       self$info(
         paste("iteration", self$iteration, "of", self$iterations),
         verbose = verbose
       )
     },
+
     next_block = function(block, verbose = self$verbose) {
       self$info(
         paste("- block {", paste(block, sep = ","), "} : "),
         verbose = verbose
       )
     },
+
     initialize_details = function(initial, value_at_initial, npar) {
       structure(
         data.frame(
@@ -52,6 +56,7 @@ Procedure <- R6::R6Class("Procedure",
         )
       )
     },
+
     update_details = function(value, parameter, block) {
       seconds <- block_objective_out[["seconds"]]
       value_new <- block_objective_out[["value"]]
@@ -66,6 +71,7 @@ Procedure <- R6::R6Class("Procedure",
       }
     }
   ),
+
   active = list(
 
     #' @field verbose (`logical(1)`)\cr
@@ -120,6 +126,7 @@ Procedure <- R6::R6Class("Procedure",
         private$.iterations <- value
       }
     },
+
     stopping = function(value) {
       latest_parameter <- unlist(sequence[nrow(sequence), parameter_columns])
       dist <- sqrt(sum(current_parameter - latest_parameter)^2)
@@ -133,9 +140,11 @@ Procedure <- R6::R6Class("Procedure",
         iteration <- iteration + 1
       }
     },
+
     details = function(value) {
 
     },
+
     output = function(value) {
       self$info("finished alternating optimization")
       list(
@@ -146,10 +155,11 @@ Procedure <- R6::R6Class("Procedure",
       )
     }
   ),
+
   private = list(
     .verbose = logical(),
     .minimize = logical(),
-    .iterations = integer(),
+    .iterations = integer()
   )
 )
 
