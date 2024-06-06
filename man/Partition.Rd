@@ -10,6 +10,10 @@ Partition of the target argument for alternating optimization.
 # TODO
 
 }
+\author{
+Siddhartha Chib
+Return fixed partition.
+}
 \section{Active bindings}{
 \if{html}{\out{<div class="r6-active-bindings">}}
 \describe{
@@ -28,6 +32,10 @@ result in smaller parameter blocks.}
 \item{\code{minimum_block_number}}{(\code{integer(1)})\cr
 Only relevant for \code{type = "random"}.
 The minimum number of blocks in random partitions.}
+
+\item{\code{block_attributes}}{(\code{list()})\cr
+TODO
+Generated randomized blocks.}
 }
 \if{html}{\out{</div>}}
 }
@@ -39,9 +47,7 @@ The minimum number of blocks in random partitions.}
 \item \href{#method-Partition-get}{\code{Partition$get()}}
 \item \href{#method-Partition-define_fixed_partition}{\code{Partition$define_fixed_partition()}}
 \item \href{#method-Partition-define_closed_form}{\code{Partition$define_closed_form()}}
-\item \href{#method-Partition-remove_closed_form}{\code{Partition$remove_closed_form()}}
-\item \href{#method-Partition-define_attribute}{\code{Partition$define_attribute()}}
-\item \href{#method-Partition-remove_attribute}{\code{Partition$remove_attribute()}}
+\item \href{#method-Partition-define_block_attribute}{\code{Partition$define_block_attribute()}}
 }
 }
 \if{html}{\out{<hr>}}
@@ -147,58 +153,25 @@ TODO}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Partition-remove_closed_form"></a>}}
-\if{latex}{\out{\hypertarget{method-Partition-remove_closed_form}{}}}
-\subsection{Method \code{remove_closed_form()}}{
-TODO
+\if{html}{\out{<a id="method-Partition-define_block_attribute"></a>}}
+\if{latex}{\out{\hypertarget{method-Partition-define_block_attribute}{}}}
+\subsection{Method \code{define_block_attribute()}}{
+Defines how attributes of the objective function are to be used during
+the alternating optimization procedure.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Partition$remove_closed_form(parameter_block)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Partition$define_block_attribute(attribute_name, attribute_definition)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{parameter_block}}{()\cr
-TODO}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Partition-define_attribute"></a>}}
-\if{latex}{\out{\hypertarget{method-Partition-define_attribute}{}}}
-\subsection{Method \code{define_attribute()}}{
-TODO
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Partition$define_attribute(attribute_name, attribute_definition)}\if{html}{\out{</div>}}
-}
+\item{\code{attribute_name}}{(\code{character(1)})\cr
+The name of an attribute of the objective output.}
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{attribute_name}}{()\cr
-TODO}
-
-\item{\code{attribute_definition}}{()\cr
-TODO}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Partition-remove_attribute"></a>}}
-\if{latex}{\out{\hypertarget{method-Partition-remove_attribute}{}}}
-\subsection{Method \code{remove_attribute()}}{
-TODO
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Partition$remove_attribute(attribute_name)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{attribute_name}}{()\cr
-TODO}
+\item{\code{attribute_definition}}{(\code{function})\cr
+The definition how the attribute is to be used. The \code{function} must
+have the two arguments \code{x} and \code{y}, where \code{x} is the
+attribute value and \code{y} the parameter indices in the current block.}
 }
 \if{html}{\out{</div>}}
 }

@@ -1,10 +1,13 @@
 #' Alternating Optimization
 #'
 #' @description
-#' Performing alternating optimization of the function \code{f}.
+#' Alternating optimization is an iterative procedure for optimizing a
+#' real-valued function jointly over all its parameters by alternating
+#' restricted optimization over parameter partitions.
 #'
-#' - `ao` is the most general function
-#' - `ao_fixed` is the special case of a fixed partition
+#' - `ao` is the most general API
+#' - `ao_fixed` is the special case of a parameter partition that remains fixed
+#'   during the alternating optimization procedure
 #' - `ao_random` is the special case of random partitions
 #'
 #' @param objective (`numeric()`)\cr
@@ -75,18 +78,58 @@
 #' * and \code{seconds}, the overall computation time in seconds.
 #'
 #' @examples
-#' # definition of the 'Himmelblau' objective function with two parameters
-#' objective <- Objective$new(
-#'   f = function(x) (x[1]^2 + x[2] - 11)^2 + (x[1] + x[2]^2 - 7)^2,
-#'   npar = 2
+#' # Example 1: Minimization of Himmelblau's function --------------------------
+#'
+#' # see https://en.wikipedia.org/wiki/Himmelblau%27s_function
+#' himmelblau <- function(x) (x[1]^2 + x[2] - 11)^2 + (x[1] + x[2]^2 - 7)^2
+#'
+#' ao_fixed(
+#'   f = himmelblau,
+#'   initial = rnorm(2),             # random initial value
+#'   fixed_partition = as.list(1:2), # minimize one parameter cond. on the other
+#'   iteration_limit = 10,           # stop after at most 10 iterations
+#'   tolerance_value = 1e-6,         # stop if objective value improvem. <= 1e-6
+#'   verbose = FALSE
 #' )
 #'
-#' # definition of the partition: one parameter conditional on the other
-#' partition <- Partition$new(npar = 2, type = "sequential")
+#' # Example 2: Maximization of 2-class Gaussian mixture log-likelihood --------
 #'
-#' # definition of the optimizer with parameter restriction: -5 <= x_1, x_2 <= 5
+#' # targets:
+#' # - class means mu (2, unrestricted)
+#' # - class standard deviations sd (2, must be non-negative)
+#' # - class proportion lambda (only 1 for identification, must be in [0, 1])
+#' normal_mixture_llk <- function(mu, sd, lambda, data) {
+#'   c1 <- lambda * dnorm(data, mu[1], sd[1])
+#'   c2 <- (1 - lambda) * dnorm(data, mu[2], sd[2]))
+#'   sum(log(c1 + c2))
+#' }
+#'
+#' # overview of the data set
+#' hist(datasets::faithful$eruptions, breaks = 20)
+#'
+#' # definition of the 'Objective' object
+#' objective <- Objective$new(
+#'   f = normal_mixture_llk,
+#'   target = c("mu", "sd", "lambda"),
+#'   npar = c(2, 2, 1),
+#'   data = datasets::faithful$eruptions
+#' )
+#'
+#' # definition of the 'Partition' object
+#' partition <- Partition$new(npar = 5, type = "random")
+#'
+#' # definition of the 'Optimizer' object with parameter restriction
 #' optimizer <- Optimizer$new(
-#'   which = "stats::optim", lower = -5, upper = 5, method = "L-BFGS-B"
+#'   which = "stats::optim",
+#'   lower = -5,
+#'   upper = 5,
+#'   method = "L-BFGS-B"
+#' )
+#'
+#' # definition of the 'Procedure' object
+#' procedure <- Procedure$new(
+#'   verbose = TRUE,
+#'   minimize = TRUE
 #' )
 #'
 #' # alternating optimization
@@ -94,12 +137,8 @@
 #'   objective = objective,
 #'   partition = partition,
 #'   optimizer = optimizer,
-#'   initial = c(0, 0), # initial parameter values
-#'   minimize = TRUE, # minimization
-#'   iterations = Inf, # no restriction on the number of iterations
-#'   tolerance = 1e-6, # stop if change in parameters is within tolerance
-#'   joint_end = TRUE, # finally perform joint optimization
-#'   verbose = TRUE # print progress
+#'   initial   = rnorm(5)
+#'   procedure = procedure
 #' )
 #'
 #' @export
@@ -108,15 +147,17 @@ ao <- function(
     objective,
     partition = Partition$new(npar = sum(objective$npar), type = "random"),
     optimizer = Optimizer$new("stats::optim"),
-    initial = stats::rnorm(sum(objective$npar)),
-    procedure = Procedure$new(verbose = TRUE, minimize = TRUE)) {
+    initial   = stats::rnorm(sum(objective$npar)),
+    procedure = Procedure$new(verbose = TRUE, minimize = TRUE)
+  ) {
+
   ### input checks and preliminary preparations
   ao_input_checks(
     objective = objective, partition = partition, optimizer = optimizer,
     initial = initial, procedure = procedure
   )
   npar <- partition$npar
-  block_objective <- ao_build_block_objective()
+  block_objective <- ao_build_block_objective(partition = partition)
   procedure$initialize_details(
     initial = initial, value = objective$evaluate(initial), npar = npar
   )
@@ -132,15 +173,16 @@ ao <- function(
     next_partition <- partition$get()
 
     ### optimize over each parameter block in partition
-    for (block in partition$get()) {
+    for (parameter_block in partition$get()) {
       procedure$next_block()
 
       ### optimize block objective function
       block_objective_out <- optimizer$optimize(
-        objective = block_objective(block),
-        initial = procedure$parameter[block],
+        objective = block_objective,
+        initial = procedure$parameter[parameter_block],
         direction = ifelse(procedure$minimize, "min", "max"),
-        theta_rest = procedure$parameter[-block]
+        theta_rest = procedure$parameter[-parameter_block],
+        parameter_block = parameter_block
       )
 
       ### check acceptance and update

@@ -24,12 +24,6 @@
 #' @param closed_form ()\cr
 #' TODO
 #'
-#' @param attribute_name ()\cr
-#' TODO
-#'
-#' @param attribute_definition ()\cr
-#' TODO
-#'
 #' @examples
 #' # TODO
 #'
@@ -122,22 +116,33 @@ Partition <- R6::R6Class("Partition",
     },
 
     #' @description
-    #' TODO
-    remove_closed_form = function(parameter_block) {
-      # TODO
-    },
-
-    #' @description
-    #' TODO
-    define_attribute = function(attribute_name, attribute_definition) {
-      # TODO
-    },
-
-    #' @description
-    #' TODO
-    remove_attribute = function(attribute_name) {
-      # TODO
+    #' Defines how attributes of the objective function are to be used during
+    #' the alternating optimization procedure.
+    #' @param attribute_name (`character(1)`)\cr
+    #' The name of an attribute of the objective output.
+    #' @param attribute_definition (`function`)\cr
+    #' The definition how the attribute is to be used. The \code{function} must
+    #' have the two arguments \code{x} and \code{y}, where \code{x} is the
+    #' attribute value and \code{y} the parameter indices in the current block.
+    define_block_attribute = function(attribute_name, attribute_definition) {
+      if (!checkmate::test_string(attribute_name)) {
+        cli::cli_abort(
+          "{.var attribute_name} must be a scalar character vector",
+          call = NULL
+        )
+      }
+      if (!checkmate::test_function(
+        attribute_definition, args = c("x", "y"), ordered = TRUE, nargs = 2
+      )) {
+        cli::cli_abort(
+          "{.var attribute_definition} must be a {.cls function} of the form
+          {.code function(x, y)}",
+          call = NULL
+        )
+      }
+      private$.block_attributes[[attribute_name]] <- attribute_definition
     }
+
   ),
   active = list(
 
@@ -202,7 +207,21 @@ Partition <- R6::R6Class("Partition",
         )
         private$.minimum_block_number <- value
       }
+    },
+
+    #' @field block_attributes (`list()`)\cr
+    #' TODO
+    block_attributes = function(value) {
+      if (missing(value)) {
+        private$.block_attributes
+      } else {
+        cli::cli_abort(
+          "{.var block_attributes} is read-only",
+          call = NULL
+        )
+      }
     }
+
   ),
   private = list(
     .npar = integer(),
@@ -210,15 +229,16 @@ Partition <- R6::R6Class("Partition",
     .fixed_partition_definition = list(),
     .new_block_probability = numeric(),
     .minimum_block_number = integer(),
+    .block_attributes = list(),
 
-    # Generated randomized blocks.
-    # @param x (`integer()`)\cr
-    # The parameter indices.
-    # @param p (`numeric(1)`)\cr
-    # The probability to generate a new block.
-    # @param min (`integer(1)`)\cr
-    # The minimum number of blocks
-    # @author Siddhartha Chib
+    #' Generated randomized blocks.
+    #' @param x (`integer()`)\cr
+    #' The parameter indices.
+    #' @param p (`numeric(1)`)\cr
+    #' The probability to generate a new block.
+    #' @param min (`integer(1)`)\cr
+    #' The minimum number of blocks
+    #' @author Siddhartha Chib
     .random_partition = function(x = self$npar,
                                  p = self$new_block_probability,
                                  min = self$minimum_block_number) {
@@ -248,7 +268,7 @@ Partition <- R6::R6Class("Partition",
       blocks
     },
 
-    # Return fixed partition.
+    #' Return fixed partition.
     .fixed_partition = function() {
       if (is.null(private$.fixed_partition_definition)) {
         cli::cli_abort(

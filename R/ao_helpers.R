@@ -1,5 +1,18 @@
+#' Input checks
+#'
+#' @description
+#' This helper function checks the inputs for the \code{\link{ao}} function.
+#'
+#' @inheritParams ao
+#'
+#' @return
+#' Either throws an error, or invisible \code{TRUE}.
+#'
+#' @keywords internal
+
 ao_input_checks <- function(
-    objective, partition, optimizer, initial, procedure) {
+    objective, partition, optimizer, initial, procedure
+  ) {
   if (!checkmate::test_class(objective, "Objective")) {
     cli::cli_abort(
       "{.var objective} must be an
@@ -9,14 +22,14 @@ ao_input_checks <- function(
   }
   if (!checkmate::test_class(partition, "Partition")) {
     cli::cli_abort(
-      "{.var partition} must be an
+      "{.var partition} must be a
       {.help [{.cls Partition}](ao::Partition)} object",
       call = NULL
     )
   }
   if (sum(objective$npar) != partition$npar) {
     cli::cli_abort(
-      "parameter number implied by {.var objective}
+      "parameter number `npar` implied by {.var objective}
       ({.num {sum(objective$npar)}}) does not match parameter number
       implied by {.var partition} ({.num {partition$npar}})",
       call = NULL
@@ -31,36 +44,47 @@ ao_input_checks <- function(
   }
   if (!oeli::test_numeric_vector(initial, len = partition$npar)) {
     cli::cli_abort(
-      "{.var initial} must be a vector of initial values of length
-      {.num {partition$npar}}",
+      "{.var initial} must be a {.cls numeric} vector of initial values of
+      length {.num {partition$npar}}",
+      call = NULL
+    )
+  }
+  if (!checkmate::test_class(procedure, "Procedure")) {
+    cli::cli_abort(
+      "{.var procedure} must be a
+      {.help [{.cls Procedure}](ao::Procedure)} object",
       call = NULL
     )
   }
   invisible(TRUE)
 }
 
-ao_build_block_objective <- function() {
-  function(block) {
-    function(theta_block, theta_rest) {
-      theta <- numeric(npar)
-      theta[block] <- theta_block
-      theta[-block] <- theta_rest
-      out <- objective$evaluate(theta)
+#' Block objective function
+#'
+#' @description
+#' This helper function builds the block objective function for the alternating
+#' optimization procedure.
+#'
+#' @inheritParams ao
+#'
+#' @return
+#' TODO
+#'
+#' @keywords internal
 
-      # TODO: attributes
-      # if ("gradient" %in% names(attributes(out))) {
-      #   gradient <- attr(out, "gradient")
-      #   if (is.numeric(gradient) && is.vector(gradient)) {
-      #     attr(out, "gradient") <- gradient[p_ind]
-      #   }
-      # }
-      # if ("hessian" %in% names(attributes(out))) {
-      #   hessian <- attr(out, "hessian")
-      #   if (is.numeric(hessian) && is.matrix(hessian)) {
-      #     attr(out, "hessian") <- hessian[p_ind, p_ind, drop = FALSE]
-      #   }
-      # }
-      out
+ao_build_block_objective <- function(partition) {
+  function(theta_block, theta_rest, parameter_block) {
+    theta <- numeric(partition$npar)
+    theta[parameter_block] <- theta_block
+    theta[-parameter_block] <- theta_rest
+    out <- objective$evaluate(theta)
+    value <- as.numeric(out)
+    for (attribute_name in names(partition$block_attributes)) {
+      attribute_function <- partition$block_attributes[[attribute_name]]
+      attr(value, attribute_name) <- attribute_function(
+        x = attr(out, attribute_name), y = parameter_block
+      )
     }
+    return(value)
   }
 }

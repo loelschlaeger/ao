@@ -160,15 +160,15 @@ Procedure <- R6::R6Class("Procedure",
 
 
 
-
-if (!checkmate::test_number(tolerance, lower = 0, finite = TRUE)) {
-  cli::cli_abort(
-    "{.var tolerance} must be a single, non-negative number",
-    call = NULL
-  )
-} else if (tolerance == 0 && identical(iterations, Inf)) {
-  cli::cli_abort(
-    "{.var tolerance} cannot be {.num 0} if {.var iterations} is {.num Inf}",
-    call = NULL
-  )
-}
+#
+# if (!checkmate::test_number(tolerance, lower = 0, finite = TRUE)) {
+#   cli::cli_abort(
+#     "{.var tolerance} must be a single, non-negative number",
+#     call = NULL
+#   )
+# } else if (tolerance == 0 && identical(iterations, Inf)) {
+#   cli::cli_abort(
+#     "{.var tolerance} cannot be {.num 0} if {.var iterations} is {.num Inf}",
+#     call = NULL
+#   )
+# }
