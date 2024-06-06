@@ -33,7 +33,8 @@ test_that("block objective function can be built", {
   expect_equal(
     block_objective(3, 2, 1),
     structure(
-      0, gradient = 0, hessian = structure(74, dim = c(1L, 1L)),
+      0,
+      gradient = 0, hessian = structure(74, dim = c(1L, 1L)),
       does_not_exist = 1
     )
   )

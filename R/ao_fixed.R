@@ -10,9 +10,7 @@ ao_fixed <- function(
     iterations = 10,
     tolerance = 1e-6,
     joint_end = FALSE,
-    verbose = FALSE
-  ) {
-
+    verbose = FALSE) {
   ###
   objective <- Objective$new(f = f, npar = length(initial), ...)
 

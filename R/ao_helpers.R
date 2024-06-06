@@ -11,8 +11,7 @@
 #' @keywords internal
 
 ao_input_checks <- function(
-    objective, partition, optimizer, initial, procedure
-  ) {
+    objective, partition, optimizer, initial, procedure) {
   if (!checkmate::test_class(objective, "Objective")) {
     cli::cli_abort(
       "{.var objective} must be an

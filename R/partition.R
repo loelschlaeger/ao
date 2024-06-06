@@ -132,7 +132,8 @@ Partition <- R6::R6Class("Partition",
         )
       }
       if (!checkmate::test_function(
-        attribute_definition, args = c("x", "y"), ordered = TRUE, nargs = 2
+        attribute_definition,
+        args = c("x", "y"), ordered = TRUE, nargs = 2
       )) {
         cli::cli_abort(
           "{.var attribute_definition} must be a {.cls function} of the form
@@ -142,7 +143,6 @@ Partition <- R6::R6Class("Partition",
       }
       private$.block_attributes[[attribute_name]] <- attribute_definition
     }
-
   ),
   active = list(
 
@@ -221,7 +221,6 @@ Partition <- R6::R6Class("Partition",
         )
       }
     }
-
   ),
   private = list(
     .npar = integer(),
