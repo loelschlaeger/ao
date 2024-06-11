@@ -6,8 +6,33 @@
 #' @param verbose (`logical(1)`)\cr
 #' Print tracing details during the alternating optimization process?
 #'
+#' @param minimize (`logical(1)`)\cr
+#' Perform minimization? Alternatively, maximization is performed.
+#'
+#' @param iteration_limit (`integer(1)`)\cr
+#' The maximum number of iterations through the parameter partition before the
+#' alternating optimization process is terminated. Can also be \code{Inf}.
+#'
+#' @param tolerance_value (`numeric(1)`)\cr
+#' A non-negative tolerance value. The alternating optimization terminates
+#' prematurely (i.e., before \code{iteration_limit} is reached) if the absolute
+#' difference between the current function value and the one from the last
+#' iteration is smaller than \code{tolerance_value}.
+#'
+#' @param tolerance_parameter (`numeric(1)`)\cr
+#' A non-negative tolerance value. The alternating optimization terminates
+#' prematurely (i.e., before \code{iteration_limit} is reached) if the euclidean
+#' distance between the current estimate and the one from the last iteration is
+#' smaller than \code{tolerance_parameter}.
+#'
 #' @examples
-#' # TODO
+#' Procedure$new(
+#'   verbose = FALSE,
+#'   minimize = TRUE,
+#'   iteration_limit = 10,
+#'   tolerance_value = 1e-6,
+#'   tolerance_parameter = 1e-6
+#' )
 #'
 #' @export
 
@@ -17,32 +42,88 @@ Procedure <- R6::R6Class("Procedure",
 
     #' @description
     #' Creates a new object of this [R6][R6::R6Class] class.
-    initialize = function(verbose = TRUE, minimize = TRUE, iterations = 10) {
-
+    initialize = function(
+      verbose = FALSE, minimize = TRUE, iteration_limit = 10,
+      tolerance_value = 1e-6, tolerance_parameter = 1e-6
+    ) {
+      self$verbose <- verbose
+      self$minimize <- minimize
+      self$iteration_limit <- iteration_limit
+      self$tolerance_value <- tolerance_value
+      self$tolerance_parameter <- tolerance_parameter
+      self$iteration <- 0
+      invisible(self)
     },
 
     #' @description
     #' Print details about this object.
     print = function() {
+      cat("procedure object")
+      invisible(self)
+    },
+
+    #' @description
+    #' Prints a status message.
+    #' @param message (`character(1)`)\cr
+    #' The status message.
+    status = function(message, verbose = self$verbose) {
+      if (isTRUE(verbose)) {
+        cat(message, "\n")
+      }
+      invisible(self)
+    },
+
+    #' @description
+    #' TODO
+    #' @param iteration
+    #' TODO
+    get_value = function(iteration = self$iteration) {
 
     },
-    info = function(message, verbose = self$verbose) {
+
+    #' @description
+    #' TODO
+    #' @param type
+    #' TODO
+    #' @param iteration
+    #' TODO
+    get_parameter = function(type, iteration = self$iteration) {
 
     },
+
+    #' @description
+    #' TODO
     next_iteration = function(verbose = self$verbose) {
-      self$info(
-        paste("iteration", self$iteration, "of", self$iterations),
+      private$.iteration <- private$.iteration + 1
+      self$status(
+        paste("iteration", private$.iteration, "of", self$iteration_limit),
         verbose = verbose
       )
+      invisible(self)
     },
+
+    #' @description
+    #' TODO
+    #' @param block
+    #' TODO
     next_block = function(block, verbose = self$verbose) {
-      self$info(
+      self$status(
         paste("- block {", paste(block, sep = ","), "} : "),
         verbose = verbose
       )
+      invisible(self)
     },
-    initialize_details = function(initial, value_at_initial, npar) {
-      structure(
+
+    #' @description
+    #' TODO
+    #' @param initial
+    #' TODO
+    #' @param value
+    #' TODO
+    #' @param npar
+    #' TODO
+    initialize_details = function(initial, value, npar) {
+      private$.details <- structure(
         data.frame(
           t(c(0L, value, 0, initial, rep(NA, npar)))
         ),
@@ -51,8 +132,21 @@ Procedure <- R6::R6Class("Procedure",
           paste0("b", seq_len(npar))
         )
       )
+      invisible(self)
     },
-    update_details = function(value, parameter, block) {
+
+    #' @description
+    #' TODO
+    #' @param value
+    #' TODO
+    #' @param parameter
+    #' TODO
+    #' @param block
+    #' TODO
+    update_details = function(value, block, parameter, seconds) {
+
+      ### TODO: accept update?
+
       seconds <- block_objective_out[["seconds"]]
       value_new <- block_objective_out[["value"]]
       if (checkmate::test_number(value_new, finite = TRUE)) {
@@ -64,8 +158,10 @@ Procedure <- R6::R6Class("Procedure",
       if (verbose) {
         cat("value =", value, "\n")
       }
+      invisible(self)
     }
   ),
+
   active = list(
 
     #' @field verbose (`logical(1)`)\cr
@@ -102,25 +198,69 @@ Procedure <- R6::R6Class("Procedure",
       }
     },
 
-    #' @field iterations (`integer(1)`)\cr
+    #' @field iteration_limit (`integer(1)`)\cr
     #' The maximum number of iterations through the parameter partition before
     #' the alternating optimization process is terminated.
-    iterations = function(value) {
+    iteration_limit = function(value) {
       if (missing(value)) {
-        private$.iterations
+        private$.iteration_limit
       } else {
         if (!checkmate::test_number(value, lower = 1, finite = FALSE)) {
           cli::cli_abort(
-            "{.var iterations} must be an integer greater or equal {.num 1}",
+            "{.var iteration_limit} must be an integer greater or equal {.num 1}",
             call = NULL
           )
         } else if (is.finite(value)) {
           value <- as.integer(value)
         }
-        private$.iterations <- value
+        private$.iteration_limit <- value
       }
     },
+
+    #' @field tolerance_value (`numeric(1)`)\cr
+    #' A non-negative tolerance value. The alternating optimization terminates
+    #' prematurely (i.e., before \code{iteration_limit} is reached) if the
+    #' absolute difference between the current function value and the one from
+    #' the last iteration is smaller than \code{tolerance_value}.
+    tolerance_value = function(value) {
+      if (missing(value)) {
+        private$.tolerance_value
+      } else {
+        if (!checkmate::test_number(value, lower = 0, finite = TRUE)) {
+          cli::cli_abort(
+            "{.var tolerance_value} must be a number greater or equal {.num 0}",
+            call = NULL
+          )
+        }
+        private$.tolerance_value <- value
+      }
+    },
+
+    #' @field tolerance_parameter (`integer(1)`)\cr
+    #' A non-negative tolerance value. The alternating optimization terminates
+    #' prematurely (i.e., before \code{iteration_limit} is reached) if the
+    #' euclidean distance between the current estimate and the one from the last
+    #' iteration is smaller than \code{tolerance_parameter}.
+    tolerance_parameter = function(value) {
+      if (missing(value)) {
+        private$.tolerance_parameter
+      } else {
+        if (!checkmate::test_number(value, lower = 0, finite = FALSE)) {
+          cli::cli_abort(
+            "{.var tolerance_parameter} must be an integer greater or equal {.num 0}",
+            call = NULL
+          )
+        }
+        private$.tolerance_parameter <- value
+      }
+    },
+
+    #' @field stopping
+    #' TODO
     stopping = function(value) {
+      if (private$.iteration == 0) {
+        return(FALSE)
+      }
       latest_parameter <- unlist(sequence[nrow(sequence), parameter_columns])
       dist <- sqrt(sum(current_parameter - latest_parameter)^2)
       if (dist < tolerance) {
@@ -133,42 +273,54 @@ Procedure <- R6::R6Class("Procedure",
         iteration <- iteration + 1
       }
     },
-    details = function(value) {
 
+    #' @field details
+    #' TODO
+    details = function(value) {
+      if (missing(value)) {
+        private$.details
+      } else {
+        cli::cli_abort(
+          "{.var details} is read-only",
+          call = NULL
+        )
+      }
     },
+
+    #' @field output
+    #' TODO
     output = function(value) {
-      self$info("finished alternating optimization")
+      self$status("finished alternating optimization")
       list(
-        "value" = self$value,
-        "estimate" = self$parameter,
+        "estimate" = self$get_parameter(),
+        "value" = self$get_value(),
         "details" = self$details,
         "seconds" = sum(self$details$seconds, na.rm = TRUE)
       )
+    },
+
+    #' @field iteration
+    #' TODO
+    iteration = function(value) {
+      if (missing(value)) {
+        private$.iteration
+      } else {
+        # TODO: check
+        private$.iteration <- value
+      }
     }
+
   ),
+
   private = list(
     .verbose = logical(),
     .minimize = logical(),
-    .iterations = integer()
+    .iteration = integer(),
+    .iteration_limit = integer(),
+    .tolerance_value = numeric(),
+    .tolerance_parameter = numeric(),
+    .details = data.frame(),
+    .parameter = numeric()
   )
 )
 
-
-
-
-
-
-
-
-#
-# if (!checkmate::test_number(tolerance, lower = 0, finite = TRUE)) {
-#   cli::cli_abort(
-#     "{.var tolerance} must be a single, non-negative number",
-#     call = NULL
-#   )
-# } else if (tolerance == 0 && identical(iterations, Inf)) {
-#   cli::cli_abort(
-#     "{.var tolerance} cannot be {.num 0} if {.var iterations} is {.num Inf}",
-#     call = NULL
-#   )
-# }

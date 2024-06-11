@@ -15,59 +15,145 @@ knitr::opts_chunk$set(
   comment = "#>",
   fig.path = "ao-"
 )
-```
-
-## Background
-
-### What is alternating optimization?
-
-Alternating optimization is an iterative procedure for optimizing some function jointly over all parameters by alternating restricted optimization over individual parameter subsets.
-
-More precisely, consider minimizing or maximizing $f:\mathbb{R}^n \to \mathbb{R}$ over the set of feasible points $x \in X \subseteq \mathbb{R}^n$. The underlying algorithm of alternating optimization is as follows:
-
-1. Assign an initial value for $x$.
-
-2. Optimize $f$ with respect to a subset of parameters $\tilde{x}$ while holding the other parameters constant. Note that alternating optimization is a generalization of joint optimization, where the only parameter subset would be the whole set of parameters.
-
-3. Replace the values in $x$ by the optimal values for $\tilde{x}$ found in step 2.
-
-4. Repeat from step 2 with another parameter subset.
-
-5. Stop when the process has converged or reached the iteration limit.
-
-### When is alternating optimization a good idea?
-
-- When the joint optimization is numerically difficult or not feasible.
-
-- When there is a natural division of the parameters. That is the case for likelihood functions, where the parameter space naturally divides into parameter subsets, e.g. corresponding to linear effects, variances and covariances with different influence on the likelihood value.
-
-- To improve optimization time in some cases, see [@hu:2002] for an example.
-
-- Compared to joint optimization, alternating optimization may be better in bypassing local optima, see [@bezdek:2002].
-
-### What are the properties of alternating optimization?
-
-Alternating optimization under certain conditions on $f$ can convergence to the global optimum. However, the set of possible solutions also contains saddle points [@bezdek:1987]. @bezdek:2003 provides additional details on the convergence rate.
-
-## Application
-
-As an application, we consider minimizing the [Himmelblau's function](https://en.wikipedia.org/wiki/Himmelblau%27s_function) in $n = 2$ dimensions with parameter constraints $-5 \leq x_1, x_2 \leq 5$:
-
-```{r, ao demo}
 library("ao")
-himmelblau <- function(x) (x[1]^2 + x[2] - 11)^2 + (x[1] + x[2]^2 - 7)^2
-objective <- Objective$new(f = himmelblau, npar = 2)
-partition <- Partition$new(npar = 2, type = "fixed")$
-  define_fixed_partition(fixed_partition = list(1, 2))
-optimizer <- Optimizer$new(
-  which = "stats::optim", lower = -5, upper = 5, method = "L-BFGS-B"
-)
+```
 
-ao(
-  objective = objective, partition = partition, optimizer = optimizer, initial = c(0, 0)
+The `{ao}` R package implements the alternating optimization (AO) approach. This vignette gives an overview of the package. For theoretical results on AO, we refer to @bezdek:2002, who explain how AO can avoid getting stuck in local optima; @hu:2002, who show that AO can speed up optimization; and @bezdek:2003, who give more details on how fast AO converges.
+
+## What actually is alternating optimization?
+
+Alternating optimization (AO) is an iterative procedure used to optimize a multivariate function by breaking it down into simpler sub-problems. Specifically, it involves optimizing over one block of function parameters while keeping the others fixed, and then alternating this process among the parameter blocks. AO is useful when the sub-problems are easier to solve than the original joint optimization problem, or when there is a natural partition of the parameters.
+
+Mathematically, consider a real-valued **objective** function $f(\mathbf{x}, \mathbf{y})$ where $\mathbf{x}$ and $\mathbf{y}$ are two blocks of function parameters, namely a **partition** of the parameters. The AO procedure can be described as follows:
+
+1. **Initialization**: Start with initial guesses $\mathbf{x}^{(0)}$ and $\mathbf{y}^{(0)}$.
+
+2. **Iterative Steps**: For $k = 0, 1, 2, \dots$
+   - **Step 1**: Fix $\mathbf{y} = \mathbf{y}^{(k)}$ and solve the sub-problem $$\mathbf{x}^{(k+1)} = \arg \min_{\mathbf{x}} f(\mathbf{x}, \mathbf{y}^{(k)}).$$
+   - **Step 2**: Fix $\mathbf{x} = \mathbf{x}^{(k+1)}$ and solve the sub-problem $$\mathbf{y}^{(k+1)} = \arg \min_{\mathbf{y}} f(\mathbf{x}^{(k+1)}, \mathbf{y}).$$
+
+3. **Convergence**: Repeat the iterative steps until a convergence criterion is met, such as when the change in the objective function or the parameters falls below a specified threshold, or when a pre-defined iteration limit is reached.
+
+The AO procedure can be
+
+- viewed as a generalization of joint optimization, where the parameter partition is trivial, consisting of the entire parameter vector as a single block,
+
+- also used for maximization problems by simply replacing $\arg \min$ by $\arg \max$ above,
+
+- generalized to more than two parameter blocks, i.e., for $f(\mathbf{x}_1, \mathbf{x}_2, \ldots, \mathbf{x}_n)$, the procedure involves cycling through each parameter block and solving the corresponding sub-problems iteratively (the parameter blocks do not necessarily have to be disjoint),
+
+- **randomized** by changing the parameter partition randomly after each iteration, which can further improve the convergence rate.
+
+## Now how to use the `{ao}` package?
+
+The `{ao}` package offers three functions to perform different versions of the AO procedure: `ao_fixed()`, `ao_random()`, and `ao()`. As their names suggest, `ao_fixed()` conducts AO with a fixed parameter partition in each iteration, while `ao_random()` alters the parameter partition randomly in each iteration. On the other hand, `ao()` is the most versatile among the three, allowing users to handle more general objective functions, choose various numerical optimizers for the sub-problems, and define the AO procedure in detail. In fact, both `ao_fixed()` and `ao_random()` internally call `ao()`. However, the flexibility of `ao()` necessitates working with R6 objects [@chang:2022], as elaborated below, which is not required for the two specialized functions `ao_fixed()` and `ao_random()`.
+
+### `ao_fixed()` for a fixed parameter partition in each iteration
+
+The `ao_fixed()` function call with the default arguments is as follows:
+
+```{r, ao_fixed call, eval = FALSE}
+ao_fixed(
+  f,
+  initial,
+  ...,
+  fixed_partition = as.list(1:length(initial)),
+  minimize = TRUE,
+  max_iterations = 10,
+  value_tolerance = 1e-6,
+  verbose = FALSE
 )
 ```
 
-The call minimizes `f` by alternating optimizing with respect to each parameter separately, where the parameters all are initialized at the value 0. 
+The arguments have the following meaning:
+
+- `f` is the objective function to be optimized over its first argument, returning a single `numeric`
+
+- `initial` are the starting parameter values for the AO procedure
+
+- `...` are additional parameters for `f` (if any)
+
+- `fixed_partition` is a `list` that defines the fixed parameter partition, where each list element must be an `integer` vector with parameter indices (by default, `fixed_partition = as.list(1:length(initial))` considers each parameter separately)
+
+- `minimize` can be `TRUE` for minimization or `FALSE` for maximization
+
+- `max_iterations` is the maximum number of AO iterations before termination, this value can also be `Inf`
+
+- `value_tolerance` is a positive threshold which is the minimum absolute change in the function value in two consecutive iterations before the procedure is terminated
+
+- `verbose` can be `TRUE` or `FALSE` to show or hide status messages during the process
+
+As an application, we consider minimizing the [Himmelblau's function](https://en.wikipedia.org/wiki/Himmelblau%27s_function) $$f(x, y) = (x^2 + y - 11)^2 + (x + y^2 - 7)^2.$$
+
+The following is an implementation of the function, where the output value has the analytical gradient and the Hessian as attributes. These two attributes will be used and can improve solving the sub-problems, but specifying both or any of them is actually not required.
+
+```{r, himmelblau}
+himmelblau <- function(x) {
+  value <- (x[1]^2 + x[2] - 11)^2 + (x[1] + x[2]^2 - 7)^2
+  gradient <- c(
+    4 * x[1] * (x[1]^2 + x[2] - 11) + 2 * (x[1] + x[2]^2 - 7),
+    2 * (x[1]^2 + x[2] - 11) + 4 * x[2] * (x[1] + x[2]^2 - 7)
+  )
+  hessian <- matrix(
+    c(
+      12 * x[1]^2 + 4 * x[2] - 42,
+      4 * (x[1] + x[2]),
+      4 * (x[1] + x[2]),
+      4 * x[1] + 12 * x[2]^2 - 26
+    ),
+    nrow = 2, ncol = 2
+  )
+  structure(value, "gradient" = gradient, "hessian" = hessian)
+}
+```
+
+The function has four identical local minima, for example in $x = 3$ and $y = 2$:
+
+```{r, himmelblau evaluate}
+himmelblau(c(3, 2))
+```
+
+```{r, visualize himmelblau, echo = FALSE, message = FALSE, warning = FALSE, fig.align = 'center', out.width = "80%", fig.dim = c(8, 6)}
+library("ggplot2")
+x <- y <- seq(-5, 5, 0.1)
+grid <- expand.grid(x, y)
+grid$z <- apply(grid, 1, himmelblau)
+ggplot(grid, aes(x = Var1, y = Var2, z = z)) +
+  geom_raster(aes(fill = z)) +
+  geom_contour(colour = "white", bins = 40) +
+  scale_fill_gradient(low = "blue", high = "red") +
+  theme_linedraw() +
+  labs(
+    x = "x",
+    y = "y",
+    fill = "value",
+    title = "Himmelblau function",
+    subtitle = "the four local minima are marked in green"
+  ) + 
+  coord_fixed() +
+  annotate(
+    "Text", 
+    x = c(3, -2.8, -3.78, 3.58),
+    y = c(2, 3.13, -3.28, -1.85),
+    label ="X", size = 6, color = "green"
+  )
+```
+
+Minimizing the Himmelblau function through alternating minimization for $\mathbf{x}$ and $\mathbf{y}$ with initial values $\mathbf{x}^{(0)} = \mathbf{y}^{(0)} = 0$ can be accomplished as follows:
+
+```{r, ao himmelblau, eval = FALSE}
+ao_fixed(
+  f = himmelblau,
+  initial = c(0, 0),
+  fixed_partition = list(1, 2),
+  minimize = TRUE,
+  max_iterations = Inf,
+  value_tolerance = 1e-6
+)
+```
+
+### `ao_random()` for random parameter partitions 
+
+### `ao()` for more flexibility
 
 ## References

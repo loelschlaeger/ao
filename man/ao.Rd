@@ -20,9 +20,8 @@ ao_fixed(
   ...,
   fixed_partition = as.list(1:length(initial)),
   minimize = TRUE,
-  iterations = 10,
-  tolerance = 1e-06,
-  joint_end = FALSE,
+  iterations_limit = 10,
+  tolerance_value = 1e-06,
   verbose = FALSE
 )
 
@@ -53,7 +52,7 @@ The definition of the base optimizer that solves the optimization problems in
 the partitions, can be created via \code{\link[optimizeR]{Optimizer}}.}
 
 \item{initial}{(\code{numeric()})\cr
-The starting parameter values for the optimization.}
+The starting parameter values for the procedure.}
 
 \item{f}{(\code{function})\cr
 A \code{function} to be optimized, returning a single \code{numeric}.
@@ -72,20 +71,11 @@ optimized separately. Parameter indices can be members of multiple blocks.}
 \item{minimize}{(\code{logical(1)})\cr
 Perform minimization? Alternatively, maximization is performed.}
 
-\item{iterations}{(\code{integer(1)})\cr
-The maximum number of iterations through the parameter partition before the
-alternating optimization process is terminated. Can also be \code{Inf}, in
-which case \code{tolerance} is responsible for the termination.}
-
-\item{tolerance}{(\code{numeric(1)})\cr
+\item{tolerance_value}{(\code{numeric(1)})\cr
 A non-negative tolerance value. The alternating optimization terminates
-prematurely (i.e., before \code{iterations} is reached) if the euclidean
-distance between the current estimate and the one from the last iteration is
-smaller than \code{tolerance}.}
-
-\item{joint_end}{(\code{logical(1)})\cr
-Optimize the parameter set jointly after the alternating optimization process
-is terminated?}
+prematurely (i.e., before \code{iteration_limit} is reached) if the absolute
+difference between the current function value and the one from the last
+iteration is smaller than \code{tolerance_value}.}
 
 \item{verbose}{(\code{logical(1)})\cr
 Print tracing details during the alternating optimization process?}
@@ -97,14 +87,28 @@ result in smaller parameter blocks.}
 
 \item{minimum_block_number}{(\code{integer(1)})\cr
 The minimum number of blocks in random partitions.}
+
+\item{joint_end}{(\code{logical(1)})\cr
+Optimize the parameter set jointly after the alternating optimization process
+is terminated?}
+
+\item{iteration_limit}{(\code{integer(1)})\cr
+The maximum number of iterations through the parameter partition before the
+alternating optimization process is terminated. Can also be \code{Inf}.}
+
+\item{tolerance_parameter}{(\code{numeric(1)})\cr
+A non-negative tolerance value. The alternating optimization terminates
+prematurely (i.e., before \code{iteration_limit} is reached) if the euclidean
+distance between the current estimate and the one from the last iteration is
+smaller than \code{tolerance_parameter}.}
 }
 \value{
 A \code{list} with the elements
 \itemize{
 \item \code{estimate}, the optimal parameter vector found,
 \item \code{value}, the value of \code{f} at \code{estimate},
-\item \code{sequence}, a \code{data.frame} of the function values, estimates and
-computation times in the single iterations and parameter blocks,
+\item \code{details}, a \code{data.frame} of the function values, parameters and
+computation times in the single iterations,
 \item and \code{seconds}, the overall computation time in seconds.
 }
 }

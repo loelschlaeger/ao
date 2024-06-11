@@ -21,9 +21,6 @@
 #' @param parameter_block ()\cr
 #' TODO
 #'
-#' @param closed_form ()\cr
-#' TODO
-#'
 #' @examples
 #' # TODO
 #'
@@ -110,12 +107,6 @@ Partition <- R6::R6Class("Partition",
     },
 
     #' @description
-    #' TODO
-    define_closed_form = function(parameter_block, closed_form) {
-      # TODO
-    },
-
-    #' @description
     #' Defines how attributes of the objective function are to be used during
     #' the alternating optimization procedure.
     #' @param attribute_name (`character(1)`)\cr
@@ -142,6 +133,7 @@ Partition <- R6::R6Class("Partition",
         )
       }
       private$.block_attributes[[attribute_name]] <- attribute_definition
+      invisible(self)
     }
   ),
   active = list(
@@ -230,14 +222,14 @@ Partition <- R6::R6Class("Partition",
     .minimum_block_number = integer(),
     .block_attributes = list(),
 
-    #' Generated randomized blocks.
-    #' @param x (`integer()`)\cr
-    #' The parameter indices.
-    #' @param p (`numeric(1)`)\cr
-    #' The probability to generate a new block.
-    #' @param min (`integer(1)`)\cr
-    #' The minimum number of blocks
-    #' @author Siddhartha Chib
+    # Generated randomized blocks.
+    # @param x (`integer()`)\cr
+    # The parameter indices.
+    # @param p (`numeric(1)`)\cr
+    # The probability to generate a new block.
+    # @param min (`integer(1)`)\cr
+    # The minimum number of blocks
+    # @author Siddhartha Chib
     .random_partition = function(x = self$npar,
                                  p = self$new_block_probability,
                                  min = self$minimum_block_number) {

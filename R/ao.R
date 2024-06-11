@@ -23,21 +23,26 @@
 #' the partitions, can be created via \code{\link[optimizeR]{Optimizer}}.
 #'
 #' @param initial (`numeric()`)\cr
-#' The starting parameter values for the optimization.
+#' The starting parameter values for the procedure.
 #'
 #' @param minimize (`logical(1)`)\cr
 #' Perform minimization? Alternatively, maximization is performed.
 #'
-#' @param iterations (`integer(1)`)\cr
+#' @param iteration_limit (`integer(1)`)\cr
 #' The maximum number of iterations through the parameter partition before the
-#' alternating optimization process is terminated. Can also be \code{Inf}, in
-#' which case \code{tolerance} is responsible for the termination.
+#' alternating optimization process is terminated. Can also be \code{Inf}.
 #'
-#' @param tolerance (`numeric(1)`)\cr
+#' @param tolerance_value (`numeric(1)`)\cr
 #' A non-negative tolerance value. The alternating optimization terminates
-#' prematurely (i.e., before \code{iterations} is reached) if the euclidean
+#' prematurely (i.e., before \code{iteration_limit} is reached) if the absolute
+#' difference between the current function value and the one from the last
+#' iteration is smaller than \code{tolerance_value}.
+#'
+#' @param tolerance_parameter (`numeric(1)`)\cr
+#' A non-negative tolerance value. The alternating optimization terminates
+#' prematurely (i.e., before \code{iteration_limit} is reached) if the euclidean
 #' distance between the current estimate and the one from the last iteration is
-#' smaller than \code{tolerance}.
+#' smaller than \code{tolerance_parameter}.
 #'
 #' @param joint_end (`logical(1)`)\cr
 #' Optimize the parameter set jointly after the alternating optimization process
@@ -73,8 +78,8 @@
 #' A \code{list} with the elements
 #' * \code{estimate}, the optimal parameter vector found,
 #' * \code{value}, the value of \code{f} at \code{estimate},
-#' * \code{sequence}, a \code{data.frame} of the function values, estimates and
-#'   computation times in the single iterations and parameter blocks,
+#' * \code{details}, a \code{data.frame} of the function values, parameters and
+#'   computation times in the single iterations,
 #' * and \code{seconds}, the overall computation time in seconds.
 #'
 #' @examples
@@ -163,25 +168,29 @@ ao <- function(
   )
 
   ### alternating optimization
-  procedure$info("start alternating optimization")
+  procedure$status("start alternating optimization")
   while (TRUE) {
+
     ### check stopping criteria
-    if (procedure$stopping) break
-    procedure$next_iteration()
+    if (procedure$stopping) {
+      break
+    } else {
+      procedure$next_iteration()
+    }
 
     ### generate partition
     next_partition <- partition$get()
 
     ### optimize over each parameter block in partition
-    for (parameter_block in partition$get()) {
-      procedure$next_block()
+    for (parameter_block in next_partition) {
+      procedure$next_block(block = parameter_block)
 
       ### optimize block objective function
       block_objective_out <- optimizer$optimize(
         objective = block_objective,
-        initial = procedure$parameter[parameter_block],
+        initial = procedure$get_parameter("block"),
         direction = ifelse(procedure$minimize, "min", "max"),
-        theta_rest = procedure$parameter[-parameter_block],
+        theta_rest = procedure$get_parameter("fixed"),
         parameter_block = parameter_block
       )
 

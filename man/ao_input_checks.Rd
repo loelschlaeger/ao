@@ -20,7 +20,7 @@ The definition of the base optimizer that solves the optimization problems in
 the partitions, can be created via \code{\link[optimizeR]{Optimizer}}.}
 
 \item{initial}{(\code{numeric()})\cr
-The starting parameter values for the optimization.}
+The starting parameter values for the procedure.}
 }
 \value{
 Either throws an error, or invisible \code{TRUE}.

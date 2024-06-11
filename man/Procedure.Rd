@@ -7,7 +7,13 @@
 Details for alternating optimization procedure.
 }
 \examples{
-# TODO
+Procedure$new(
+  verbose = FALSE,
+  minimize = TRUE,
+  iteration_limit = 10,
+  tolerance_value = 1e-6,
+  tolerance_parameter = 1e-6
+)
 
 }
 \section{Active bindings}{
@@ -21,9 +27,29 @@ process.}
 Whether to minimize during the alternating optimization process.
 Alternatively, maximization is performed.}
 
-\item{\code{iterations}}{(\code{integer(1)})\cr
+\item{\code{iteration_limit}}{(\code{integer(1)})\cr
 The maximum number of iterations through the parameter partition before
 the alternating optimization process is terminated.}
+
+\item{\code{tolerance_value}}{(\code{numeric(1)})\cr
+A non-negative tolerance value. The alternating optimization terminates
+prematurely (i.e., before \code{iteration_limit} is reached) if the
+absolute difference between the current function value and the one from
+the last iteration is smaller than \code{tolerance_value}.}
+
+\item{\code{tolerance_parameter}}{(\code{integer(1)})\cr
+A non-negative tolerance value. The alternating optimization terminates
+prematurely (i.e., before \code{iteration_limit} is reached) if the
+euclidean distance between the current estimate and the one from the last
+iteration is smaller than \code{tolerance_parameter}.}
+
+\item{\code{stopping}}{TODO}
+
+\item{\code{details}}{TODO}
+
+\item{\code{output}}{TODO}
+
+\item{\code{iteration}}{TODO}
 }
 \if{html}{\out{</div>}}
 }
@@ -32,7 +58,9 @@ the alternating optimization process is terminated.}
 \itemize{
 \item \href{#method-Procedure-new}{\code{Procedure$new()}}
 \item \href{#method-Procedure-print}{\code{Procedure$print()}}
-\item \href{#method-Procedure-info}{\code{Procedure$info()}}
+\item \href{#method-Procedure-status}{\code{Procedure$status()}}
+\item \href{#method-Procedure-get_value}{\code{Procedure$get_value()}}
+\item \href{#method-Procedure-get_parameter}{\code{Procedure$get_parameter()}}
 \item \href{#method-Procedure-next_iteration}{\code{Procedure$next_iteration()}}
 \item \href{#method-Procedure-next_block}{\code{Procedure$next_block()}}
 \item \href{#method-Procedure-initialize_details}{\code{Procedure$initialize_details()}}
@@ -45,7 +73,13 @@ the alternating optimization process is terminated.}
 \subsection{Method \code{new()}}{
 Creates a new object of this \link[R6:R6Class]{R6} class.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Procedure$new(verbose = TRUE, minimize = TRUE, iterations = 10)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Procedure$new(
+  verbose = FALSE,
+  minimize = TRUE,
+  iteration_limit = 10,
+  tolerance_value = 1e-06,
+  tolerance_parameter = 1e-06
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -53,6 +87,25 @@ Creates a new object of this \link[R6:R6Class]{R6} class.
 \describe{
 \item{\code{verbose}}{(\code{logical(1)})\cr
 Print tracing details during the alternating optimization process?}
+
+\item{\code{minimize}}{(\code{logical(1)})\cr
+Perform minimization? Alternatively, maximization is performed.}
+
+\item{\code{iteration_limit}}{(\code{integer(1)})\cr
+The maximum number of iterations through the parameter partition before the
+alternating optimization process is terminated. Can also be \code{Inf}.}
+
+\item{\code{tolerance_value}}{(\code{numeric(1)})\cr
+A non-negative tolerance value. The alternating optimization terminates
+prematurely (i.e., before \code{iteration_limit} is reached) if the absolute
+difference between the current function value and the one from the last
+iteration is smaller than \code{tolerance_value}.}
+
+\item{\code{tolerance_parameter}}{(\code{numeric(1)})\cr
+A non-negative tolerance value. The alternating optimization terminates
+prematurely (i.e., before \code{iteration_limit} is reached) if the euclidean
+distance between the current estimate and the one from the last iteration is
+smaller than \code{tolerance_parameter}.}
 }
 \if{html}{\out{</div>}}
 }
@@ -68,18 +121,58 @@ Print details about this object.
 
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Procedure-info"></a>}}
-\if{latex}{\out{\hypertarget{method-Procedure-info}{}}}
-\subsection{Method \code{info()}}{
+\if{html}{\out{<a id="method-Procedure-status"></a>}}
+\if{latex}{\out{\hypertarget{method-Procedure-status}{}}}
+\subsection{Method \code{status()}}{
+Prints a status message.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Procedure$info(message, verbose = self$verbose)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Procedure$status(message, verbose = self$verbose)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
+\item{\code{message}}{(\code{character(1)})\cr
+The status message.}
+
 \item{\code{verbose}}{(\code{logical(1)})\cr
 Print tracing details during the alternating optimization process?}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Procedure-get_value"></a>}}
+\if{latex}{\out{\hypertarget{method-Procedure-get_value}{}}}
+\subsection{Method \code{get_value()}}{
+TODO
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Procedure$get_value(iteration = self$iteration)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{iteration}}{TODO}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Procedure-get_parameter"></a>}}
+\if{latex}{\out{\hypertarget{method-Procedure-get_parameter}{}}}
+\subsection{Method \code{get_parameter()}}{
+TODO
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Procedure$get_parameter(type, iteration = self$iteration)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{type}}{TODO}
+
+\item{\code{iteration}}{TODO}
 }
 \if{html}{\out{</div>}}
 }
@@ -88,6 +181,7 @@ Print tracing details during the alternating optimization process?}
 \if{html}{\out{<a id="method-Procedure-next_iteration"></a>}}
 \if{latex}{\out{\hypertarget{method-Procedure-next_iteration}{}}}
 \subsection{Method \code{next_iteration()}}{
+TODO
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Procedure$next_iteration(verbose = self$verbose)}\if{html}{\out{</div>}}
 }
@@ -105,6 +199,7 @@ Print tracing details during the alternating optimization process?}
 \if{html}{\out{<a id="method-Procedure-next_block"></a>}}
 \if{latex}{\out{\hypertarget{method-Procedure-next_block}{}}}
 \subsection{Method \code{next_block()}}{
+TODO
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Procedure$next_block(block, verbose = self$verbose)}\if{html}{\out{</div>}}
 }
@@ -112,6 +207,8 @@ Print tracing details during the alternating optimization process?}
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
+\item{\code{block}}{TODO}
+
 \item{\code{verbose}}{(\code{logical(1)})\cr
 Print tracing details during the alternating optimization process?}
 }
@@ -122,18 +219,42 @@ Print tracing details during the alternating optimization process?}
 \if{html}{\out{<a id="method-Procedure-initialize_details"></a>}}
 \if{latex}{\out{\hypertarget{method-Procedure-initialize_details}{}}}
 \subsection{Method \code{initialize_details()}}{
+TODO
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Procedure$initialize_details(initial, value_at_initial, npar)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Procedure$initialize_details(initial, value, npar)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{initial}}{TODO}
+
+\item{\code{value}}{TODO}
+
+\item{\code{npar}}{TODO}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Procedure-update_details"></a>}}
 \if{latex}{\out{\hypertarget{method-Procedure-update_details}{}}}
 \subsection{Method \code{update_details()}}{
+TODO
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Procedure$update_details(value, parameter, block)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Procedure$update_details(value, block, parameter, seconds)}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{value}}{TODO}
+
+\item{\code{block}}{TODO}
+
+\item{\code{parameter}}{TODO}
+}
+\if{html}{\out{</div>}}
+}
 }
 }

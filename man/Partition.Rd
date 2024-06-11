@@ -10,10 +10,6 @@ Partition of the target argument for alternating optimization.
 # TODO
 
 }
-\author{
-Siddhartha Chib
-Return fixed partition.
-}
 \section{Active bindings}{
 \if{html}{\out{<div class="r6-active-bindings">}}
 \describe{
@@ -35,7 +31,7 @@ The minimum number of blocks in random partitions.}
 
 \item{\code{block_attributes}}{(\code{list()})\cr
 TODO
-Generated randomized blocks.}
+Return fixed partition.}
 }
 \if{html}{\out{</div>}}
 }
@@ -46,7 +42,6 @@ Generated randomized blocks.}
 \item \href{#method-Partition-print}{\code{Partition$print()}}
 \item \href{#method-Partition-get}{\code{Partition$get()}}
 \item \href{#method-Partition-define_fixed_partition}{\code{Partition$define_fixed_partition()}}
-\item \href{#method-Partition-define_closed_form}{\code{Partition$define_closed_form()}}
 \item \href{#method-Partition-define_block_attribute}{\code{Partition$define_block_attribute()}}
 }
 }
@@ -127,27 +122,6 @@ TODO
 Only relevant for \code{type = "fixed"}.
 A \code{list} of \code{integer} (vectors), specifying the partition of the
 target parameter vector.}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Partition-define_closed_form"></a>}}
-\if{latex}{\out{\hypertarget{method-Partition-define_closed_form}{}}}
-\subsection{Method \code{define_closed_form()}}{
-TODO
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Partition$define_closed_form(parameter_block, closed_form)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{parameter_block}}{()\cr
-TODO}
-
-\item{\code{closed_form}}{()\cr
-TODO}
 }
 \if{html}{\out{</div>}}
 }
