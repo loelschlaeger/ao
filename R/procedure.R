@@ -42,10 +42,8 @@ Procedure <- R6::R6Class("Procedure",
 
     #' @description
     #' Creates a new object of this [R6][R6::R6Class] class.
-    initialize = function(
-      verbose = FALSE, minimize = TRUE, iteration_limit = 10,
-      tolerance_value = 1e-6, tolerance_parameter = 1e-6
-    ) {
+    initialize = function(verbose = FALSE, minimize = TRUE, iteration_limit = 10,
+                          tolerance_value = 1e-6, tolerance_parameter = 1e-6) {
       self$verbose <- verbose
       self$minimize <- minimize
       self$iteration_limit <- iteration_limit
@@ -144,7 +142,6 @@ Procedure <- R6::R6Class("Procedure",
     #' @param block
     #' TODO
     update_details = function(value, block, parameter, seconds) {
-
       ### TODO: accept update?
 
       seconds <- block_objective_out[["seconds"]]
@@ -161,7 +158,6 @@ Procedure <- R6::R6Class("Procedure",
       invisible(self)
     }
   ),
-
   active = list(
 
     #' @field verbose (`logical(1)`)\cr
@@ -309,9 +305,7 @@ Procedure <- R6::R6Class("Procedure",
         private$.iteration <- value
       }
     }
-
   ),
-
   private = list(
     .verbose = logical(),
     .minimize = logical(),
@@ -323,4 +317,3 @@ Procedure <- R6::R6Class("Procedure",
     .parameter = numeric()
   )
 )
-

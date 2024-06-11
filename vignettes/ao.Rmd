@@ -129,13 +129,13 @@ ggplot(grid, aes(x = Var1, y = Var2, z = z)) +
     fill = "value",
     title = "Himmelblau function",
     subtitle = "the four local minima are marked in green"
-  ) + 
+  ) +
   coord_fixed() +
   annotate(
-    "Text", 
+    "Text",
     x = c(3, -2.8, -3.78, 3.58),
     y = c(2, 3.13, -3.28, -1.85),
-    label ="X", size = 6, color = "green"
+    label = "X", size = 6, color = "green"
   )
 ```
 

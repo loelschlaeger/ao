@@ -9,9 +9,7 @@ ao_fixed <- function(
     minimize = TRUE,
     iterations_limit = 10,
     tolerance_value = 1e-6,
-    verbose = FALSE
-  ) {
-
+    verbose = FALSE) {
   ### define 'Objective' object
   objective <- Objective$new(f = f, npar = length(initial), ...)
 
