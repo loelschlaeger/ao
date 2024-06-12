@@ -175,23 +175,29 @@ ao <- function(
     if (procedure$stopping) {
       break
     } else {
-      procedure$next_iteration()
+      procedure$iteration <- procedure$iteration + 1L
     }
 
     ### generate partition
     next_partition <- partition$get()
 
     ### optimize over each parameter block in partition
-    for (parameter_block in next_partition) {
-      procedure$next_block(block = parameter_block)
+    for (block in next_partition) {
+      procedure$block <- block
 
       ### optimize block objective function
+      parameter_block <- as.numeric(
+        procedure$get_parameter(parameter_type = "block", which_block = "last")
+      )
+      parameter_fixed <- as.numeric(
+        procedure$get_parameter(parameter_type = "fixed", which_block = "last")
+      )
       block_objective_out <- optimizer$optimize(
         objective = block_objective,
-        initial = procedure$get_parameter("block"),
+        initial = paramter_block,
         direction = ifelse(procedure$minimize, "min", "max"),
-        theta_rest = procedure$get_parameter("fixed"),
-        parameter_block = parameter_block
+        parameter_fixed = parameter_fixed,
+        block = block
       )
 
       ### check acceptance and update

@@ -15,7 +15,8 @@ knitr::opts_chunk$set(
   comment = "#>",
   fig.path = "ao-"
 )
-library("ao")
+# TODO: library("ao") 
+devtools::load_all()
 ```
 
 The `{ao}` R package implements the alternating optimization (AO) approach. This vignette gives an overview of the package. For theoretical results on AO, we refer to @bezdek:2002, who explain how AO can avoid getting stuck in local optima; @hu:2002, who show that AO can speed up optimization; and @bezdek:2003, who give more details on how fast AO converges.
@@ -59,8 +60,8 @@ ao_fixed(
   ...,
   fixed_partition = as.list(1:length(initial)),
   minimize = TRUE,
-  max_iterations = 10,
-  value_tolerance = 1e-6,
+  iteration_limit = 10,
+  tolerance_value = 1e-6,
   verbose = FALSE
 )
 ```
@@ -77,9 +78,9 @@ The arguments have the following meaning:
 
 - `minimize` can be `TRUE` for minimization or `FALSE` for maximization
 
-- `max_iterations` is the maximum number of AO iterations before termination, this value can also be `Inf`
+- `iteration_limit` is the maximum number of AO iterations before termination, this value can also be `Inf`
 
-- `value_tolerance` is a positive threshold which is the minimum absolute change in the function value in two consecutive iterations before the procedure is terminated
+- `tolerance_value` is a positive threshold which is the minimum absolute change in the function value in two consecutive iterations before the procedure is terminated
 
 - `verbose` can be `TRUE` or `FALSE` to show or hide status messages during the process
 
@@ -147,8 +148,8 @@ ao_fixed(
   initial = c(0, 0),
   fixed_partition = list(1, 2),
   minimize = TRUE,
-  max_iterations = Inf,
-  value_tolerance = 1e-6
+  iteration_limit = Inf,
+  tolerance_value = 1e-6
 )
 ```
 

@@ -72,16 +72,16 @@ ao_input_checks <- function(
 #' @keywords internal
 
 ao_build_block_objective <- function(partition) {
-  function(theta_block, theta_rest, parameter_block) {
+  function(parameter_block, parameter_fixed, block) {
     theta <- numeric(partition$npar)
-    theta[parameter_block] <- theta_block
-    theta[-parameter_block] <- theta_rest
+    theta[block] <- parameter_block
+    theta[-block] <- parameter_fixed
     out <- objective$evaluate(theta)
     value <- as.numeric(out)
     for (attribute_name in names(partition$block_attributes)) {
       attribute_function <- partition$block_attributes[[attribute_name]]
       attr(value, attribute_name) <- attribute_function(
-        x = attr(out, attribute_name), y = parameter_block
+        x = attr(out, attribute_name), y = block
       )
     }
     return(value)

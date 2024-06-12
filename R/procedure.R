@@ -49,7 +49,6 @@ Procedure <- R6::R6Class("Procedure",
       self$iteration_limit <- iteration_limit
       self$tolerance_value <- tolerance_value
       self$tolerance_parameter <- tolerance_parameter
-      self$iteration <- 0
       invisible(self)
     },
 
@@ -73,47 +72,6 @@ Procedure <- R6::R6Class("Procedure",
 
     #' @description
     #' TODO
-    #' @param iteration
-    #' TODO
-    get_value = function(iteration = self$iteration) {
-
-    },
-
-    #' @description
-    #' TODO
-    #' @param type
-    #' TODO
-    #' @param iteration
-    #' TODO
-    get_parameter = function(type, iteration = self$iteration) {
-
-    },
-
-    #' @description
-    #' TODO
-    next_iteration = function(verbose = self$verbose) {
-      private$.iteration <- private$.iteration + 1
-      self$status(
-        paste("iteration", private$.iteration, "of", self$iteration_limit),
-        verbose = verbose
-      )
-      invisible(self)
-    },
-
-    #' @description
-    #' TODO
-    #' @param block
-    #' TODO
-    next_block = function(block, verbose = self$verbose) {
-      self$status(
-        paste("- block {", paste(block, sep = ","), "} : "),
-        verbose = verbose
-      )
-      invisible(self)
-    },
-
-    #' @description
-    #' TODO
     #' @param initial
     #' TODO
     #' @param value
@@ -130,6 +88,7 @@ Procedure <- R6::R6Class("Procedure",
           paste0("b", seq_len(npar))
         )
       )
+      private$.npar <- npar
       invisible(self)
     },
 
@@ -156,6 +115,185 @@ Procedure <- R6::R6Class("Procedure",
         cat("value =", value, "\n")
       }
       invisible(self)
+    },
+
+    #' @description
+    #' TODO
+    get_details = function(
+      which_iteration = self$iteration, which_block = NULL,
+      which_column = c("iteration", "value", "seconds", "parameter", "block")
+    ) {
+
+      ### input checks
+      if (
+        !checkmate::test_integerish(
+          which_iteration, lower = 0, null.ok = TRUE, min.len = 1,
+          any.missing = FALSE
+        )
+      ) {
+        cli::cli_abort(
+          "{.var which_iteration} must be non-negative integers or {.code NULL}",
+          call = NULL
+        )
+      }
+      if (
+        !checkmate::test_choice(which_block, c("first", "last"), null.ok = TRUE) &&
+        !checkmate::test_integerish(
+          which_block, lower = 1, upper = private$.npar, unique = TRUE,
+          min.len = 1, max.len = private$.npar, any.missing = FALSE
+        )
+      ) {
+        cli::cli_abort(
+          "{.var which_block} must be one of {.val first}, {.val last},
+          {.code NULL}, or of class {.cls integer}.",
+          call = NULL
+        )
+      }
+      if (!checkmate::test_subset(
+        which_column, c("iteration", "value", "seconds", "parameter", "block"),
+        empty.ok = TRUE
+      )) {
+        cli::cli_abort(
+          "{.var which_column} must be a subset of {.val iteration},
+          {.val value}, {.val seconds}, {.val parameter}, and {.val block}.",
+          call = NULL
+        )
+      }
+
+      ### filter details
+      details <- private$.details
+      if (!is.null(which_iteration)) {
+        details <- details[details$iteration %in% iteration, ]
+      }
+      if (!is.null(which_block)) {
+        if (is.character(which_block)) {
+          rows <- oeli::vector_occurrence(details$iteration, which_block)
+        } else {
+          rows <- as.integer(which(apply(
+            details[, block_columns], 1, function(x) all(as.numeric(x) %in% 1)
+          )))
+        }
+      } else {
+        rows <- seq_len(nrow(details))
+      }
+
+      ### select columns
+      iteration_column <- which(colnames(details) == "iteration")
+      value_column <- which(colnames(details) == "value")
+      seconds_column <- which(colnames(details) == "seconds")
+      parameter_columns <- which(startsWith(colnames(details), "p"))
+      block_columns <- which(startsWith(colnames(details), "b"))
+      columns <- c(
+        if ("iteration" %in% which_column) iteration_column,
+        if ("value" %in% which_column) value_column,
+        if ("seconds" %in% which_column) seconds_column,
+        if ("parameter" %in% which_column) parameter_columns,
+        if ("block" %in% which_column) block_columns
+      )
+
+      ### return details
+      details[rows, columns]
+    },
+
+    #' @description
+    #' Get the function value in different steps of the alternating optimization
+    #' procedure.
+    #' @param which_iteration (`integer()`)\cr
+    #' Selects the iteration(s).
+    #' Can also be \code{NULL} to select all iterations.
+    #' @param which_block (`character(1)` or `integer()`)\cr
+    #' Selects the parameter block in the partition and can be one of
+    #' - \code{"first"} for the first parameter block,
+    #' - \code{"last"} for the last parameter block,
+    #' - an `integer` vector of parameter indices,
+    #' - or \code{NULL} for all parameter blocks.
+    #' @return
+    #' TODO
+    get_value = function(
+      which_iteration = self$iteration, which_block = NULL,
+      keep_iteration_column = FALSE, keep_block_columns = FALSE
+    ) {
+
+      ### input checks
+      if (!checkmate::test_flag(keep_iteration_column)) {
+        cli::cli_abort(
+          "{.var keep_iteration_column} must be {.code TRUE} or {.code FALSE}",
+          call = NULL
+        )
+      }
+      if (!checkmate::test_flag(keep_block_columns)) {
+        cli::cli_abort(
+          "{.var keep_block_columns} must be {.code TRUE} or {.code FALSE}",
+          call = NULL
+        )
+      }
+
+      ### return values
+      self$details(
+        which_iteration = which_iteration, which_block = which_block,
+        which_column = c(
+          "value",
+          if (keep_iteration_column) "iteration",
+          if (keep_block_columns) "block"
+        )
+      )
+    },
+
+    #' @description
+    #' Get the parameter values in different steps of the alternating
+    #' optimization procedure.
+    #' @param parameter_type (`character(1)`)\cr
+    #' Can be one of
+    #' - \code{"full"} (default) to get the full parameter vector,
+    #' - \code{"block"} to get the parameter values for the current block,
+    #'   i.e., the parameters with the indices `self$block`
+    #' - \code{"fixed"} to get the parameter values which are currently fixed,
+    #'   i.e., all except for those with the indices `self$block`
+    #' @return
+    #' TODO
+    get_parameter = function(
+      parameter_type = "full", which_iteration = self$iteration,
+      which_block = NULL, keep_iteration_column = FALSE,
+      keep_block_columns = FALSE
+    ) {
+
+      ### input checks
+      if (!checkmate::test_choice(parameter_type, c("full", "block", "fixed"))) {
+        cli::cli_abort(
+          "{.var parameter_type} must be one of {.val full}, {.val block},
+          or {.val fixed}.",
+          call = NULL
+        )
+      }
+      if (!checkmate::test_flag(keep_iteration_column)) {
+        cli::cli_abort(
+          "{.var keep_iteration_column} must be {.code TRUE} or {.code FALSE}",
+          call = NULL
+        )
+      }
+      if (!checkmate::test_flag(keep_block_columns)) {
+        cli::cli_abort(
+          "{.var keep_block_columns} must be {.code TRUE} or {.code FALSE}",
+          call = NULL
+        )
+      }
+
+      ### get parameters
+      details <- self$details(
+        which_iteration = which_iteration, which_block = which_block,
+        which_column = c(
+          "parameter",
+          if (keep_iteration_column) "iteration",
+          if (keep_block_columns) "block"
+        )
+      )
+
+      ### filter type
+      parameter_columns <- which(startsWith(colnames(details), "p"))
+
+
+
+
     }
   ),
   active = list(
@@ -270,29 +408,30 @@ Procedure <- R6::R6Class("Procedure",
       }
     },
 
-    #' @field details
-    #' TODO
-    details = function(value) {
-      if (missing(value)) {
-        private$.details
-      } else {
-        cli::cli_abort(
-          "{.var details} is read-only",
-          call = NULL
-        )
-      }
-    },
-
     #' @field output
     #' TODO
     output = function(value) {
-      self$status("finished alternating optimization")
-      list(
-        "estimate" = self$get_parameter(),
-        "value" = self$get_value(),
-        "details" = self$details,
-        "seconds" = sum(self$details$seconds, na.rm = TRUE)
-      )
+      if (missing(value)) {
+        list(
+          "estimate" = self$get_parameter(
+
+          ),
+          "value" = self$get_value(
+
+          ),
+          "details" = self$get_details(
+
+          ),
+          "seconds" = sum(self$get_seconds(
+
+          ), na.rm = TRUE)
+        )
+      } else {
+        cli::cli_abort(
+          "{.var output} is read-only",
+          call = NULL
+        )
+      }
     },
 
     #' @field iteration
@@ -303,17 +442,36 @@ Procedure <- R6::R6Class("Procedure",
       } else {
         # TODO: check
         private$.iteration <- value
+        self$status(
+          paste("iteration", private$.iteration, "of", self$iteration_limit)
+        )
+      }
+    },
+
+    #' @field block
+    #' TODO
+    block = function(value) {
+      if (missing(value)) {
+        private$.block
+      } else {
+        # TODO: check
+        private$.block <- value
+        self$status(
+          paste("- block {", paste(value, sep = ","), "} : ")
+        )
       }
     }
+
   ),
   private = list(
     .verbose = logical(),
     .minimize = logical(),
-    .iteration = integer(),
     .iteration_limit = integer(),
     .tolerance_value = numeric(),
     .tolerance_parameter = numeric(),
+    .iteration = 0L,
+    .block = integer(),
     .details = data.frame(),
-    .parameter = numeric()
+    .npar = integer()
   )
 )
