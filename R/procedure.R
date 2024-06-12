@@ -119,15 +119,13 @@ Procedure <- R6::R6Class("Procedure",
 
     #' @description
     #' TODO
-    get_details = function(
-      which_iteration = self$iteration, which_block = NULL,
-      which_column = c("iteration", "value", "seconds", "parameter", "block")
-    ) {
-
+    get_details = function(which_iteration = self$iteration, which_block = NULL,
+                           which_column = c("iteration", "value", "seconds", "parameter", "block")) {
       ### input checks
       if (
         !checkmate::test_integerish(
-          which_iteration, lower = 0, null.ok = TRUE, min.len = 1,
+          which_iteration,
+          lower = 0, null.ok = TRUE, min.len = 1,
           any.missing = FALSE
         )
       ) {
@@ -138,10 +136,11 @@ Procedure <- R6::R6Class("Procedure",
       }
       if (
         !checkmate::test_choice(which_block, c("first", "last"), null.ok = TRUE) &&
-        !checkmate::test_integerish(
-          which_block, lower = 1, upper = private$.npar, unique = TRUE,
-          min.len = 1, max.len = private$.npar, any.missing = FALSE
-        )
+          !checkmate::test_integerish(
+            which_block,
+            lower = 1, upper = private$.npar, unique = TRUE,
+            min.len = 1, max.len = private$.npar, any.missing = FALSE
+          )
       ) {
         cli::cli_abort(
           "{.var which_block} must be one of {.val first}, {.val last},
@@ -209,11 +208,8 @@ Procedure <- R6::R6Class("Procedure",
     #' - or \code{NULL} for all parameter blocks.
     #' @return
     #' TODO
-    get_value = function(
-      which_iteration = self$iteration, which_block = NULL,
-      keep_iteration_column = FALSE, keep_block_columns = FALSE
-    ) {
-
+    get_value = function(which_iteration = self$iteration, which_block = NULL,
+                         keep_iteration_column = FALSE, keep_block_columns = FALSE) {
       ### input checks
       if (!checkmate::test_flag(keep_iteration_column)) {
         cli::cli_abort(
@@ -251,12 +247,9 @@ Procedure <- R6::R6Class("Procedure",
     #'   i.e., all except for those with the indices `self$block`
     #' @return
     #' TODO
-    get_parameter = function(
-      parameter_type = "full", which_iteration = self$iteration,
-      which_block = NULL, keep_iteration_column = FALSE,
-      keep_block_columns = FALSE
-    ) {
-
+    get_parameter = function(parameter_type = "full", which_iteration = self$iteration,
+                             which_block = NULL, keep_iteration_column = FALSE,
+                             keep_block_columns = FALSE) {
       ### input checks
       if (!checkmate::test_choice(parameter_type, c("full", "block", "fixed"))) {
         cli::cli_abort(
@@ -290,10 +283,6 @@ Procedure <- R6::R6Class("Procedure",
 
       ### filter type
       parameter_columns <- which(startsWith(colnames(details), "p"))
-
-
-
-
     }
   ),
   active = list(
@@ -413,18 +402,10 @@ Procedure <- R6::R6Class("Procedure",
     output = function(value) {
       if (missing(value)) {
         list(
-          "estimate" = self$get_parameter(
-
-          ),
-          "value" = self$get_value(
-
-          ),
-          "details" = self$get_details(
-
-          ),
-          "seconds" = sum(self$get_seconds(
-
-          ), na.rm = TRUE)
+          "estimate" = self$get_parameter(),
+          "value" = self$get_value(),
+          "details" = self$get_details(),
+          "seconds" = sum(self$get_seconds(), na.rm = TRUE)
         )
       } else {
         cli::cli_abort(
@@ -461,7 +442,6 @@ Procedure <- R6::R6Class("Procedure",
         )
       }
     }
-
   ),
   private = list(
     .verbose = logical(),

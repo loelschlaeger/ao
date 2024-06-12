@@ -1,4 +1,4 @@
-rm(list=ls())
+rm(list = ls())
 load_all()
 
 himmelblau <- function(x) {
@@ -19,13 +19,13 @@ himmelblau <- function(x) {
   structure(value, "gradient" = gradient, "hessian" = hessian)
 }
 
-f = himmelblau
-initial = c(0, 0)
-fixed_partition = list(1, 2)
-minimize = TRUE
-iteration_limit = Inf
-tolerance_value = 1e-6
-verbose = TRUE
+f <- himmelblau
+initial <- c(0, 0)
+fixed_partition <- list(1, 2)
+minimize <- TRUE
+iteration_limit <- Inf
+tolerance_value <- 1e-6
+verbose <- TRUE
 
 ### define 'Objective' object
 objective <- Objective$new(f = f, npar = length(initial))
@@ -56,6 +56,3 @@ private <- self$.__enclos_env__$private
 #   initial = initial,
 #   procedure = procedure
 # )
-
-
-
