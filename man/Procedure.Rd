@@ -25,7 +25,7 @@ process.}
 
 \item{\code{minimize}}{(\code{logical(1)})\cr
 Whether to minimize during the alternating optimization process.
-Alternatively, maximization is performed.}
+If \code{FALSE}, maximization is performed.}
 
 \item{\code{iteration_limit}}{(\code{integer(1)})\cr
 The maximum number of iterations through the parameter partition before
@@ -40,18 +40,35 @@ the last iteration is smaller than \code{tolerance_value}.}
 \item{\code{tolerance_parameter}}{(\code{integer(1)})\cr
 A non-negative tolerance value. The alternating optimization terminates
 prematurely (i.e., before \code{iteration_limit} is reached) if the
-euclidean distance between the current estimate and the one from the last
-iteration is smaller than \code{tolerance_parameter}.}
+distance between the current estimate and the one from the last
+iteration is smaller than \code{tolerance_parameter}.
+By default, the distance is measured with the euclidean norm, but the
+norm can be specified via the \code{tolerance_parameter_norm} field.}
 
-\item{\code{stopping}}{TODO}
+\item{\code{tolerance_parameter_norm}}{(\code{function})\cr
+The norm that measures the distance between the current estimate and the
+one from the last iteration. If the distance is smaller than
+\code{tolerance_parameter}, the procedure is terminated.
+It must be of the form \code{function(x, y)} for two vector inputs
+\code{x} and \code{y}, and return a single \code{numeric} value.
+By default, the euclidean norm \code{function(x, y) sqrt(sum((x - y)^2))}
+is used.}
 
-\item{\code{details}}{TODO}
+\item{\code{output}}{(\code{list()})\cr
+The results of the alternating optimization procedure, contains
+\itemize{
+\item \code{"estimate"}, the parameter vector at termination,
+\item \code{"value"}, the function value at termination,
+\item \code{"details"}, a \code{data.frame} of the function values,
+parameters and computation times in the single iterations,
+\item \code{"seconds"}, the overall computation time in seconds.
+}}
 
-\item{\code{output}}{TODO}
+\item{\code{iteration}}{(\code{integer(1)})\cr
+The current iteration number.}
 
-\item{\code{iteration}}{TODO}
-
-\item{\code{block}}{TODO}
+\item{\code{block}}{(\code{integer()})\cr
+The currently active parameter block, represented as parameter indices.}
 }
 \if{html}{\out{</div>}}
 }
@@ -61,10 +78,12 @@ iteration is smaller than \code{tolerance_parameter}.}
 \item \href{#method-Procedure-new}{\code{Procedure$new()}}
 \item \href{#method-Procedure-print}{\code{Procedure$print()}}
 \item \href{#method-Procedure-status}{\code{Procedure$status()}}
-\item \href{#method-Procedure-get_value}{\code{Procedure$get_value()}}
-\item \href{#method-Procedure-get_parameter}{\code{Procedure$get_parameter()}}
 \item \href{#method-Procedure-initialize_details}{\code{Procedure$initialize_details()}}
 \item \href{#method-Procedure-update_details}{\code{Procedure$update_details()}}
+\item \href{#method-Procedure-get_details}{\code{Procedure$get_details()}}
+\item \href{#method-Procedure-get_value}{\code{Procedure$get_value()}}
+\item \href{#method-Procedure-get_parameter}{\code{Procedure$get_parameter()}}
+\item \href{#method-Procedure-check_stopping}{\code{Procedure$check_stopping()}}
 }
 }
 \if{html}{\out{<hr>}}
@@ -142,6 +161,62 @@ Print tracing details during the alternating optimization process?}
 }
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Procedure-initialize_details"></a>}}
+\if{latex}{\out{\hypertarget{method-Procedure-initialize_details}{}}}
+\subsection{Method \code{initialize_details()}}{
+TODO
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Procedure$initialize_details(initial, value, npar)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{initial}}{TODO}
+
+\item{\code{value}}{TODO}
+
+\item{\code{npar}}{TODO}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Procedure-update_details"></a>}}
+\if{latex}{\out{\hypertarget{method-Procedure-update_details}{}}}
+\subsection{Method \code{update_details()}}{
+TODO
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Procedure$update_details(value, block, parameter, seconds)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{value}}{TODO}
+
+\item{\code{block}}{TODO}
+
+\item{\code{parameter}}{TODO}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Procedure-get_details"></a>}}
+\if{latex}{\out{\hypertarget{method-Procedure-get_details}{}}}
+\subsection{Method \code{get_details()}}{
+TODO
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Procedure$get_details(
+  which_iteration = self$iteration,
+  which_block = NULL,
+  which_column = c("iteration", "value", "seconds", "parameter", "block")
+)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Procedure-get_value"></a>}}
 \if{latex}{\out{\hypertarget{method-Procedure-get_value}{}}}
 \subsection{Method \code{get_value()}}{
@@ -184,8 +259,10 @@ optimization procedure.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Procedure$get_parameter(
   parameter_type = "full",
-  iteration = self$iteration,
-  which_block = NULL
+  which_iteration = self$iteration,
+  which_block = NULL,
+  keep_iteration_column = FALSE,
+  keep_block_columns = FALSE
 )}\if{html}{\out{</div>}}
 }
 
@@ -197,52 +274,45 @@ Can be one of
 \itemize{
 \item \code{"full"} (default) to get the full parameter vector,
 \item \code{"block"} to get the parameter values for the current block,
-i.e., the parameters with the indeces \code{self$current_block}
+i.e., the parameters with the indices \code{self$block}
 \item \code{"fixed"} to get the parameter values which are currently fixed,
-i.e., all except for those with the indeces \code{self$current_block}
+i.e., all except for those with the indices \code{self$block}
 }}
 }
 \if{html}{\out{</div>}}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Procedure-initialize_details"></a>}}
-\if{latex}{\out{\hypertarget{method-Procedure-initialize_details}{}}}
-\subsection{Method \code{initialize_details()}}{
-TODO
+\if{html}{\out{<a id="method-Procedure-check_stopping"></a>}}
+\if{latex}{\out{\hypertarget{method-Procedure-check_stopping}{}}}
+\subsection{Method \code{check_stopping()}}{
+Checks if the alternating optimization procedure can be terminated.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Procedure$initialize_details(initial, value, npar)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Procedure$check_stopping(
+  tolerance_value = self$tolerance_value,
+  tolerance_parameter = self$tolerance_parameter,
+  tolerance_parameter_norm = self$tolerance_parameter_norm,
+  verbose = self$verbose
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{initial}}{TODO}
+\item{\code{tolerance_value}}{(\code{numeric(1)})\cr
+A non-negative tolerance value. The alternating optimization terminates
+prematurely (i.e., before \code{iteration_limit} is reached) if the absolute
+difference between the current function value and the one from the last
+iteration is smaller than \code{tolerance_value}.}
 
-\item{\code{value}}{TODO}
+\item{\code{tolerance_parameter}}{(\code{numeric(1)})\cr
+A non-negative tolerance value. The alternating optimization terminates
+prematurely (i.e., before \code{iteration_limit} is reached) if the euclidean
+distance between the current estimate and the one from the last iteration is
+smaller than \code{tolerance_parameter}.}
 
-\item{\code{npar}}{TODO}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Procedure-update_details"></a>}}
-\if{latex}{\out{\hypertarget{method-Procedure-update_details}{}}}
-\subsection{Method \code{update_details()}}{
-TODO
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Procedure$update_details(value, block, parameter, seconds)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{TODO}
-
-\item{\code{block}}{TODO}
-
-\item{\code{parameter}}{TODO}
+\item{\code{verbose}}{(\code{logical(1)})\cr
+Print tracing details during the alternating optimization process?}
 }
 \if{html}{\out{</div>}}
 }

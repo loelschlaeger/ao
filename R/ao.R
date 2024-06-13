@@ -76,8 +76,8 @@
 #'
 #' @return
 #' A \code{list} with the elements
-#' * \code{estimate}, the optimal parameter vector found,
-#' * \code{value}, the value of \code{f} at \code{estimate},
+#' * \code{estimate}, the parameter vector at termination,
+#' * \code{value}, the function value at termination,
 #' * \code{details}, a \code{data.frame} of the function values, parameters and
 #'   computation times in the single iterations,
 #' * and \code{seconds}, the overall computation time in seconds.
@@ -172,7 +172,7 @@ ao <- function(
   while (TRUE) {
 
     ### check stopping criteria
-    if (procedure$stopping) {
+    if (procedure$check_stopping()) {
       break
     } else {
       procedure$iteration <- procedure$iteration + 1L
@@ -186,17 +186,11 @@ ao <- function(
       procedure$block <- block
 
       ### optimize block objective function
-      parameter_block <- as.numeric(
-        procedure$get_parameter(parameter_type = "block", which_block = "last")
-      )
-      parameter_fixed <- as.numeric(
-        procedure$get_parameter(parameter_type = "fixed", which_block = "last")
-      )
       block_objective_out <- optimizer$optimize(
         objective = block_objective,
-        initial = paramter_block,
+        initial = procedure$get_parameter_latest("block"),
         direction = ifelse(procedure$minimize, "min", "max"),
-        parameter_fixed = parameter_fixed,
+        parameter_fixed = procedure$get_parameter_latest("fixed"),
         block = block
       )
 
