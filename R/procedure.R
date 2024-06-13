@@ -110,10 +110,7 @@ Procedure <- R6::R6Class("Procedure",
     #' TODO
     #' @param block
     #' TODO
-    update_details = function(
-      value, parameter_block, seconds, block = self$block
-    ) {
-
+    update_details = function(value, parameter_block, seconds, block = self$block) {
       ### check whether to accept the update
       accept <- if (procedure$minimize) {
         all(value < self$get_value())
@@ -143,14 +140,12 @@ Procedure <- R6::R6Class("Procedure",
 
     #' @description
     #' TODO
-    get_details = function(
-      which_iteration = NULL, which_block = NULL,
-      which_column = c("iteration", "value", "seconds", "parameter", "block")
-    ) {
-
+    get_details = function(which_iteration = NULL, which_block = NULL,
+                           which_column = c("iteration", "value", "seconds", "parameter", "block")) {
       ### input checks
       check <- checkmate::check_integerish(
-        which_iteration, lower = 0, null.ok = TRUE, min.len = 1, any.missing = FALSE
+        which_iteration,
+        lower = 0, null.ok = TRUE, min.len = 1, any.missing = FALSE
       )
       if (!isTRUE(check)) {
         cli::cli_abort(
@@ -230,10 +225,8 @@ Procedure <- R6::R6Class("Procedure",
     #' - \code{"last"} for the last parameter block,
     #' - an `integer` vector of parameter indices,
     #' - or \code{NULL} for all parameter blocks.
-    get_value = function(
-      which_iteration = NULL, which_block = NULL,
-      keep_iteration_column = FALSE, keep_block_columns = FALSE
-    ) {
+    get_value = function(which_iteration = NULL, which_block = NULL,
+                         keep_iteration_column = FALSE, keep_block_columns = FALSE) {
       ### input checks
       check <- checkmate::test_flag(keep_iteration_column)
       if (!isTRUE(check)) {
@@ -271,11 +264,8 @@ Procedure <- R6::R6Class("Procedure",
     #' @description
     #' Get the parameter values in different steps of the alternating
     #' optimization procedure.
-    get_parameter = function(
-        which_iteration = self$iteration, which_block = NULL,
-        keep_iteration_column = FALSE, keep_block_columns = FALSE
-      ) {
-
+    get_parameter = function(which_iteration = self$iteration, which_block = NULL,
+                             keep_iteration_column = FALSE, keep_block_columns = FALSE) {
       ### input checks
       check <- checkmate::test_flag(keep_iteration_column)
       if (!isTRUE(check)) {
@@ -307,7 +297,6 @@ Procedure <- R6::R6Class("Procedure",
     #' Get the parameter value in the latest step of the alternating
     #' optimization procedure.
     get_parameter_latest = function(parameter_type = "full") {
-
       ### input checks
       check <- checkmate::check_choice(parameter_type, c("full", "block", "fixed"))
       if (!isTRUE(check)) {
@@ -336,11 +325,8 @@ Procedure <- R6::R6Class("Procedure",
 
     #' @description
     #' TODO
-    get_seconds = function(
-      which_iteration = self$iteration, which_block = NULL,
-      keep_iteration_column = FALSE, keep_block_columns = FALSE
-    ) {
-
+    get_seconds = function(which_iteration = self$iteration, which_block = NULL,
+                           keep_iteration_column = FALSE, keep_block_columns = FALSE) {
       ### input checks
       check <- checkmate::test_flag(keep_iteration_column)
       if (!isTRUE(check)) {
@@ -366,18 +352,15 @@ Procedure <- R6::R6Class("Procedure",
           if (keep_block_columns) "block"
         )
       )
-
     },
 
     #' @description
     #' Checks if the alternating optimization procedure can be terminated.
-    check_stopping = function(
-      iteration_limit = self$iteration_limit,
-      tolerance_value = self$tolerance_value,
-      tolerance_parameter = self$tolerance_parameter,
-      tolerance_parameter_norm = self$tolerance_parameter_norm,
-      verbose = self$verbose
-    ) {
+    check_stopping = function(iteration_limit = self$iteration_limit,
+                              tolerance_value = self$tolerance_value,
+                              tolerance_parameter = self$tolerance_parameter,
+                              tolerance_parameter_norm = self$tolerance_parameter_norm,
+                              verbose = self$verbose) {
       if (self$iteration == 0) {
         return(FALSE)
       }
@@ -557,7 +540,8 @@ Procedure <- R6::R6Class("Procedure",
         private$.block
       } else {
         check <- checkmate::check_integerish(
-          value, unique = TRUE, lower = 1,
+          value,
+          unique = TRUE, lower = 1,
           upper = if (length(private$.npar) == 1) private$.npar else Inf
         )
         if (!isTRUE(check)) {
@@ -572,7 +556,6 @@ Procedure <- R6::R6Class("Procedure",
         )
       }
     }
-
   ),
   private = list(
     .verbose = logical(),
