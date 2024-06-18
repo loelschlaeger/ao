@@ -105,8 +105,8 @@ smaller than \code{tolerance_parameter}.}
 \value{
 A \code{list} with the elements
 \itemize{
-\item \code{estimate}, the optimal parameter vector found,
-\item \code{value}, the value of \code{f} at \code{estimate},
+\item \code{estimate}, the parameter vector at termination,
+\item \code{value}, the function value at termination,
 \item \code{details}, a \code{data.frame} of the function values, parameters and
 computation times in the single iterations,
 \item and \code{seconds}, the overall computation time in seconds.

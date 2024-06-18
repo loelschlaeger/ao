@@ -25,7 +25,7 @@ process.}
 
 \item{\code{minimize}}{(\code{logical(1)})\cr
 Whether to minimize during the alternating optimization process.
-Alternatively, maximization is performed.}
+If \code{FALSE}, maximization is performed.}
 
 \item{\code{iteration_limit}}{(\code{integer(1)})\cr
 The maximum number of iterations through the parameter partition before
@@ -40,16 +40,35 @@ the last iteration is smaller than \code{tolerance_value}.}
 \item{\code{tolerance_parameter}}{(\code{integer(1)})\cr
 A non-negative tolerance value. The alternating optimization terminates
 prematurely (i.e., before \code{iteration_limit} is reached) if the
-euclidean distance between the current estimate and the one from the last
-iteration is smaller than \code{tolerance_parameter}.}
+distance between the current estimate and the one from the last
+iteration is smaller than \code{tolerance_parameter}.
+By default, the distance is measured with the euclidean norm, but the
+norm can be specified via the \code{tolerance_parameter_norm} field.}
 
-\item{\code{stopping}}{TODO}
+\item{\code{tolerance_parameter_norm}}{(\code{function})\cr
+The norm that measures the distance between the current estimate and the
+one from the last iteration. If the distance is smaller than
+\code{tolerance_parameter}, the procedure is terminated.
+It must be of the form \code{function(x, y)} for two vector inputs
+\code{x} and \code{y}, and return a single \code{numeric} value.
+By default, the euclidean norm \code{function(x, y) sqrt(sum((x - y)^2))}
+is used.}
 
-\item{\code{output}}{TODO}
+\item{\code{output}}{(\code{list()})\cr
+The results of the alternating optimization procedure, contains
+\itemize{
+\item \code{"estimate"}, the parameter vector at termination,
+\item \code{"value"}, the function value at termination,
+\item \code{"details"}, a \code{data.frame} of the function values,
+parameters and computation times in the single iterations,
+\item \code{"seconds"}, the overall computation time in seconds.
+}}
 
-\item{\code{iteration}}{TODO}
+\item{\code{iteration}}{(\code{integer(1)})\cr
+The current iteration number.}
 
-\item{\code{block}}{TODO}
+\item{\code{block}}{(\code{integer()})\cr
+The currently active parameter block, represented as parameter indices.}
 }
 \if{html}{\out{</div>}}
 }
@@ -63,7 +82,11 @@ iteration is smaller than \code{tolerance_parameter}.}
 \item \href{#method-Procedure-update_details}{\code{Procedure$update_details()}}
 \item \href{#method-Procedure-get_details}{\code{Procedure$get_details()}}
 \item \href{#method-Procedure-get_value}{\code{Procedure$get_value()}}
+\item \href{#method-Procedure-get_value_latest}{\code{Procedure$get_value_latest()}}
 \item \href{#method-Procedure-get_parameter}{\code{Procedure$get_parameter()}}
+\item \href{#method-Procedure-get_parameter_latest}{\code{Procedure$get_parameter_latest()}}
+\item \href{#method-Procedure-get_seconds}{\code{Procedure$get_seconds()}}
+\item \href{#method-Procedure-check_stopping}{\code{Procedure$check_stopping()}}
 }
 }
 \if{html}{\out{<hr>}}
@@ -167,7 +190,7 @@ TODO
 \subsection{Method \code{update_details()}}{
 TODO
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Procedure$update_details(value, block, parameter, seconds)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Procedure$update_details(value, parameter_block, seconds, block = self$block)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -175,9 +198,11 @@ TODO
 \describe{
 \item{\code{value}}{TODO}
 
-\item{\code{block}}{TODO}
+\item{\code{parameter_block}}{TODO}
 
-\item{\code{parameter}}{TODO}
+\item{\code{seconds}}{TODO}
+
+\item{\code{block}}{TODO}
 }
 \if{html}{\out{</div>}}
 }
@@ -189,7 +214,7 @@ TODO
 TODO
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Procedure$get_details(
-  which_iteration = self$iteration,
+  which_iteration = NULL,
   which_block = NULL,
   which_column = c("iteration", "value", "seconds", "parameter", "block")
 )}\if{html}{\out{</div>}}
@@ -204,7 +229,7 @@ Get the function value in different steps of the alternating optimization
 procedure.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Procedure$get_value(
-  which_iteration = self$iteration,
+  which_iteration = NULL,
   which_block = NULL,
   keep_iteration_column = FALSE,
   keep_block_columns = FALSE
@@ -229,9 +254,17 @@ Selects the parameter block in the partition and can be one of
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Returns}{
-TODO
 }
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Procedure-get_value_latest"></a>}}
+\if{latex}{\out{\hypertarget{method-Procedure-get_value_latest}{}}}
+\subsection{Method \code{get_value_latest()}}{
+Get the function value in the latest step of the alternating
+optimization procedure.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Procedure$get_value_latest()}\if{html}{\out{</div>}}
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Procedure-get_parameter"></a>}}
@@ -241,12 +274,22 @@ Get the parameter values in different steps of the alternating
 optimization procedure.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Procedure$get_parameter(
-  parameter_type = "full",
   which_iteration = self$iteration,
   which_block = NULL,
   keep_iteration_column = FALSE,
   keep_block_columns = FALSE
 )}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Procedure-get_parameter_latest"></a>}}
+\if{latex}{\out{\hypertarget{method-Procedure-get_parameter_latest}{}}}
+\subsection{Method \code{get_parameter_latest()}}{
+Get the parameter value in the latest step of the alternating
+optimization procedure.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Procedure$get_parameter_latest(parameter_type = "full")}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -264,8 +307,60 @@ i.e., all except for those with the indices \code{self$block}
 }
 \if{html}{\out{</div>}}
 }
-\subsection{Returns}{
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Procedure-get_seconds"></a>}}
+\if{latex}{\out{\hypertarget{method-Procedure-get_seconds}{}}}
+\subsection{Method \code{get_seconds()}}{
 TODO
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Procedure$get_seconds(
+  which_iteration = self$iteration,
+  which_block = NULL,
+  keep_iteration_column = FALSE,
+  keep_block_columns = FALSE
+)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Procedure-check_stopping"></a>}}
+\if{latex}{\out{\hypertarget{method-Procedure-check_stopping}{}}}
+\subsection{Method \code{check_stopping()}}{
+Checks if the alternating optimization procedure can be terminated.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Procedure$check_stopping(
+  iteration_limit = self$iteration_limit,
+  tolerance_value = self$tolerance_value,
+  tolerance_parameter = self$tolerance_parameter,
+  tolerance_parameter_norm = self$tolerance_parameter_norm,
+  verbose = self$verbose
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{iteration_limit}}{(\code{integer(1)})\cr
+The maximum number of iterations through the parameter partition before the
+alternating optimization process is terminated. Can also be \code{Inf}.}
+
+\item{\code{tolerance_value}}{(\code{numeric(1)})\cr
+A non-negative tolerance value. The alternating optimization terminates
+prematurely (i.e., before \code{iteration_limit} is reached) if the absolute
+difference between the current function value and the one from the last
+iteration is smaller than \code{tolerance_value}.}
+
+\item{\code{tolerance_parameter}}{(\code{numeric(1)})\cr
+A non-negative tolerance value. The alternating optimization terminates
+prematurely (i.e., before \code{iteration_limit} is reached) if the euclidean
+distance between the current estimate and the one from the last iteration is
+smaller than \code{tolerance_parameter}.}
+
+\item{\code{verbose}}{(\code{logical(1)})\cr
+Print tracing details during the alternating optimization process?}
+}
+\if{html}{\out{</div>}}
 }
 }
 }
