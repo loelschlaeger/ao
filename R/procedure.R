@@ -88,15 +88,13 @@ Procedure <- R6::R6Class("Procedure",
 
     #' @description
     #' Creates a new object of this [R6][R6::R6Class] class.
-    initialize = function(
-      verbose = FALSE,
-      minimize = TRUE,
-      iteration_limit = Inf,
-      seconds_limit = Inf,
-      tolerance_value = 0,
-      tolerance_parameter = 0,
-      tolerance_parameter_norm = function(x, y) sqrt(sum((x - y)^2))
-    ) {
+    initialize = function(verbose = FALSE,
+                          minimize = TRUE,
+                          iteration_limit = Inf,
+                          seconds_limit = Inf,
+                          tolerance_value = 0,
+                          tolerance_parameter = 0,
+                          tolerance_parameter_norm = function(x, y) sqrt(sum((x - y)^2))) {
       self$verbose <- verbose
       self$minimize <- minimize
       self$iteration_limit <- iteration_limit
@@ -133,8 +131,7 @@ Procedure <- R6::R6Class("Procedure",
       checkmate::assert_int(message_type, lower = 1, upper = 8)
       checkmate::assert_flag(verbose)
       if (isTRUE(verbose)) {
-        switch(
-          message_type,
+        switch(message_type,
           cli::cli_h1(message),
           cli::cli_h2(message),
           cli::cli_h3(message),
@@ -182,10 +179,7 @@ Procedure <- R6::R6Class("Procedure",
     #' Whether solving the sub-problem resulted in an error.
     #' @param block (`integer()`)\cr
     #' The currently active parameter block, represented as parameter indices.
-    update_details = function(
-      value, parameter_block, seconds, error, block = self$block
-    ) {
-
+    update_details = function(value, parameter_block, seconds, error, block = self$block) {
       ### check inputs
       check_block <- checkmate::check_integerish(
         block,
@@ -193,13 +187,16 @@ Procedure <- R6::R6Class("Procedure",
         upper = if (length(private$.npar) == 1) private$.npar else Inf
       )
       check_value <- checkmate::check_number(
-        value, na.ok = FALSE, null.ok = FALSE, finite = TRUE
+        value,
+        na.ok = FALSE, null.ok = FALSE, finite = TRUE
       )
       check_parameter_block <- oeli::check_numeric_vector(
-        parameter_block, any.missing = FALSE, len = length(block)
+        parameter_block,
+        any.missing = FALSE, len = length(block)
       )
       check_seconds <- checkmate::check_number(
-        seconds, na.ok = FALSE, lower = 0, finite = TRUE, null.ok = FALSE
+        seconds,
+        na.ok = FALSE, lower = 0, finite = TRUE, null.ok = FALSE
       )
       check_error <- checkmate::check_flag(error)
 
@@ -247,10 +244,8 @@ Procedure <- R6::R6Class("Procedure",
 
     #' @description
     #' Get the `details` part of the output.
-    get_details = function(
-      which_iteration = NULL, which_block = NULL,
-      which_column = c("iteration", "value", "parameter", "block", "seconds", "update_code")
-    ) {
+    get_details = function(which_iteration = NULL, which_block = NULL,
+                           which_column = c("iteration", "value", "parameter", "block", "seconds", "update_code")) {
       ### input checks
       check <- checkmate::check_integerish(
         which_iteration,
@@ -327,13 +322,10 @@ Procedure <- R6::R6Class("Procedure",
     #' @description
     #' Get the function value in different steps of the alternating optimization
     #' procedure.
-    get_value = function(
-      which_iteration = NULL,
-      which_block = NULL,
-      keep_iteration_column = FALSE,
-      keep_block_columns = FALSE
-    ) {
-
+    get_value = function(which_iteration = NULL,
+                         which_block = NULL,
+                         keep_iteration_column = FALSE,
+                         keep_block_columns = FALSE) {
       ### input checks
       check <- checkmate::test_flag(keep_iteration_column)
       if (!isTRUE(check)) {
@@ -371,13 +363,10 @@ Procedure <- R6::R6Class("Procedure",
     #' @description
     #' Get the parameter values in different steps of the alternating
     #' optimization procedure.
-    get_parameter = function(
-      which_iteration = self$iteration,
-      which_block = NULL,
-      keep_iteration_column = FALSE,
-      keep_block_columns = FALSE
-    ) {
-
+    get_parameter = function(which_iteration = self$iteration,
+                             which_block = NULL,
+                             keep_iteration_column = FALSE,
+                             keep_block_columns = FALSE) {
       ### input checks
       check <- checkmate::test_flag(keep_iteration_column)
       if (!isTRUE(check)) {
@@ -438,13 +427,10 @@ Procedure <- R6::R6Class("Procedure",
     #' @description
     #' Get the optimization time in seconds in different steps of the
     #' alternating optimization procedure.
-    get_seconds = function(
-      which_iteration = NULL,
-      which_block = NULL,
-      keep_iteration_column = FALSE,
-      keep_block_columns = FALSE
-    ) {
-
+    get_seconds = function(which_iteration = NULL,
+                           which_block = NULL,
+                           keep_iteration_column = FALSE,
+                           keep_block_columns = FALSE) {
       ### input checks
       check <- checkmate::test_flag(keep_iteration_column)
       if (!isTRUE(check)) {
@@ -484,82 +470,76 @@ Procedure <- R6::R6Class("Procedure",
 
     #' @description
     #' Checks if the alternating optimization procedure can be terminated.
-    check_stopping = function(
-        iteration_limit = self$iteration_limit,
-        seconds_limit = self$seconds_limit,
-        tolerance_value = self$tolerance_value,
-        tolerance_parameter = self$tolerance_parameter,
-        tolerance_parameter_norm = self$tolerance_parameter_norm
-      ) {
+    check_stopping = function(iteration_limit = self$iteration_limit,
+                              seconds_limit = self$seconds_limit,
+                              tolerance_value = self$tolerance_value,
+                              tolerance_parameter = self$tolerance_parameter,
+                              tolerance_parameter_norm = self$tolerance_parameter_norm) {
+      ### check inputs
+      self$iteration_limit <- iteration_limit
+      self$seconds_limit <- seconds_limit
+      self$tolerance_value <- tolerance_value
+      self$tolerance_parameter <- tolerance_parameter
+      self$tolerance_parameter_norm <- tolerance_parameter_norm
 
-        ### check inputs
-        self$iteration_limit <- iteration_limit
-        self$seconds_limit <- seconds_limit
-        self$tolerance_value <- tolerance_value
-        self$tolerance_parameter <- tolerance_parameter
-        self$tolerance_parameter_norm <- tolerance_parameter_norm
-
-        ### check stopping criteria
-        stopping <- FALSE
-        while (TRUE) {
-
-          ### check iteration limit
-          if (self$iteration >= iteration_limit) {
-            message <- paste("iteration limit of", iteration_limit, "reached")
-            stopping <- TRUE
-            break
-          }
-
-          ### check time limit
-          if (self$get_seconds_total() >= seconds_limit) {
-            message <- paste("time limit of", seconds_limit, "seconds reached")
-            stopping <- TRUE
-            break
-          }
-
-          ### only check tolerance if at least one iteration has been performed
-          if (self$iteration >= 1) {
-
-            ### check value tolerance
-            abs_value_change <- abs(
-              self$get_value_latest() - self$get_value(
-                which_iteration = self$iteration - 1,
-                which_block = "first"
-              )
-            )
-            if (abs_value_change < tolerance_value) {
-              message <- paste("change in function value is <", tolerance_value)
-              stopping <- TRUE
-              break
-            }
-
-            ### check parameter tolerance
-            parameter_change <- tolerance_parameter_norm(
-              self$get_parameter_latest(),
-              self$get_parameter(
-                which_iteration = self$iteration - 1,
-                which_block = "first"
-              )
-            )
-            if (parameter_change < tolerance_parameter) {
-              message <- paste("distance of parameters is <", tolerance_parameter)
-              stopping <- TRUE
-              break
-            }
-          }
+      ### check stopping criteria
+      stopping <- FALSE
+      while (TRUE) {
+        ### check iteration limit
+        if (self$iteration >= iteration_limit) {
+          message <- paste("iteration limit of", iteration_limit, "reached")
+          stopping <- TRUE
           break
         }
 
-        ### decide for stopping
-        if (isTRUE(stopping)) {
-          private$.stopping_reason <- message
-          self$status("\n", 8)
-          self$status(paste("procedure is terminated:", message), 4)
-          self$status("\n", 8)
+        ### check time limit
+        if (self$get_seconds_total() >= seconds_limit) {
+          message <- paste("time limit of", seconds_limit, "seconds reached")
+          stopping <- TRUE
+          break
         }
-        return(stopping)
 
+        ### only check tolerance if at least one iteration has been performed
+        if (self$iteration >= 1) {
+          ### check value tolerance
+          abs_value_change <- abs(
+            self$get_value_latest() - self$get_value(
+              which_iteration = self$iteration - 1,
+              which_block = "first"
+            )
+          )
+          if (abs_value_change < tolerance_value) {
+            message <- paste("change in function value is <", tolerance_value)
+            stopping <- TRUE
+            break
+          }
+
+          ### check parameter tolerance
+          parameter_change <- tolerance_parameter_norm(
+            self$get_parameter_latest(),
+            self$get_parameter(
+              which_iteration = self$iteration - 1,
+              which_block = "first"
+            )
+          )
+          if (parameter_change < tolerance_parameter) {
+            message <- paste("distance of parameters is <", tolerance_parameter)
+            stopping <- TRUE
+            break
+          }
+        }
+        break
       }
+
+      ### decide for stopping
+      if (isTRUE(stopping)) {
+        private$.stopping_reason <- message
+        self$status("\n", 8)
+        self$status(paste("procedure is terminated:", message), 4)
+        self$status("\n", 8)
+      }
+      return(stopping)
+    }
   ),
   active = list(
 
@@ -633,7 +613,8 @@ Procedure <- R6::R6Class("Procedure",
         private$.seconds_limit
       } else {
         check <- checkmate::check_number(
-          value, lower = 0, finite = FALSE, null.ok = FALSE, na.ok = FALSE
+          value,
+          lower = 0, finite = FALSE, null.ok = FALSE, na.ok = FALSE
         )
         if (!isTRUE(check)) {
           cli::cli_abort(
@@ -788,7 +769,6 @@ Procedure <- R6::R6Class("Procedure",
         )
       }
     }
-
   ),
   private = list(
     .verbose = logical(),
