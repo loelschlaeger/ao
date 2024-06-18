@@ -45,8 +45,6 @@ iteration is smaller than \code{tolerance_parameter}.}
 
 \item{\code{stopping}}{TODO}
 
-\item{\code{details}}{TODO}
-
 \item{\code{output}}{TODO}
 
 \item{\code{iteration}}{TODO}
@@ -61,10 +59,11 @@ iteration is smaller than \code{tolerance_parameter}.}
 \item \href{#method-Procedure-new}{\code{Procedure$new()}}
 \item \href{#method-Procedure-print}{\code{Procedure$print()}}
 \item \href{#method-Procedure-status}{\code{Procedure$status()}}
-\item \href{#method-Procedure-get_value}{\code{Procedure$get_value()}}
-\item \href{#method-Procedure-get_parameter}{\code{Procedure$get_parameter()}}
 \item \href{#method-Procedure-initialize_details}{\code{Procedure$initialize_details()}}
 \item \href{#method-Procedure-update_details}{\code{Procedure$update_details()}}
+\item \href{#method-Procedure-get_details}{\code{Procedure$get_details()}}
+\item \href{#method-Procedure-get_value}{\code{Procedure$get_value()}}
+\item \href{#method-Procedure-get_parameter}{\code{Procedure$get_parameter()}}
 }
 }
 \if{html}{\out{<hr>}}
@@ -142,70 +141,6 @@ Print tracing details during the alternating optimization process?}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Procedure-get_value"></a>}}
-\if{latex}{\out{\hypertarget{method-Procedure-get_value}{}}}
-\subsection{Method \code{get_value()}}{
-Get the function value in different steps of the alternating optimization
-procedure.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Procedure$get_value(
-  which_iteration = self$iteration,
-  which_block = NULL,
-  keep_iteration_column = FALSE,
-  keep_block_columns = FALSE
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{which_iteration}}{(\code{integer()})\cr
-Selects the iteration(s).
-Can also be \code{NULL} to select all iterations.}
-
-\item{\code{which_block}}{(\code{character(1)} or \code{integer()})\cr
-Selects the parameter block in the partition and can be one of
-\itemize{
-\item \code{"first"} for the first parameter block,
-\item \code{"last"} for the last parameter block,
-\item an \code{integer} vector of parameter indices,
-\item or \code{NULL} for all parameter blocks.
-}}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Procedure-get_parameter"></a>}}
-\if{latex}{\out{\hypertarget{method-Procedure-get_parameter}{}}}
-\subsection{Method \code{get_parameter()}}{
-Get the parameter values in different steps of the alternating
-optimization procedure.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Procedure$get_parameter(
-  parameter_type = "full",
-  iteration = self$iteration,
-  which_block = NULL
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{parameter_type}}{(\code{character(1)})\cr
-Can be one of
-\itemize{
-\item \code{"full"} (default) to get the full parameter vector,
-\item \code{"block"} to get the parameter values for the current block,
-i.e., the parameters with the indeces \code{self$current_block}
-\item \code{"fixed"} to get the parameter values which are currently fixed,
-i.e., all except for those with the indeces \code{self$current_block}
-}}
-}
-\if{html}{\out{</div>}}
-}
-}
-\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Procedure-initialize_details"></a>}}
 \if{latex}{\out{\hypertarget{method-Procedure-initialize_details}{}}}
 \subsection{Method \code{initialize_details()}}{
@@ -245,6 +180,92 @@ TODO
 \item{\code{parameter}}{TODO}
 }
 \if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Procedure-get_details"></a>}}
+\if{latex}{\out{\hypertarget{method-Procedure-get_details}{}}}
+\subsection{Method \code{get_details()}}{
+TODO
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Procedure$get_details(
+  which_iteration = self$iteration,
+  which_block = NULL,
+  which_column = c("iteration", "value", "seconds", "parameter", "block")
+)}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Procedure-get_value"></a>}}
+\if{latex}{\out{\hypertarget{method-Procedure-get_value}{}}}
+\subsection{Method \code{get_value()}}{
+Get the function value in different steps of the alternating optimization
+procedure.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Procedure$get_value(
+  which_iteration = self$iteration,
+  which_block = NULL,
+  keep_iteration_column = FALSE,
+  keep_block_columns = FALSE
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{which_iteration}}{(\code{integer()})\cr
+Selects the iteration(s).
+Can also be \code{NULL} to select all iterations.}
+
+\item{\code{which_block}}{(\code{character(1)} or \code{integer()})\cr
+Selects the parameter block in the partition and can be one of
+\itemize{
+\item \code{"first"} for the first parameter block,
+\item \code{"last"} for the last parameter block,
+\item an \code{integer} vector of parameter indices,
+\item or \code{NULL} for all parameter blocks.
+}}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+TODO
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Procedure-get_parameter"></a>}}
+\if{latex}{\out{\hypertarget{method-Procedure-get_parameter}{}}}
+\subsection{Method \code{get_parameter()}}{
+Get the parameter values in different steps of the alternating
+optimization procedure.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Procedure$get_parameter(
+  parameter_type = "full",
+  which_iteration = self$iteration,
+  which_block = NULL,
+  keep_iteration_column = FALSE,
+  keep_block_columns = FALSE
+)}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{parameter_type}}{(\code{character(1)})\cr
+Can be one of
+\itemize{
+\item \code{"full"} (default) to get the full parameter vector,
+\item \code{"block"} to get the parameter values for the current block,
+i.e., the parameters with the indices \code{self$block}
+\item \code{"fixed"} to get the parameter values which are currently fixed,
+i.e., all except for those with the indices \code{self$block}
+}}
+}
+\if{html}{\out{</div>}}
+}
+\subsection{Returns}{
+TODO
 }
 }
 }

@@ -25,7 +25,7 @@ The `{ao}` R package implements the alternating optimization (AO) approach. This
 
 Alternating optimization (AO) is an iterative procedure used to optimize a multivariate function by breaking it down into simpler sub-problems. Specifically, it involves optimizing over one block of function parameters while keeping the others fixed, and then alternating this process among the parameter blocks. AO is useful when the sub-problems are easier to solve than the original joint optimization problem, or when there is a natural partition of the parameters.
 
-Mathematically, consider a real-valued **objective** function $f(\mathbf{x}, \mathbf{y})$ where $\mathbf{x}$ and $\mathbf{y}$ are two blocks of function parameters, namely a **partition** of the parameters. The AO procedure can be described as follows:
+Mathematically, consider a real-valued **objective** function $f(\mathbf{x}, \mathbf{y})$ where $\mathbf{x}$ and $\mathbf{y}$ are two **blocks** of function parameters, namely a **partition** of the parameters. The AO procedure can be described as follows:
 
 1. **Initialization**: Start with initial guesses $\mathbf{x}^{(0)}$ and $\mathbf{y}^{(0)}$.
 
@@ -33,7 +33,7 @@ Mathematically, consider a real-valued **objective** function $f(\mathbf{x}, \ma
    - **Step 1**: Fix $\mathbf{y} = \mathbf{y}^{(k)}$ and solve the sub-problem $$\mathbf{x}^{(k+1)} = \arg \min_{\mathbf{x}} f(\mathbf{x}, \mathbf{y}^{(k)}).$$
    - **Step 2**: Fix $\mathbf{x} = \mathbf{x}^{(k+1)}$ and solve the sub-problem $$\mathbf{y}^{(k+1)} = \arg \min_{\mathbf{y}} f(\mathbf{x}^{(k+1)}, \mathbf{y}).$$
 
-3. **Convergence**: Repeat the iterative steps until a convergence criterion is met, such as when the change in the objective function or the parameters falls below a specified threshold, or when a pre-defined iteration limit is reached.
+3. **Convergence**: Repeat the iterative steps until a **convergence criterion** is met, such as when the change in the objective function or the parameters falls below a specified threshold, or when a pre-defined iteration limit is reached.
 
 The AO procedure can be
 
@@ -41,17 +41,27 @@ The AO procedure can be
 
 - also used for maximization problems by simply replacing $\arg \min$ by $\arg \max$ above,
 
-- generalized to more than two parameter blocks, i.e., for $f(\mathbf{x}_1, \mathbf{x}_2, \ldots, \mathbf{x}_n)$, the procedure involves cycling through each parameter block and solving the corresponding sub-problems iteratively (the parameter blocks do not necessarily have to be disjoint),
+- generalized to more than two parameter blocks, i.e., for $f(\mathbf{x}_1, \mathbf{x}_2, \ldots, \mathbf{x}_n)$, the procedure involves cycling through each parameter block $\mathbf{x}_1, \mathbf{x}_2, \ldots, \mathbf{x}_n$ and solving the corresponding sub-problems iteratively (the parameter blocks do not necessarily have to be disjoint),
 
-- **randomized** by changing the parameter partition randomly after each iteration, which can further improve the convergence rate.
+- **randomized** by changing the parameter partition randomly after each iteration, which can further improve the convergence rate and avoid getting trapped in local optima.
 
 ## Now how to use the `{ao}` package?
 
-The `{ao}` package offers three functions to perform different versions of the AO procedure: `ao_fixed()`, `ao_random()`, and `ao()`. As their names suggest, `ao_fixed()` conducts AO with a fixed parameter partition in each iteration, while `ao_random()` alters the parameter partition randomly in each iteration. On the other hand, `ao()` is the most versatile among the three, allowing users to handle more general objective functions, choose various numerical optimizers for the sub-problems, and define the AO procedure in detail. In fact, both `ao_fixed()` and `ao_random()` internally call `ao()`. However, the flexibility of `ao()` necessitates working with R6 objects [@chang:2022], as elaborated below, which is not required for the two specialized functions `ao_fixed()` and `ao_random()`.
+The `{ao}` package offers three functions to perform different variants of the AO procedure: 
+
+1. `ao_fixed()`,
+
+2. `ao_random()`,
+
+3. `ao()`. 
+
+As their names suggest, `ao_fixed()` conducts AO with a fixed parameter partition in each iteration, while `ao_random()` alters the parameter partition randomly in each iteration. 
+
+On the other hand, `ao()` is the most versatile among the three, allowing users to handle more general objective functions, choose various numerical optimizers for the sub-problems, and define the AO procedure in detail. In fact, both `ao_fixed()` and `ao_random()` internally call `ao()`. However, the flexibility of `ao()` necessitates working with R6 objects [@chang:2022], as elaborated below, which might be not everyone's cup of tea and is not required for the two specialized functions `ao_fixed()` and `ao_random()`.
 
 ### `ao_fixed()` for a fixed parameter partition in each iteration
 
-The `ao_fixed()` function call with the default arguments is as follows:
+The `ao_fixed()` function call with the default arguments looks as follows:
 
 ```{r, ao_fixed call, eval = FALSE}
 ao_fixed(
@@ -68,25 +78,25 @@ ao_fixed(
 
 The arguments have the following meaning:
 
-- `f` is the objective function to be optimized over its first argument, returning a single `numeric`
+- `f` is the objective function to be optimized over its first argument, returning a single `numeric` value.
 
-- `initial` are the starting parameter values for the AO procedure
+- `initial` are the `numeric` starting parameter values for the AO procedure.
 
-- `...` are additional parameters for `f` (if any)
+- `...` are additional parameters for `f` (if any).
 
-- `fixed_partition` is a `list` that defines the fixed parameter partition, where each list element must be an `integer` vector with parameter indices (by default, `fixed_partition = as.list(1:length(initial))` considers each parameter separately)
+- `fixed_partition` is a `list` that defines the parameter partition, where each element must be an `integer` vector with parameter indices. By default, `fixed_partition = as.list(1:length(initial))` considers each parameter separately. The partition does not have to be unique (i.e., parameter indices can be members of multiple blocks) and does not have to cover all parameter indices (i.e., parameters whose indices are not part of the partition remain fixed at their initial values during the AO procedure).
 
-- `minimize` can be `TRUE` for minimization or `FALSE` for maximization
+- `minimize` can be `TRUE` to conduct minimization or `FALSE` for maximization.
 
-- `iteration_limit` is the maximum number of AO iterations before termination, this value can also be `Inf`
+- `iteration_limit` is an `integer`, the maximum number of AO iterations before termination. This value can also be `Inf`, in which case termination is solely determined by `tolerance_value`.
 
-- `tolerance_value` is a positive threshold which is the minimum absolute change in the function value in two consecutive iterations before the procedure is terminated
+- `tolerance_value` is a positive `numeric`, a threshold which is the minimum absolute change in the function value in two consecutive iterations before the procedure is terminated.
 
-- `verbose` can be `TRUE` or `FALSE` to show or hide status messages during the process
+- `verbose` can be `TRUE` or `FALSE` to either show or hide status messages during the AO process.
 
-As an application, we consider minimizing the [Himmelblau's function](https://en.wikipedia.org/wiki/Himmelblau%27s_function) $$f(x, y) = (x^2 + y - 11)^2 + (x + y^2 - 7)^2.$$
+As a simple application, we consider minimizing [Himmelblau's function](https://en.wikipedia.org/wiki/Himmelblau%27s_function) $$f(x, y) = (x^2 + y - 11)^2 + (x + y^2 - 7)^2.$$
 
-The following is an implementation of the function, where the output value has the analytical gradient and the Hessian as attributes. These two attributes will be used and can improve solving the sub-problems, but specifying both or any of them is actually not required.
+The following is an implementation of the function. The output value has the analytical gradient and the Hessian as attributes. These two attributes will be used during the AO procedure and can improve solving the sub-problems, because no approximations are required. But specifying both or any of them is actually not required.
 
 ```{r, himmelblau}
 himmelblau <- function(x) {
@@ -97,10 +107,8 @@ himmelblau <- function(x) {
   )
   hessian <- matrix(
     c(
-      12 * x[1]^2 + 4 * x[2] - 42,
-      4 * (x[1] + x[2]),
-      4 * (x[1] + x[2]),
-      4 * x[1] + 12 * x[2]^2 - 26
+      12 * x[1]^2 + 4 * x[2] - 42, 4 * (x[1] + x[2]),
+      4 * (x[1] + x[2]), 4 * x[1] + 12 * x[2]^2 - 26
     ),
     nrow = 2, ncol = 2
   )
@@ -108,7 +116,7 @@ himmelblau <- function(x) {
 }
 ```
 
-The function has four identical local minima, for example in $x = 3$ and $y = 2$:
+Himmelblau's function has four identical local minima, for example in $x = 3$ and $y = 2$:
 
 ```{r, himmelblau evaluate}
 himmelblau(c(3, 2))
@@ -140,7 +148,7 @@ ggplot(grid, aes(x = Var1, y = Var2, z = z)) +
   )
 ```
 
-Minimizing the Himmelblau function through alternating minimization for $\mathbf{x}$ and $\mathbf{y}$ with initial values $\mathbf{x}^{(0)} = \mathbf{y}^{(0)} = 0$ can be accomplished as follows:
+Minimizing Himmelblau's function through alternating minimization for $\mathbf{x}$ and $\mathbf{y}$ with initial values $\mathbf{x}^{(0)} = \mathbf{y}^{(0)} = 0$ can be accomplished as follows:
 
 ```{r, ao himmelblau, eval = FALSE}
 ao_fixed(
