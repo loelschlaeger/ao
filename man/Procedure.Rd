@@ -6,16 +6,6 @@
 \description{
 Details for alternating optimization procedure.
 }
-\examples{
-Procedure$new(
-  verbose = FALSE,
-  minimize = TRUE,
-  iteration_limit = 10,
-  tolerance_value = 1e-6,
-  tolerance_parameter = 1e-6
-)
-
-}
 \section{Active bindings}{
 \if{html}{\out{<div class="r6-active-bindings">}}
 \describe{
@@ -27,23 +17,33 @@ process.}
 Whether to minimize during the alternating optimization process.
 If \code{FALSE}, maximization is performed.}
 
-\item{\code{iteration_limit}}{(\code{integer(1)})\cr
+\item{\code{iteration_limit}}{(\code{integer(1)} or \code{Inf})\cr
 The maximum number of iterations through the parameter partition before
-the alternating optimization process is terminated.}
+the alternating optimization process is terminated.
+Can also be \code{Inf} for no iteration limit.}
+
+\item{\code{seconds_limit}}{(\code{numeric(1)})\cr
+The time limit in seconds before the alternating optimization process is
+terminated.
+Can also be \code{Inf} for no time limit.
+Note that this stopping criteria is only checked \emph{after}
+a sub-problem is solved and not \emph{within} solving a sub-problem, so the
+actual process time can exceed this limit.}
 
 \item{\code{tolerance_value}}{(\code{numeric(1)})\cr
 A non-negative tolerance value. The alternating optimization terminates
-prematurely (i.e., before \code{iteration_limit} is reached) if the
-absolute difference between the current function value and the one from
-the last iteration is smaller than \code{tolerance_value}.}
+if the absolute difference between the current function value and the one
+from the last iteration is smaller than \code{tolerance_value}.
+Can be \code{0} for no value threshold.}
 
-\item{\code{tolerance_parameter}}{(\code{integer(1)})\cr
+\item{\code{tolerance_parameter}}{(\code{numeric(1)})\cr
 A non-negative tolerance value. The alternating optimization terminates
-prematurely (i.e., before \code{iteration_limit} is reached) if the
-distance between the current estimate and the one from the last
+if the distance between the current estimate and the one from the last
 iteration is smaller than \code{tolerance_parameter}.
-By default, the distance is measured with the euclidean norm, but the
-norm can be specified via the \code{tolerance_parameter_norm} field.}
+Can be \code{0} for no parameter threshold.
+By default, the distance is measured using the euclidean norm, but
+another norm can be specified via the \code{tolerance_parameter_norm}
+field.}
 
 \item{\code{tolerance_parameter_norm}}{(\code{function})\cr
 The norm that measures the distance between the current estimate and the
@@ -54,21 +54,31 @@ It must be of the form \code{function(x, y)} for two vector inputs
 By default, the euclidean norm \code{function(x, y) sqrt(sum((x - y)^2))}
 is used.}
 
-\item{\code{output}}{(\code{list()})\cr
-The results of the alternating optimization procedure, contains
-\itemize{
-\item \code{"estimate"}, the parameter vector at termination,
-\item \code{"value"}, the function value at termination,
-\item \code{"details"}, a \code{data.frame} of the function values,
-parameters and computation times in the single iterations,
-\item \code{"seconds"}, the overall computation time in seconds.
-}}
-
 \item{\code{iteration}}{(\code{integer(1)})\cr
 The current iteration number.}
 
 \item{\code{block}}{(\code{integer()})\cr
 The currently active parameter block, represented as parameter indices.}
+
+\item{\code{output}}{(\code{list()}, read-only)\cr
+The output of the alternating optimization procedure, which is a
+\code{list} with the following elements:
+\itemize{
+\item \code{estimate} is the parameter vector at termination.
+\item \code{value} is the function value at termination.
+\item \code{details} is a \code{data.frame} with full information about the procedure:
+For each iteration (column \code{iteration}) it contains the function value
+(column \code{value}), parameter values (columns starting with \code{p} followed by
+the parameter index), the active parameter block (columns starting with \code{b}
+followed by the parameter index, where \code{1} stands for a parameter contained
+in the active parameter block and \code{0} if not), computation times in seconds
+(column \code{seconds}), and a code that summarizes whether the update got
+accepted (column \code{update_code}, where \code{0} stands for an accepted update,
+\code{1} for a rejected update due to an error when solving the sub-problem, and
+\code{2} for a rejected update because it did not improve the function value).
+\item \code{seconds} is the overall computation time in seconds.
+\item \code{stopping_reason} is a message why the procedure has terminated.
+}}
 }
 \if{html}{\out{</div>}}
 }
@@ -86,6 +96,7 @@ The currently active parameter block, represented as parameter indices.}
 \item \href{#method-Procedure-get_parameter}{\code{Procedure$get_parameter()}}
 \item \href{#method-Procedure-get_parameter_latest}{\code{Procedure$get_parameter_latest()}}
 \item \href{#method-Procedure-get_seconds}{\code{Procedure$get_seconds()}}
+\item \href{#method-Procedure-get_seconds_total}{\code{Procedure$get_seconds_total()}}
 \item \href{#method-Procedure-check_stopping}{\code{Procedure$check_stopping()}}
 }
 }
@@ -98,9 +109,11 @@ Creates a new object of this \link[R6:R6Class]{R6} class.
 \if{html}{\out{<div class="r">}}\preformatted{Procedure$new(
   verbose = FALSE,
   minimize = TRUE,
-  iteration_limit = 10,
-  tolerance_value = 1e-06,
-  tolerance_parameter = 1e-06
+  iteration_limit = Inf,
+  seconds_limit = Inf,
+  tolerance_value = 0,
+  tolerance_parameter = 0,
+  tolerance_parameter_norm = function(x, y) sqrt(sum((x - y)^2))
 )}\if{html}{\out{</div>}}
 }
 
@@ -108,26 +121,49 @@ Creates a new object of this \link[R6:R6Class]{R6} class.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{verbose}}{(\code{logical(1)})\cr
-Print tracing details during the alternating optimization process?}
+Whether to print tracing details during the alternating optimization
+process.}
 
 \item{\code{minimize}}{(\code{logical(1)})\cr
-Perform minimization? Alternatively, maximization is performed.}
+Whether to minimize during the alternating optimization process.
+If \code{FALSE}, maximization is performed.}
 
-\item{\code{iteration_limit}}{(\code{integer(1)})\cr
-The maximum number of iterations through the parameter partition before the
-alternating optimization process is terminated. Can also be \code{Inf}.}
+\item{\code{iteration_limit}}{(\code{integer(1)} or \code{Inf})\cr
+The maximum number of iterations through the parameter partition before
+the alternating optimization process is terminated.
+Can also be \code{Inf} for no iteration limit.}
+
+\item{\code{seconds_limit}}{(\code{numeric(1)})\cr
+The time limit in seconds before the alternating optimization process is
+terminated.
+Can also be \code{Inf} for no time limit.
+Note that this stopping criteria is only checked \emph{after}
+a sub-problem is solved and not \emph{within} solving a sub-problem, so the
+actual process time can exceed this limit.}
 
 \item{\code{tolerance_value}}{(\code{numeric(1)})\cr
 A non-negative tolerance value. The alternating optimization terminates
-prematurely (i.e., before \code{iteration_limit} is reached) if the absolute
-difference between the current function value and the one from the last
-iteration is smaller than \code{tolerance_value}.}
+if the absolute difference between the current function value and the one
+from the last iteration is smaller than \code{tolerance_value}.
+Can be \code{0} for no value threshold.}
 
 \item{\code{tolerance_parameter}}{(\code{numeric(1)})\cr
 A non-negative tolerance value. The alternating optimization terminates
-prematurely (i.e., before \code{iteration_limit} is reached) if the euclidean
-distance between the current estimate and the one from the last iteration is
-smaller than \code{tolerance_parameter}.}
+if the distance between the current estimate and the one from the last
+iteration is smaller than \code{tolerance_parameter}.
+Can be \code{0} for no parameter threshold.
+By default, the distance is measured using the euclidean norm, but
+another norm can be specified via the \code{tolerance_parameter_norm}
+field.}
+
+\item{\code{tolerance_parameter_norm}}{(\code{function})\cr
+The norm that measures the distance between the current estimate and the
+one from the last iteration. If the distance is smaller than
+\code{tolerance_parameter}, the procedure is terminated.
+It must be of the form \code{function(x, y)} for two vector inputs
+\code{x} and \code{y}, and return a single \code{numeric} value.
+By default, the euclidean norm \code{function(x, y) sqrt(sum((x - y)^2))}
+is used.}
 }
 \if{html}{\out{</div>}}
 }
@@ -148,7 +184,7 @@ Print details about this object.
 \subsection{Method \code{status()}}{
 Prints a status message.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Procedure$status(message, verbose = self$verbose)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Procedure$status(message, message_type = 8, verbose = self$verbose)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -157,8 +193,22 @@ Prints a status message.
 \item{\code{message}}{(\code{character(1)})\cr
 The status message.}
 
+\item{\code{message_type}}{(\code{integer(1)})\cr
+The type of the message, one of the following:
+\itemize{
+\item \code{1} for \code{cli::cli_h1()}
+\item \code{2} for \code{cli::cli_h2()}
+\item \code{3} for \code{cli::cli_h3()}
+\item \code{4} for \code{cli::cli_alert_success()}
+\item \code{5} for \code{cli::cli_alert_info()}
+\item \code{6} for \code{cli::cli_alert_warning()}
+\item \code{7} for \code{cli::cli_alert_danger()}
+\item \code{8} for \code{cli::cat_line()}
+}}
+
 \item{\code{verbose}}{(\code{logical(1)})\cr
-Print tracing details during the alternating optimization process?}
+Whether to print tracing details during the alternating optimization
+process.}
 }
 \if{html}{\out{</div>}}
 }
@@ -167,19 +217,22 @@ Print tracing details during the alternating optimization process?}
 \if{html}{\out{<a id="method-Procedure-initialize_details"></a>}}
 \if{latex}{\out{\hypertarget{method-Procedure-initialize_details}{}}}
 \subsection{Method \code{initialize_details()}}{
-TODO
+Initializes the \code{details} part of the output.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Procedure$initialize_details(initial, value, npar)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Procedure$initialize_details(initial_parameter, initial_value, npar)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{initial}}{TODO}
+\item{\code{initial_parameter}}{(\code{numeric()})\cr
+The starting parameter values for the procedure.}
 
-\item{\code{value}}{TODO}
+\item{\code{initial_value}}{(\code{numeric(1)})\cr
+The function value at the initial parameters.}
 
-\item{\code{npar}}{TODO}
+\item{\code{npar}}{(\code{integer(1)})\cr
+The length of the target argument.}
 }
 \if{html}{\out{</div>}}
 }
@@ -188,21 +241,34 @@ TODO
 \if{html}{\out{<a id="method-Procedure-update_details"></a>}}
 \if{latex}{\out{\hypertarget{method-Procedure-update_details}{}}}
 \subsection{Method \code{update_details()}}{
-TODO
+Updates the \code{details} part of the output.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Procedure$update_details(value, parameter_block, seconds, block = self$block)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Procedure$update_details(
+  value,
+  parameter_block,
+  seconds,
+  error,
+  block = self$block
+)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{value}}{TODO}
+\item{\code{value}}{(\code{numeric(1)})\cr
+The updated function value.}
 
-\item{\code{parameter_block}}{TODO}
+\item{\code{parameter_block}}{(\code{numeric()})\cr
+The updated parameter values for the active parameter block.}
 
-\item{\code{seconds}}{TODO}
+\item{\code{seconds}}{(\code{numeric(1)})\cr
+The time in seconds for solving the sub-problem.}
 
-\item{\code{block}}{TODO}
+\item{\code{error}}{(\code{logical(1)})\cr
+Whether solving the sub-problem resulted in an error.}
+
+\item{\code{block}}{(\code{integer()})\cr
+The currently active parameter block, represented as parameter indices.}
 }
 \if{html}{\out{</div>}}
 }
@@ -211,15 +277,38 @@ TODO
 \if{html}{\out{<a id="method-Procedure-get_details"></a>}}
 \if{latex}{\out{\hypertarget{method-Procedure-get_details}{}}}
 \subsection{Method \code{get_details()}}{
-TODO
+Get the \code{details} part of the output.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Procedure$get_details(
   which_iteration = NULL,
   which_block = NULL,
-  which_column = c("iteration", "value", "seconds", "parameter", "block")
+  which_column = c("iteration", "value", "parameter", "block", "seconds", "update_code")
 )}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{which_iteration}}{(\code{integer()})\cr
+Selects the iteration(s).
+Can also be \code{NULL} to select all iterations.}
+
+\item{\code{which_block}}{(\code{character(1)} or \code{integer()})\cr
+Selects the parameter block in the partition and can be one of
+\itemize{
+\item \code{"first"} for the first parameter block,
+\item \code{"last"} for the last parameter block,
+\item an \code{integer} vector of parameter indices,
+\item or \code{NULL} for all parameter blocks.
+}}
+
+\item{\code{which_column}}{(\code{character()})\cr
+Selects the columns in the \code{details} part of the output and can be one or
+more of \code{"iteration"}, \code{"value"}, \code{"parameter"}, \code{"block"}, \code{"seconds"},
+and \code{"update_code"}.}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Procedure-get_value"></a>}}
@@ -251,6 +340,14 @@ Selects the parameter block in the partition and can be one of
 \item an \code{integer} vector of parameter indices,
 \item or \code{NULL} for all parameter blocks.
 }}
+
+\item{\code{keep_iteration_column}}{(\code{logical()})\cr
+Whether to keep the column containing the information about the iteration
+in the output.}
+
+\item{\code{keep_block_columns}}{(\code{logical()})\cr
+Whether to keep the column containing the information about the active
+parameter block in the output.}
 }
 \if{html}{\out{</div>}}
 }
@@ -281,6 +378,32 @@ optimization procedure.
 )}\if{html}{\out{</div>}}
 }
 
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{which_iteration}}{(\code{integer()})\cr
+Selects the iteration(s).
+Can also be \code{NULL} to select all iterations.}
+
+\item{\code{which_block}}{(\code{character(1)} or \code{integer()})\cr
+Selects the parameter block in the partition and can be one of
+\itemize{
+\item \code{"first"} for the first parameter block,
+\item \code{"last"} for the last parameter block,
+\item an \code{integer} vector of parameter indices,
+\item or \code{NULL} for all parameter blocks.
+}}
+
+\item{\code{keep_iteration_column}}{(\code{logical()})\cr
+Whether to keep the column containing the information about the iteration
+in the output.}
+
+\item{\code{keep_block_columns}}{(\code{logical()})\cr
+Whether to keep the column containing the information about the active
+parameter block in the output.}
+}
+\if{html}{\out{</div>}}
+}
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Procedure-get_parameter_latest"></a>}}
@@ -312,14 +435,52 @@ i.e., all except for those with the indices \code{self$block}
 \if{html}{\out{<a id="method-Procedure-get_seconds"></a>}}
 \if{latex}{\out{\hypertarget{method-Procedure-get_seconds}{}}}
 \subsection{Method \code{get_seconds()}}{
-TODO
+Get the optimization time in seconds in different steps of the
+alternating optimization procedure.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Procedure$get_seconds(
-  which_iteration = self$iteration,
+  which_iteration = NULL,
   which_block = NULL,
   keep_iteration_column = FALSE,
   keep_block_columns = FALSE
 )}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{which_iteration}}{(\code{integer()})\cr
+Selects the iteration(s).
+Can also be \code{NULL} to select all iterations.}
+
+\item{\code{which_block}}{(\code{character(1)} or \code{integer()})\cr
+Selects the parameter block in the partition and can be one of
+\itemize{
+\item \code{"first"} for the first parameter block,
+\item \code{"last"} for the last parameter block,
+\item an \code{integer} vector of parameter indices,
+\item or \code{NULL} for all parameter blocks.
+}}
+
+\item{\code{keep_iteration_column}}{(\code{logical()})\cr
+Whether to keep the column containing the information about the iteration
+in the output.}
+
+\item{\code{keep_block_columns}}{(\code{logical()})\cr
+Whether to keep the column containing the information about the active
+parameter block in the output.}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Procedure-get_seconds_total"></a>}}
+\if{latex}{\out{\hypertarget{method-Procedure-get_seconds_total}{}}}
+\subsection{Method \code{get_seconds_total()}}{
+Get the total optimization time in seconds of the alternating
+optimization procedure.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Procedure$get_seconds_total()}\if{html}{\out{</div>}}
 }
 
 }
@@ -331,34 +492,52 @@ Checks if the alternating optimization procedure can be terminated.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Procedure$check_stopping(
   iteration_limit = self$iteration_limit,
+  seconds_limit = self$seconds_limit,
   tolerance_value = self$tolerance_value,
   tolerance_parameter = self$tolerance_parameter,
-  tolerance_parameter_norm = self$tolerance_parameter_norm,
-  verbose = self$verbose
+  tolerance_parameter_norm = self$tolerance_parameter_norm
 )}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{iteration_limit}}{(\code{integer(1)})\cr
-The maximum number of iterations through the parameter partition before the
-alternating optimization process is terminated. Can also be \code{Inf}.}
+\item{\code{iteration_limit}}{(\code{integer(1)} or \code{Inf})\cr
+The maximum number of iterations through the parameter partition before
+the alternating optimization process is terminated.
+Can also be \code{Inf} for no iteration limit.}
+
+\item{\code{seconds_limit}}{(\code{numeric(1)})\cr
+The time limit in seconds before the alternating optimization process is
+terminated.
+Can also be \code{Inf} for no time limit.
+Note that this stopping criteria is only checked \emph{after}
+a sub-problem is solved and not \emph{within} solving a sub-problem, so the
+actual process time can exceed this limit.}
 
 \item{\code{tolerance_value}}{(\code{numeric(1)})\cr
 A non-negative tolerance value. The alternating optimization terminates
-prematurely (i.e., before \code{iteration_limit} is reached) if the absolute
-difference between the current function value and the one from the last
-iteration is smaller than \code{tolerance_value}.}
+if the absolute difference between the current function value and the one
+from the last iteration is smaller than \code{tolerance_value}.
+Can be \code{0} for no value threshold.}
 
 \item{\code{tolerance_parameter}}{(\code{numeric(1)})\cr
 A non-negative tolerance value. The alternating optimization terminates
-prematurely (i.e., before \code{iteration_limit} is reached) if the euclidean
-distance between the current estimate and the one from the last iteration is
-smaller than \code{tolerance_parameter}.}
+if the distance between the current estimate and the one from the last
+iteration is smaller than \code{tolerance_parameter}.
+Can be \code{0} for no parameter threshold.
+By default, the distance is measured using the euclidean norm, but
+another norm can be specified via the \code{tolerance_parameter_norm}
+field.}
 
-\item{\code{verbose}}{(\code{logical(1)})\cr
-Print tracing details during the alternating optimization process?}
+\item{\code{tolerance_parameter_norm}}{(\code{function})\cr
+The norm that measures the distance between the current estimate and the
+one from the last iteration. If the distance is smaller than
+\code{tolerance_parameter}, the procedure is terminated.
+It must be of the form \code{function(x, y)} for two vector inputs
+\code{x} and \code{y}, and return a single \code{numeric} value.
+By default, the euclidean norm \code{function(x, y) sqrt(sum((x - y)^2))}
+is used.}
 }
 \if{html}{\out{</div>}}
 }

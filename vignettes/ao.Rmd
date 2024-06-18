@@ -70,7 +70,7 @@ ao_fixed(
   ...,
   fixed_partition = as.list(1:length(initial)),
   minimize = TRUE,
-  iteration_limit = 10,
+  iteration_limit = Inf,
   tolerance_value = 1e-6,
   verbose = FALSE
 )
@@ -150,16 +150,21 @@ ggplot(grid, aes(x = Var1, y = Var2, z = z)) +
 
 Minimizing Himmelblau's function through alternating minimization for $\mathbf{x}$ and $\mathbf{y}$ with initial values $\mathbf{x}^{(0)} = \mathbf{y}^{(0)} = 0$ can be accomplished as follows:
 
-```{r, ao himmelblau, eval = FALSE}
-ao_fixed(
-  f = himmelblau,
-  initial = c(0, 0),
-  fixed_partition = list(1, 2),
-  minimize = TRUE,
-  iteration_limit = Inf,
-  tolerance_value = 1e-6
-)
+```{r, ao himmelblau}
+ao_fixed(f = himmelblau, initial = c(0, 0))
 ```
+
+Here, we see the output of the alternating optimization procedure, which is a `list` that contains the following elements:
+
+- `estimate` is the parameter vector at termination.
+
+- `value` is the function value at termination.
+
+- `details` is a `data.frame` with full information about the procedure: For each iteration (column `iteration`) it contains the function value (column `value`), parameter values (columns starting with `p` followed by the parameter index), the active parameter block (columns starting with `b` followed by the parameter index, where `1` stands for a parameter contained in the active parameter block and `0` if not), computation times in seconds (column `seconds`), and a code that summarizes whether the update got accepted (column `update_code`, where `0` stands for an accepted update, `1` for a rejected update due to an error when solving the sub-problem, and `2` for a rejected update because it did not improve the function value).
+
+- `seconds` is the overall computation time in seconds.
+
+- `stopping_reason` is a message why the procedure has terminated.
 
 ### `ao_random()` for random parameter partitions 
 

@@ -71,7 +71,7 @@ ao_input_checks <- function(
 #'
 #' @keywords internal
 
-ao_build_block_objective <- function(partition) {
+ao_build_block_objective <- function(partition, objective) {
   function(parameter_block, parameter_fixed, block) {
     theta <- numeric(partition$npar)
     theta[block] <- parameter_block

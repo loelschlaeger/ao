@@ -4,12 +4,16 @@
 \alias{ao_build_block_objective}
 \title{Block objective function}
 \usage{
-ao_build_block_objective(partition)
+ao_build_block_objective(partition, objective)
 }
 \arguments{
-\item{partition}{(\code{numeric()})\cr
-The definition of the target argument partition for alternating optimization,
-can be created via \code{\link{Partition}}.}
+\item{partition}{(\code{Partition})\cr
+The parameter partition for alternating optimization.
+Can be created via \code{\link{Partition}}.}
+
+\item{objective}{(\code{Objective})\cr
+The objective function to be optimized via alternating optimization.
+Can be created via \code{\link[optimizeR]{Objective}}.}
 }
 \value{
 TODO

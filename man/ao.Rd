@@ -20,7 +20,7 @@ ao_fixed(
   ...,
   fixed_partition = as.list(1:length(initial)),
   minimize = TRUE,
-  iterations_limit = 10,
+  iteration_limit = Inf,
   tolerance_value = 1e-06,
   verbose = FALSE
 )
@@ -30,34 +30,37 @@ ao_random(
   initial,
   ...,
   new_block_probability = 0.3,
-  minimum_block_number = 1,
+  minimum_block_number = 2,
   minimize = TRUE,
-  iterations = 10,
-  tolerance = 1e-06,
-  joint_end = FALSE,
+  iteration_limit = Inf,
+  tolerance_value = 1e-06,
   verbose = FALSE
 )
 }
 \arguments{
-\item{objective}{(\code{numeric()})\cr
-The definition of the objective function to be optimized via alternating
-optimization, can be created via \code{\link[optimizeR]{Objective}}.}
+\item{objective}{(\code{Objective})\cr
+The objective function to be optimized via alternating optimization.
+Can be created via \code{\link[optimizeR]{Objective}}.}
 
-\item{partition}{(\code{numeric()})\cr
-The definition of the target argument partition for alternating optimization,
-can be created via \code{\link{Partition}}.}
+\item{partition}{(\code{Partition})\cr
+The parameter partition for alternating optimization.
+Can be created via \code{\link{Partition}}.}
 
 \item{optimizer}{(\code{Optimizer})\cr
-The definition of the base optimizer that solves the optimization problems in
-the partitions, can be created via \code{\link[optimizeR]{Optimizer}}.}
+The optimizer for solving the sub-problems.
+Can be created via \code{\link[optimizeR]{Optimizer}}.}
 
 \item{initial}{(\code{numeric()})\cr
-The starting parameter values for the procedure.}
+The starting parameter values.}
+
+\item{procedure}{(\code{Procedure})\cr
+The alternating optimization procedure.
+Can be created via \code{\link{Procedure}}.}
 
 \item{f}{(\code{function})\cr
 A \code{function} to be optimized, returning a single \code{numeric}.
 The first argument of \code{f} must be a \code{numeric} of the same length as
-\code{initial} followed by any other arguments specified by the \code{...}
+\code{initial}, followed by any other arguments specified by the \code{...}
 argument.}
 
 \item{...}{Additional arguments to be passed to \code{f}.}
@@ -66,19 +69,22 @@ argument.}
 A \code{list} of vectors of indices of \code{initial}, specifying the
 partition of the parameter vector in the alternating optimization process.
 The default is \code{as.list(1:length(initial))}, i.e. each parameter is
-optimized separately. Parameter indices can be members of multiple blocks.}
+optimized separately.}
 
 \item{minimize}{(\code{logical(1)})\cr
-Perform minimization? Alternatively, maximization is performed.}
+Whether to minimize during the alternating optimization process.
+If \code{FALSE}, maximization is performed.}
+
+\item{iteration_limit}{(\code{integer(1)} or \code{Inf})\cr
+The maximum number of iterations through the parameter partition before
+the alternating optimization process is terminated.
+Can also be \code{Inf} for no iteration limit.}
 
 \item{tolerance_value}{(\code{numeric(1)})\cr
 A non-negative tolerance value. The alternating optimization terminates
-prematurely (i.e., before \code{iteration_limit} is reached) if the absolute
-difference between the current function value and the one from the last
-iteration is smaller than \code{tolerance_value}.}
-
-\item{verbose}{(\code{logical(1)})\cr
-Print tracing details during the alternating optimization process?}
+if the absolute difference between the current function value and the one
+from the last iteration is smaller than \code{tolerance_value}.
+Can be \code{0} for no value threshold.}
 
 \item{new_block_probability}{(\code{numeric(1)})\cr
 The probability for a new parameter block in random partitions.
@@ -87,29 +93,24 @@ result in smaller parameter blocks.}
 
 \item{minimum_block_number}{(\code{integer(1)})\cr
 The minimum number of blocks in random partitions.}
-
-\item{joint_end}{(\code{logical(1)})\cr
-Optimize the parameter set jointly after the alternating optimization process
-is terminated?}
-
-\item{iteration_limit}{(\code{integer(1)})\cr
-The maximum number of iterations through the parameter partition before the
-alternating optimization process is terminated. Can also be \code{Inf}.}
-
-\item{tolerance_parameter}{(\code{numeric(1)})\cr
-A non-negative tolerance value. The alternating optimization terminates
-prematurely (i.e., before \code{iteration_limit} is reached) if the euclidean
-distance between the current estimate and the one from the last iteration is
-smaller than \code{tolerance_parameter}.}
 }
 \value{
-A \code{list} with the elements
+A \code{list} with the following elements:
 \itemize{
-\item \code{estimate}, the parameter vector at termination,
-\item \code{value}, the function value at termination,
-\item \code{details}, a \code{data.frame} of the function values, parameters and
-computation times in the single iterations,
-\item and \code{seconds}, the overall computation time in seconds.
+\item \code{estimate} is the parameter vector at termination.
+\item \code{value} is the function value at termination.
+\item \code{details} is a \code{data.frame} with full information about the procedure:
+For each iteration (column \code{iteration}) it contains the function value
+(column \code{value}), parameter values (columns starting with \code{p} followed by
+the parameter index), the active parameter block (columns starting with \code{b}
+followed by the parameter index, where \code{1} stands for a parameter contained
+in the active parameter block and \code{0} if not), computation times in seconds
+(column \code{seconds}), and a code that summarizes whether the update got
+accepted (column \code{update_code}, where \code{0} stands for an accepted update,
+\code{1} for a rejected update due to an error when solving the sub-problem, and
+\code{2} for a rejected update because it did not improve the function value).
+\item \code{seconds} is the overall computation time in seconds.
+\item \code{stopping_reason} is a message why the procedure has terminated.
 }
 }
 \description{
@@ -123,6 +124,14 @@ during the alternating optimization procedure
 \item \code{ao_random} is the special case of random partitions
 }
 }
+\section{Fields}{
+
+\describe{
+\item{\code{verbose}}{(\code{logical(1)})\cr
+Whether to print tracing details during the alternating optimization
+process.}
+}}
+
 \examples{
 # Example 1: Minimization of Himmelblau's function --------------------------
 
@@ -131,9 +140,8 @@ himmelblau <- function(x) (x[1]^2 + x[2] - 11)^2 + (x[1] + x[2]^2 - 7)^2
 
 ao_fixed(
   f = himmelblau,
-  initial = rnorm(2),             # random initial value
+  initial = c(0, 0),              # initialization at the origin
   fixed_partition = as.list(1:2), # minimize one parameter cond. on the other
-  iteration_limit = 10,           # stop after at most 10 iterations
   tolerance_value = 1e-6,         # stop if objective value improvem. <= 1e-6
   verbose = FALSE
 )

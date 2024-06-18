@@ -7,20 +7,24 @@
 ao_input_checks(objective, partition, optimizer, initial, procedure)
 }
 \arguments{
-\item{objective}{(\code{numeric()})\cr
-The definition of the objective function to be optimized via alternating
-optimization, can be created via \code{\link[optimizeR]{Objective}}.}
+\item{objective}{(\code{Objective})\cr
+The objective function to be optimized via alternating optimization.
+Can be created via \code{\link[optimizeR]{Objective}}.}
 
-\item{partition}{(\code{numeric()})\cr
-The definition of the target argument partition for alternating optimization,
-can be created via \code{\link{Partition}}.}
+\item{partition}{(\code{Partition})\cr
+The parameter partition for alternating optimization.
+Can be created via \code{\link{Partition}}.}
 
 \item{optimizer}{(\code{Optimizer})\cr
-The definition of the base optimizer that solves the optimization problems in
-the partitions, can be created via \code{\link[optimizeR]{Optimizer}}.}
+The optimizer for solving the sub-problems.
+Can be created via \code{\link[optimizeR]{Optimizer}}.}
 
 \item{initial}{(\code{numeric()})\cr
-The starting parameter values for the procedure.}
+The starting parameter values.}
+
+\item{procedure}{(\code{Procedure})\cr
+The alternating optimization procedure.
+Can be created via \code{\link{Procedure}}.}
 }
 \value{
 Either throws an error, or invisible \code{TRUE}.

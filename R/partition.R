@@ -21,9 +21,6 @@
 #' @param parameter_block ()\cr
 #' TODO
 #'
-#' @examples
-#' # TODO
-#'
 #' @export
 
 Partition <- R6::R6Class("Partition",

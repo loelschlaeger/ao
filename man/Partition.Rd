@@ -6,10 +6,6 @@
 \description{
 Partition of the target argument for alternating optimization.
 }
-\examples{
-# TODO
-
-}
 \section{Active bindings}{
 \if{html}{\out{<div class="r6-active-bindings">}}
 \describe{

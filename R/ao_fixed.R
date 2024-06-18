@@ -7,9 +7,11 @@ ao_fixed <- function(
     ...,
     fixed_partition = as.list(1:length(initial)),
     minimize = TRUE,
-    iterations_limit = 10,
+    iteration_limit = Inf,
     tolerance_value = 1e-6,
-    verbose = FALSE) {
+    verbose = FALSE
+  ) {
+
   ### define 'Objective' object
   objective <- Objective$new(f = f, npar = length(initial), ...)
 
@@ -24,8 +26,10 @@ ao_fixed <- function(
 
   ### define 'Procedure' object
   procedure <- Procedure$new(
-    verbose = verbose, minimize = minimize, iteration_limit = iteration_limit,
-    tolerance_value = tolerance_value, tolerance_parameter = 0
+    verbose = verbose,
+    minimize = minimize,
+    iteration_limit = iteration_limit,
+    tolerance_value = tolerance_value
   )
 
   ### perform alternating optimization
