@@ -182,9 +182,7 @@ ao <- function(
     tolerance_value = 1e-6,
     tolerance_parameter = 1e-6,
     tolerance_parameter_norm = function(x, y) sqrt(sum((x - y)^2)),
-    verbose = FALSE
-  ) {
-
+    verbose = FALSE) {
   ### input checks and building of objects
   ao_input_check(
     "initial",
@@ -253,7 +251,6 @@ ao <- function(
 
   ### build sub-problem template
   solve_sub_problem <- function(parameter_block, parameter_fixed, block) {
-
     ### build block objective function
     block_objective <- function(parameter_block) {
       theta <- numeric(npar)
@@ -285,7 +282,6 @@ ao <- function(
       initial = parameter_block,
       direction = ifelse(procedure$minimize, "min", "max")
     )
-
   }
 
   ### start alternating optimization
@@ -294,7 +290,6 @@ ao <- function(
     initial_value = objective$evaluate(initial)
   )
   while (TRUE) {
-
     ### check stopping criteria
     if (procedure$check_stopping()) {
       break

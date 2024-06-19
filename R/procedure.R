@@ -20,8 +20,7 @@
 
 ao_input_check <- function(
     argument_name, check_result, error_message = check_result,
-    prefix = "Input {.var {argument_name}} is bad:"
-  ) {
+    prefix = "Input {.var {argument_name}} is bad:") {
   if (!isTRUE(check_result)) {
     cli::cli_abort(paste(prefix, error_message), call = NULL)
   }
@@ -138,19 +137,17 @@ Procedure <- R6::R6Class("Procedure",
 
     #' @description
     #' Creates a new object of this [R6][R6::R6Class] class.
-    initialize = function(
-      npar = integer(),
-      partition = "sequential",
-      new_block_probability = 0.3,
-      minimum_block_number = 2,
-      verbose = FALSE,
-      minimize = TRUE,
-      iteration_limit = Inf,
-      seconds_limit = Inf,
-      tolerance_value = 1e-6,
-      tolerance_parameter = 1e-6,
-      tolerance_parameter_norm = function(x, y) sqrt(sum((x - y)^2))
-    ) {
+    initialize = function(npar = integer(),
+                          partition = "sequential",
+                          new_block_probability = 0.3,
+                          minimum_block_number = 2,
+                          verbose = FALSE,
+                          minimize = TRUE,
+                          iteration_limit = Inf,
+                          seconds_limit = Inf,
+                          tolerance_value = 1e-6,
+                          tolerance_parameter = 1e-6,
+                          tolerance_parameter_norm = function(x, y) sqrt(sum((x - y)^2))) {
       ao_input_check(
         "npar",
         checkmate::check_int(npar, lower = 0)
@@ -167,7 +164,6 @@ Procedure <- R6::R6Class("Procedure",
       self$tolerance_parameter <- tolerance_parameter
       self$tolerance_parameter_norm <- tolerance_parameter_norm
       invisible(self)
-
     },
 
     #' @description
@@ -235,10 +231,10 @@ Procedure <- R6::R6Class("Procedure",
     #' @param block (`integer()`)\cr
     #' The currently active parameter block, represented as parameter indices.
     update_details = function(value, parameter_block, seconds, error, block = self$block) {
-
       ### check inputs
       check_block <- checkmate::check_integerish(
-        block, unique = TRUE, lower = 1, upper = self$npar
+        block,
+        unique = TRUE, lower = 1, upper = self$npar
       )
       check_value <- checkmate::check_number(
         value,
@@ -281,8 +277,7 @@ Procedure <- R6::R6Class("Procedure",
         private$.details[rows + 1, parameter_columns] <- parameter
       } else {
         private$.details[rows + 1, ] <- private$.details[rows, ]
-        message <- switch(
-          update_code,
+        message <- switch(update_code,
           "1" = "an error when solving the sub-problem occured",
           "2" = "did not improve the function value"
         )
@@ -307,8 +302,7 @@ Procedure <- R6::R6Class("Procedure",
     #' Get a parameter partition.
     get_partition = function() {
       if (checkmate::test_string(self$partition)) {
-        switch(
-          self$partition,
+        switch(self$partition,
           "sequential" = as.list(seq_len(self$npar)),
           "random"     = private$.generate_random_partition(),
           "none"       = list(seq_len(self$npar))
@@ -320,12 +314,9 @@ Procedure <- R6::R6Class("Procedure",
 
     #' @description
     #' Get the `details` part of the output.
-    get_details = function(
-      which_iteration = NULL,
-      which_block = NULL,
-      which_column = c("iteration", "value", "parameter", "block", "seconds", "update_code")
-    ) {
-
+    get_details = function(which_iteration = NULL,
+                           which_block = NULL,
+                           which_column = c("iteration", "value", "parameter", "block", "seconds", "update_code")) {
       ### input checks
       ao_input_check(
         "which_iteration",
@@ -337,11 +328,11 @@ Procedure <- R6::R6Class("Procedure",
       ao_input_check(
         "which_block",
         checkmate::test_choice(which_block, c("first", "last"), null.ok = TRUE) ||
-        checkmate::test_integerish(
-          which_block,
-          lower = 1, upper = self$npar, unique = TRUE,
-          min.len = 1, max.len = self$npar, any.missing = FALSE
-        ),
+          checkmate::test_integerish(
+            which_block,
+            lower = 1, upper = self$npar, unique = TRUE,
+            min.len = 1, max.len = self$npar, any.missing = FALSE
+          ),
         "Must be one of {.val first}, {.val last}, {.code NULL}, or of class
         {.cls integer}"
       )
@@ -457,7 +448,6 @@ Procedure <- R6::R6Class("Procedure",
     #' Get the parameter value in the latest step of the alternating
     #' optimization procedure.
     get_parameter_latest = function(parameter_type = "full") {
-
       ### input checks
       ao_input_check(
         "parameter_type",
@@ -523,7 +513,6 @@ Procedure <- R6::R6Class("Procedure",
     #' @description
     #' Checks if the alternating optimization procedure can be terminated.
     check_stopping = function() {
-
       ### check stopping criteria
       stopping <- FALSE
       while (TRUE) {
@@ -625,7 +614,8 @@ Procedure <- R6::R6Class("Procedure",
           ao_input_check(
             "partition",
             checkmate::check_integerish(
-              unlist(value), lower = 1, upper = self$npar, any.missing = FALSE
+              unlist(value),
+              lower = 1, upper = self$npar, any.missing = FALSE
             ),
             prefix = "Elements in {.cls list} {.var partition} are bad:"
           )
@@ -736,7 +726,8 @@ Procedure <- R6::R6Class("Procedure",
         ao_input_check(
           "seconds_limit",
           checkmate::check_number(
-            value, lower = 0, finite = FALSE, null.ok = FALSE, na.ok = FALSE
+            value,
+            lower = 0, finite = FALSE, null.ok = FALSE, na.ok = FALSE
           )
         )
         private$.seconds_limit <- value
@@ -826,7 +817,8 @@ Procedure <- R6::R6Class("Procedure",
         ao_input_check(
           "block",
           checkmate::check_integerish(
-            value, unique = TRUE, lower = 1, upper = self$npar
+            value,
+            unique = TRUE, lower = 1, upper = self$npar
           )
         )
         private$.block <- value
@@ -901,11 +893,9 @@ Procedure <- R6::R6Class("Procedure",
     # @param min (`integer(1)`)\cr
     # The minimum number of blocks
     # @author Siddhartha Chib
-    .generate_random_partition = function(
-      x = self$npar,
-      p = self$new_block_probability,
-      min = self$minimum_block_number
-    ) {
+    .generate_random_partition = function(x = self$npar,
+                                          p = self$new_block_probability,
+                                          min = self$minimum_block_number) {
       if (min == x) {
         return(as.list(seq_len(x)))
       }
