@@ -1206,14 +1206,9 @@
     },
     "oeli": {
       "Package": "oeli",
-      "Version": "0.5.0.9000",
-      "Source": "GitHub",
-      "RemoteType": "github",
-      "RemoteHost": "api.github.com",
-      "RemoteRepo": "oeli",
-      "RemoteUsername": "loelschlaeger",
-      "RemoteRef": "HEAD",
-      "RemoteSha": "6efd0fc3b17e1f0456d16e00cc10f641921568ff",
+      "Version": "0.5.2",
+      "Source": "Repository",
+      "Repository": "CRAN",
       "Requirements": [
         "Rcpp",
         "RcppArmadillo",
@@ -1231,7 +1226,7 @@
         "usethis",
         "utils"
       ],
-      "Hash": "29cf6b790cb4ca53f2a607e20a3380c0"
+      "Hash": "6945f22bb29acd632bdaba0eea4b6d1b"
     },
     "openssl": {
       "Package": "openssl",
@@ -1245,14 +1240,9 @@
     },
     "optimizeR": {
       "Package": "optimizeR",
-      "Version": "1.1.0",
-      "Source": "GitHub",
-      "RemoteType": "github",
-      "RemoteHost": "api.github.com",
-      "RemoteRepo": "optimizeR",
-      "RemoteUsername": "loelschlaeger",
-      "RemoteRef": "HEAD",
-      "RemoteSha": "3ff2d9612295dd6679210e9107629ace4ca73be4",
+      "Version": "1.1.1",
+      "Source": "Repository",
+      "Repository": "CRAN",
       "Requirements": [
         "R",
         "R6",
@@ -1265,7 +1255,7 @@
         "ucminf",
         "utils"
       ],
-      "Hash": "a175e0d72297653ec45716d38d48c2b2"
+      "Hash": "4a4b6fef09e03eb9baf3dd296fd3fcf8"
     },
     "pillar": {
       "Package": "pillar",

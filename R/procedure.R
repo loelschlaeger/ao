@@ -1,7 +1,59 @@
+#' Input checks
+#'
+#' @description
+#' This helper function checks the inputs for the \code{\link{ao}} function.
+#'
+#' @param argument_name (`character(1)`)\cr
+#' The name of the argument that is checked.
+#'
+#' @param check_result (`logical(1)`)\cr
+#' \code{TRUE} if the check was successful.
+#'
+#' @param error_message (`character(1)`)\cr
+#' An error message to be printed.
+#'
+#' @param prefix (`character(1)`)\cr
+#' A prefix before the error message.
+#'
+#' @return
+#' Either throws an error, or invisible \code{TRUE}.
+
+ao_input_check <- function(
+    argument_name, check_result, error_message = check_result,
+    prefix = "Input {.var {argument_name}} is bad:"
+  ) {
+  if (!isTRUE(check_result)) {
+    cli::cli_abort(paste(prefix, error_message), call = NULL)
+  }
+  invisible(TRUE)
+}
+
 #' Procedure Object
 #'
 #' @description
-#' Details for alternating optimization procedure.
+#' This object specifies alternating optimization procedure.
+#'
+#' @param npar (`integer(1)`)\cr
+#' The (total) length of the target argument(s).
+#'
+#' @param partition (`character(1)` or `list()`)\cr
+#' Defines the parameter partition, and can be either
+#' * `"sequential"` for treating each parameter separately,
+#' * `"random"` for a random partition in each iteration,
+#' * `"none"` for no partition (which is equivalent to joint optimization),
+#' * or a `list` of vectors of parameter indices, specifying a custom
+#'   partition for the alternating optimization process.
+#'
+#' @param new_block_probability (`numeric(1)`)\cr
+#' Only relevant if `partition = "random"`.
+#' The probability for a new parameter block when creating a random
+#' partitions.
+#' Values close to 0 result in larger parameter blocks, values close to 1
+#' result in smaller parameter blocks.
+#'
+#' @param minimum_block_number (`integer(1)`)\cr
+#' Only relevant if `partition = "random"`.
+#' The minimum number of blocks in random partitions.
 #'
 #' @param verbose (`logical(1)`)\cr
 #' Whether to print tracing details during the alternating optimization
@@ -79,8 +131,6 @@
 #'   i.e., the parameters with the indices `self$block`
 #' - \code{"fixed"} to get the parameter values which are currently fixed,
 #'   i.e., all except for those with the indices `self$block`
-#'
-#' @export
 
 Procedure <- R6::R6Class("Procedure",
   cloneable = FALSE,
@@ -88,13 +138,27 @@ Procedure <- R6::R6Class("Procedure",
 
     #' @description
     #' Creates a new object of this [R6][R6::R6Class] class.
-    initialize = function(verbose = FALSE,
-                          minimize = TRUE,
-                          iteration_limit = Inf,
-                          seconds_limit = Inf,
-                          tolerance_value = 0,
-                          tolerance_parameter = 0,
-                          tolerance_parameter_norm = function(x, y) sqrt(sum((x - y)^2))) {
+    initialize = function(
+      npar = integer(),
+      partition = "sequential",
+      new_block_probability = 0.3,
+      minimum_block_number = 2,
+      verbose = FALSE,
+      minimize = TRUE,
+      iteration_limit = Inf,
+      seconds_limit = Inf,
+      tolerance_value = 1e-6,
+      tolerance_parameter = 1e-6,
+      tolerance_parameter_norm = function(x, y) sqrt(sum((x - y)^2))
+    ) {
+      ao_input_check(
+        "npar",
+        checkmate::check_int(npar, lower = 0)
+      )
+      private$.npar <- npar
+      self$partition <- partition
+      self$new_block_probability <- new_block_probability
+      self$minimum_block_number <- minimum_block_number
       self$verbose <- verbose
       self$minimize <- minimize
       self$iteration_limit <- iteration_limit
@@ -103,13 +167,7 @@ Procedure <- R6::R6Class("Procedure",
       self$tolerance_parameter <- tolerance_parameter
       self$tolerance_parameter_norm <- tolerance_parameter_norm
       invisible(self)
-    },
 
-    #' @description
-    #' Print details about this object.
-    print = function() {
-      cat("procedure object")
-      invisible(self)
     },
 
     #' @description
@@ -126,7 +184,7 @@ Procedure <- R6::R6Class("Procedure",
     #' * `6` for `cli::cli_alert_warning()`
     #' * `7` for `cli::cli_alert_danger()`
     #' * `8` for `cli::cat_line()`
-    status = function(message, message_type = 8, verbose = self$verbose) {
+    print_status = function(message, message_type = 8, verbose = self$verbose) {
       checkmate::assert_string(message, min.chars = 1)
       checkmate::assert_int(message_type, lower = 1, upper = 8)
       checkmate::assert_flag(verbose)
@@ -151,19 +209,16 @@ Procedure <- R6::R6Class("Procedure",
     #' The starting parameter values for the procedure.
     #' @param initial_value (`numeric(1)`)\cr
     #' The function value at the initial parameters.
-    #' @param npar (`integer(1)`)\cr
-    #' The length of the target argument.
-    initialize_details = function(initial_parameter, initial_value, npar) {
+    initialize_details = function(initial_parameter, initial_value) {
       private$.details <- structure(
         data.frame(
-          t(c(0L, initial_value, initial_parameter, rep(0, npar), 0, 0L))
+          t(c(0L, initial_value, initial_parameter, rep(0, self$npar), 0, 0L))
         ),
         names = c(
-          "iteration", "value", paste0("p", seq_len(npar)),
-          paste0("b", seq_len(npar)), "seconds", "update_code"
+          "iteration", "value", paste0("p", seq_len(self$npar)),
+          paste0("b", seq_len(self$npar)), "seconds", "update_code"
         )
       )
-      private$.npar <- npar
       invisible(self)
     },
 
@@ -180,11 +235,10 @@ Procedure <- R6::R6Class("Procedure",
     #' @param block (`integer()`)\cr
     #' The currently active parameter block, represented as parameter indices.
     update_details = function(value, parameter_block, seconds, error, block = self$block) {
+
       ### check inputs
       check_block <- checkmate::check_integerish(
-        block,
-        unique = TRUE, lower = 1,
-        upper = if (length(private$.npar) == 1) private$.npar else Inf
+        block, unique = TRUE, lower = 1, upper = self$npar
       )
       check_value <- checkmate::check_number(
         value,
@@ -225,62 +279,79 @@ Procedure <- R6::R6Class("Procedure",
         private$.details[rows + 1, "seconds"] <- seconds
         parameter_columns <- which(startsWith(colnames(private$.details), "p"))
         private$.details[rows + 1, parameter_columns] <- parameter
-        block_columns <- which(startsWith(colnames(private$.details), "b"))
-        private$.details[rows + 1, block_columns[block]] <- 1
-        private$.details[rows + 1, block_columns[-block]] <- 0
       } else {
         private$.details[rows + 1, ] <- private$.details[rows, ]
-        self$status("update rejected", 6)
+        message <- switch(
+          update_code,
+          "1" = "an error when solving the sub-problem occured",
+          "2" = "did not improve the function value"
+        )
+        self$print_status(paste("update rejected:", message), 6)
       }
+      private$.details[rows + 1, "iteration"] <- self$iteration
+      private$.details[rows + 1, "seconds"] <- seconds
+      block_columns <- which(startsWith(colnames(private$.details), "b"))
+      private$.details[rows + 1, block_columns[block]] <- 1
+      private$.details[rows + 1, block_columns[-block]] <- 0
       private$.details[rows + 1, "update_code"] <- update_code
 
       ### return information
-      self$status("function value:", 8)
+      self$print_status("function value:", 8)
       if (self$verbose) cli::cat_print(value)
-      self$status("parameter:", 8)
+      self$print_status("parameter:", 8)
       if (self$verbose) cli::cat_print(self$get_parameter_latest("full"))
       invisible(self)
     },
 
     #' @description
+    #' Get a parameter partition.
+    get_partition = function() {
+      if (checkmate::test_string(self$partition)) {
+        switch(
+          self$partition,
+          "sequential" = as.list(seq_len(self$npar)),
+          "random"     = private$.generate_random_partition(),
+          "none"       = list(seq_len(self$npar))
+        )
+      } else {
+        self$partition
+      }
+    },
+
+    #' @description
     #' Get the `details` part of the output.
-    get_details = function(which_iteration = NULL, which_block = NULL,
-                           which_column = c("iteration", "value", "parameter", "block", "seconds", "update_code")) {
+    get_details = function(
+      which_iteration = NULL,
+      which_block = NULL,
+      which_column = c("iteration", "value", "parameter", "block", "seconds", "update_code")
+    ) {
+
       ### input checks
-      check <- checkmate::check_integerish(
-        which_iteration,
-        lower = 0, null.ok = TRUE, min.len = 1, any.missing = FALSE
+      ao_input_check(
+        "which_iteration",
+        checkmate::check_integerish(
+          which_iteration,
+          lower = 0, null.ok = TRUE, min.len = 1, any.missing = FALSE
+        )
       )
-      if (!isTRUE(check)) {
-        cli::cli_abort(
-          paste("Input {.var which_iteration} is bad:", check),
-          call = NULL
-        )
-      }
-      if (
-        !checkmate::test_choice(which_block, c("first", "last"), null.ok = TRUE) &&
-          !checkmate::test_integerish(
-            which_block,
-            lower = 1, upper = private$.npar, unique = TRUE,
-            min.len = 1, max.len = private$.npar, any.missing = FALSE
-          )
-      ) {
-        cli::cli_abort(
-          "Input {.var which_block} must be one of {.val first}, {.val last},
-          {.code NULL}, or of class {.cls integer}",
-          call = NULL
-        )
-      }
-      check <- checkmate::check_subset(
-        which_column, c("iteration", "value", "parameter", "block", "seconds", "update_code"),
-        empty.ok = TRUE
+      ao_input_check(
+        "which_block",
+        checkmate::test_choice(which_block, c("first", "last"), null.ok = TRUE) ||
+        checkmate::test_integerish(
+          which_block,
+          lower = 1, upper = self$npar, unique = TRUE,
+          min.len = 1, max.len = self$npar, any.missing = FALSE
+        ),
+        "Must be one of {.val first}, {.val last}, {.code NULL}, or of class
+        {.cls integer}"
       )
-      if (!isTRUE(check)) {
-        cli::cli_abort(
-          paste("Input {.var which_column} is bad:", check),
-          call = NULL
+      ao_input_check(
+        "which_column",
+        checkmate::check_subset(
+          which_column, c("iteration", "value", "parameter", "block", "seconds", "update_code"),
+          empty.ok = TRUE
         )
-      }
+      )
 
       ### filter details
       details <- private$.details
@@ -327,20 +398,14 @@ Procedure <- R6::R6Class("Procedure",
                          keep_iteration_column = FALSE,
                          keep_block_columns = FALSE) {
       ### input checks
-      check <- checkmate::test_flag(keep_iteration_column)
-      if (!isTRUE(check)) {
-        cli::cli_abort(
-          paste("Input {.var keep_iteration_column} is bad:", check),
-          call = NULL
-        )
-      }
-      check <- checkmate::test_flag(keep_block_columns)
-      if (!isTRUE(check)) {
-        cli::cli_abort(
-          paste("Input {.var keep_block_columns} is bad:", check),
-          call = NULL
-        )
-      }
+      ao_input_check(
+        "keep_iteration_column",
+        checkmate::test_flag(keep_iteration_column)
+      )
+      ao_input_check(
+        "keep_block_columns",
+        checkmate::test_flag(keep_block_columns)
+      )
 
       ### return values
       self$get_details(
@@ -368,20 +433,14 @@ Procedure <- R6::R6Class("Procedure",
                              keep_iteration_column = FALSE,
                              keep_block_columns = FALSE) {
       ### input checks
-      check <- checkmate::test_flag(keep_iteration_column)
-      if (!isTRUE(check)) {
-        cli::cli_abort(
-          paste("Input {.var keep_iteration_column} is bad:", check),
-          call = NULL
-        )
-      }
-      check <- checkmate::test_flag(keep_block_columns)
-      if (!isTRUE(check)) {
-        cli::cli_abort(
-          paste("Input {.var keep_block_columns} is bad:", check),
-          call = NULL
-        )
-      }
+      ao_input_check(
+        "keep_iteration_column",
+        checkmate::test_flag(keep_iteration_column)
+      )
+      ao_input_check(
+        "keep_block_columns",
+        checkmate::test_flag(keep_block_columns)
+      )
 
       ### get parameters
       self$get_details(
@@ -398,14 +457,13 @@ Procedure <- R6::R6Class("Procedure",
     #' Get the parameter value in the latest step of the alternating
     #' optimization procedure.
     get_parameter_latest = function(parameter_type = "full") {
+
       ### input checks
-      check <- checkmate::check_choice(parameter_type, c("full", "block", "fixed"))
-      if (!isTRUE(check)) {
-        cli::cli_abort(
-          paste("Input {.var parameter_type} is bad:", check),
-          call = NULL
-        )
-      }
+      ao_input_check(
+        "parameter_type",
+        checkmate::check_choice(parameter_type, c("full", "block", "fixed")),
+        "Must be one of {.val full}, {.val block}, or {.val fixed}"
+      )
 
       ### get latest parameter
       details <- private$.details
@@ -432,20 +490,14 @@ Procedure <- R6::R6Class("Procedure",
                            keep_iteration_column = FALSE,
                            keep_block_columns = FALSE) {
       ### input checks
-      check <- checkmate::test_flag(keep_iteration_column)
-      if (!isTRUE(check)) {
-        cli::cli_abort(
-          paste("Input {.var keep_iteration_column} is bad:", check),
-          call = NULL
-        )
-      }
-      check <- checkmate::test_flag(keep_block_columns)
-      if (!isTRUE(check)) {
-        cli::cli_abort(
-          paste("Input {.var keep_block_columns} is bad:", check),
-          call = NULL
-        )
-      }
+      ao_input_check(
+        "keep_iteration_column",
+        checkmate::test_flag(keep_iteration_column)
+      )
+      ao_input_check(
+        "keep_block_columns",
+        checkmate::test_flag(keep_block_columns)
+      )
 
       ### get parameters
       self$get_details(
@@ -470,31 +522,21 @@ Procedure <- R6::R6Class("Procedure",
 
     #' @description
     #' Checks if the alternating optimization procedure can be terminated.
-    check_stopping = function(iteration_limit = self$iteration_limit,
-                              seconds_limit = self$seconds_limit,
-                              tolerance_value = self$tolerance_value,
-                              tolerance_parameter = self$tolerance_parameter,
-                              tolerance_parameter_norm = self$tolerance_parameter_norm) {
-      ### check inputs
-      self$iteration_limit <- iteration_limit
-      self$seconds_limit <- seconds_limit
-      self$tolerance_value <- tolerance_value
-      self$tolerance_parameter <- tolerance_parameter
-      self$tolerance_parameter_norm <- tolerance_parameter_norm
+    check_stopping = function() {
 
       ### check stopping criteria
       stopping <- FALSE
       while (TRUE) {
         ### check iteration limit
-        if (self$iteration >= iteration_limit) {
-          message <- paste("iteration limit of", iteration_limit, "reached")
+        if (self$iteration >= self$iteration_limit) {
+          message <- paste("iteration limit of", self$iteration_limit, "reached")
           stopping <- TRUE
           break
         }
 
         ### check time limit
-        if (self$get_seconds_total() >= seconds_limit) {
-          message <- paste("time limit of", seconds_limit, "seconds reached")
+        if (self$get_seconds_total() >= self$seconds_limit) {
+          message <- paste("time limit of", self$seconds_limit, "seconds reached")
           stopping <- TRUE
           break
         }
@@ -508,22 +550,22 @@ Procedure <- R6::R6Class("Procedure",
               which_block = "first"
             )
           )
-          if (abs_value_change < tolerance_value) {
-            message <- paste("change in function value is <", tolerance_value)
+          if (abs_value_change < self$tolerance_value) {
+            message <- paste("change in function value is <", self$tolerance_value)
             stopping <- TRUE
             break
           }
 
           ### check parameter tolerance
-          parameter_change <- tolerance_parameter_norm(
+          parameter_change <- self$tolerance_parameter_norm(
             self$get_parameter_latest(),
             self$get_parameter(
               which_iteration = self$iteration - 1,
               which_block = "first"
             )
           )
-          if (parameter_change < tolerance_parameter) {
-            message <- paste("distance of parameters is <", tolerance_parameter)
+          if (parameter_change < self$tolerance_parameter) {
+            message <- paste("distance of parameters is <", self$tolerance_parameter)
             stopping <- TRUE
             break
           }
@@ -534,14 +576,102 @@ Procedure <- R6::R6Class("Procedure",
       ### decide for stopping
       if (isTRUE(stopping)) {
         private$.stopping_reason <- message
-        self$status("\n", 8)
-        self$status(paste("procedure is terminated:", message), 4)
-        self$status("\n", 8)
+        self$print_status("\n", 8)
+        self$print_status(paste("procedure is terminated:", message), 4)
+        self$print_status("\n", 8)
       }
       return(stopping)
     }
   ),
   active = list(
+
+    #' @field npar (`integer(1)`)\cr
+    #' The length of the target argument.
+    npar = function(value) {
+      if (missing(value)) {
+        private$.npar
+      } else {
+        cli::cli_abort(
+          "Field {.var npar} is read-only",
+          call = NULL
+        )
+      }
+    },
+
+    #' @field partition (`character(1)` or `list()`)\cr
+    #' Defines the parameter partition, and can be either
+    #' * `"sequential"` for treating each parameter separately,
+    #' * `"random"` for a random partition in each iteration,
+    #' * `"none"` for no partition (which is equivalent to joint optimization),
+    #' * or a `list` of vectors of parameter indices, specifying a custom
+    #'   partition for the alternating optimization process.
+    partition = function(value) {
+      if (missing(value)) {
+        private$.partition
+      } else {
+        if (checkmate::test_string(value)) {
+          ao_input_check(
+            "partition",
+            checkmate::check_choice(value, c("sequential", "random", "none")),
+            "Must be one of {.val sequential}, {.val random}, or {.val none}"
+          )
+        } else if (checkmate::test_list(value)) {
+          ao_input_check(
+            "partition",
+            checkmate::check_list(value)
+          )
+
+          ### only parameter indices 1,...,'self$npar' allowed
+          ao_input_check(
+            "partition",
+            checkmate::check_integerish(
+              unlist(value), lower = 1, upper = self$npar, any.missing = FALSE
+            ),
+            prefix = "Elements in {.cls list} {.var partition} are bad:"
+          )
+        } else {
+          ao_input_check(
+            "partition",
+            FALSE,
+            "Must be {.val sequential}, {.val random}, {.val none}, or of class {.cls list}"
+          )
+        }
+        private$.partition <- value
+      }
+    },
+
+    #' @field new_block_probability (`numeric(1)`)\cr
+    #' Only relevant if `partition = "random"`.
+    #' The probability for a new parameter block when creating a random
+    #' partitions.
+    #' Values close to 0 result in larger parameter blocks, values close to 1
+    #' result in smaller parameter blocks.
+    new_block_probability = function(value) {
+      if (missing(value)) {
+        private$.new_block_probability
+      } else {
+        ao_input_check(
+          "new_block_probability",
+          checkmate::check_number(value, lower = 0, upper = 1)
+        )
+        private$.new_block_probability <- value
+      }
+    },
+
+    #' @field minimum_block_number (`integer(1)`)\cr
+    #' Only relevant if `partition = "random"`.
+    #' The minimum number of blocks in random partitions.
+    minimum_block_number = function(value) {
+      if (missing(value)) {
+        private$.minimum_block_number
+      } else {
+        ao_input_check(
+          "minimum_block_number",
+          checkmate::check_int(value, lower = 1, upper = self$npar)
+        )
+        private$.minimum_block_number <- value
+      }
+    },
 
     #' @field verbose (`logical(1)`)\cr
     #' Whether to print tracing details during the alternating optimization
@@ -550,13 +680,10 @@ Procedure <- R6::R6Class("Procedure",
       if (missing(value)) {
         private$.verbose
       } else {
-        check <- checkmate::check_flag(value)
-        if (!isTRUE(check)) {
-          cli::cli_abort(
-            paste("Input {.var verbose} is bad:", check),
-            call = NULL
-          )
-        }
+        ao_input_check(
+          "verbose",
+          checkmate::check_flag(value)
+        )
         private$.verbose <- value
       }
     },
@@ -568,13 +695,10 @@ Procedure <- R6::R6Class("Procedure",
       if (missing(value)) {
         private$.minimize
       } else {
-        check <- checkmate::check_flag(value)
-        if (!isTRUE(check)) {
-          cli::cli_abort(
-            paste("Input {.var minimize} is bad:", check),
-            call = NULL
-          )
-        }
+        ao_input_check(
+          "minimize",
+          checkmate::check_flag(value)
+        )
         private$.minimize <- value
       }
     },
@@ -587,13 +711,10 @@ Procedure <- R6::R6Class("Procedure",
       if (missing(value)) {
         private$.iteration_limit
       } else {
-        check <- checkmate::check_number(value, lower = 1, finite = FALSE)
-        if (!isTRUE(check)) {
-          cli::cli_abort(
-            paste("Input {.var iteration_limit} is bad:", check),
-            call = NULL
-          )
-        }
+        ao_input_check(
+          "iteration_limit",
+          checkmate::check_number(value, lower = 1, finite = FALSE)
+        )
         if (is.finite(value)) {
           value <- as.integer(value)
         }
@@ -612,16 +733,12 @@ Procedure <- R6::R6Class("Procedure",
       if (missing(value)) {
         private$.seconds_limit
       } else {
-        check <- checkmate::check_number(
-          value,
-          lower = 0, finite = FALSE, null.ok = FALSE, na.ok = FALSE
-        )
-        if (!isTRUE(check)) {
-          cli::cli_abort(
-            paste("Input {.var seconds_limit} is bad:", check),
-            call = NULL
+        ao_input_check(
+          "seconds_limit",
+          checkmate::check_number(
+            value, lower = 0, finite = FALSE, null.ok = FALSE, na.ok = FALSE
           )
-        }
+        )
         private$.seconds_limit <- value
       }
     },
@@ -635,13 +752,10 @@ Procedure <- R6::R6Class("Procedure",
       if (missing(value)) {
         private$.tolerance_value
       } else {
-        check <- checkmate::check_number(value, lower = 0, finite = TRUE)
-        if (!isTRUE(check)) {
-          cli::cli_abort(
-            paste("Input {.var tolerance_value} is bad", check),
-            call = NULL
-          )
-        }
+        ao_input_check(
+          "tolerance_value",
+          checkmate::check_number(value, lower = 0, finite = TRUE)
+        )
         private$.tolerance_value <- value
       }
     },
@@ -658,13 +772,10 @@ Procedure <- R6::R6Class("Procedure",
       if (missing(value)) {
         private$.tolerance_parameter
       } else {
-        check <- checkmate::check_number(value, lower = 0, finite = FALSE)
-        if (!isTRUE(check)) {
-          cli::cli_abort(
-            paste("Input {.var tolerance_parameter} is bad:", check),
-            call = NULL
-          )
-        }
+        ao_input_check(
+          "tolerance_parameter",
+          checkmate::check_number(value, lower = 0, finite = FALSE)
+        )
         private$.tolerance_parameter <- value
       }
     },
@@ -681,13 +792,10 @@ Procedure <- R6::R6Class("Procedure",
       if (missing(value)) {
         private$.tolerance_parameter_norm[[1]]
       } else {
-        check <- checkmate::check_function(value, args = c("x", "y"), nargs = 2)
-        if (!isTRUE(check)) {
-          cli::cli_abort(
-            paste("Input {.var tolerance_parameter_norm} is bad:", check),
-            call = NULL
-          )
-        }
+        ao_input_check(
+          "tolerance_parameter_norm",
+          checkmate::check_function(value, args = c("x", "y"), nargs = 2)
+        )
         private$.tolerance_parameter_norm <- list(value)
       }
     },
@@ -698,15 +806,12 @@ Procedure <- R6::R6Class("Procedure",
       if (missing(value)) {
         private$.iteration
       } else {
-        check <- checkmate::check_int(value, lower = 0, na.ok = FALSE)
-        if (!isTRUE(check)) {
-          cli::cli_abort(
-            paste("Input {.var iteration} is bad", check),
-            call = NULL
-          )
-        }
+        ao_input_check(
+          "iteration",
+          checkmate::check_int(value, lower = 0, na.ok = FALSE)
+        )
         private$.iteration <- as.integer(value)
-        self$status(
+        self$print_status(
           paste("iteration", private$.iteration, "of", self$iteration_limit), 2
         )
       }
@@ -718,20 +823,15 @@ Procedure <- R6::R6Class("Procedure",
       if (missing(value)) {
         private$.block
       } else {
-        check <- checkmate::check_integerish(
-          value,
-          unique = TRUE, lower = 1,
-          upper = if (length(private$.npar) == 1) private$.npar else Inf
-        )
-        if (!isTRUE(check)) {
-          cli::cli_abort(
-            paste("Input {.var block} is bad", check),
-            call = NULL
+        ao_input_check(
+          "block",
+          checkmate::check_integerish(
+            value, unique = TRUE, lower = 1, upper = self$npar
           )
-        }
+        )
         private$.block <- value
-        self$status(
-          paste("block [", paste(value, sep = ","), "] : "), 3
+        self$print_status(
+          paste("block [", paste(value, collapse = ","), "] : "), 3
         )
       }
     },
@@ -771,6 +871,12 @@ Procedure <- R6::R6Class("Procedure",
     }
   ),
   private = list(
+
+    ### inputs
+    .npar = integer(),
+    .partition = NULL,
+    .new_block_probability = numeric(),
+    .minimum_block_number = integer(),
     .verbose = logical(),
     .minimize = logical(),
     .iteration_limit = integer(),
@@ -780,10 +886,50 @@ Procedure <- R6::R6Class("Procedure",
 
     ### must store 'tolerance_parameter_norm' inside list
     .tolerance_parameter_norm = list(function(x, y) sqrt(sum((x - y)^2))),
+
+    ### results
     .iteration = 0L,
     .block = integer(),
     .details = data.frame(),
-    .npar = integer(),
-    .stopping_reason = "not terminated yet"
+    .stopping_reason = "not terminated yet",
+
+    # Generated randomized blocks.
+    # @param x (`integer()`)\cr
+    # The parameter indices.
+    # @param p (`numeric(1)`)\cr
+    # The probability to generate a new block.
+    # @param min (`integer(1)`)\cr
+    # The minimum number of blocks
+    # @author Siddhartha Chib
+    .generate_random_partition = function(
+      x = self$npar,
+      p = self$new_block_probability,
+      min = self$minimum_block_number
+    ) {
+      if (min == x) {
+        return(as.list(seq_len(x)))
+      }
+      x <- sample(x, replace = F)
+      n <- length(x)
+      y <- sample(0:1, n, replace = T, prob = c(1 - p, p))
+      y[1] <- 1
+      ind <- which(y %in% 1)
+      if (length(ind) < min) {
+        ind <- sort(c(ind, sample(which(y == 0), size = min - length(ind))))
+      }
+      B <- length(ind)
+      blocks <- vector("list", B)
+      for (j in seq_len(B)) {
+        s <- ind[j]
+        if (j < B) {
+          e <- ind[(j + 1)] - 1
+        } else {
+          e <- n
+        }
+        xj <- x[s:e]
+        blocks[[j]] <- xj[order(xj)]
+      }
+      blocks
+    }
   )
 )

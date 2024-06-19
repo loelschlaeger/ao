@@ -4,11 +4,35 @@
 \alias{Procedure}
 \title{Procedure Object}
 \description{
-Details for alternating optimization procedure.
+This object specifies alternating optimization procedure.
 }
 \section{Active bindings}{
 \if{html}{\out{<div class="r6-active-bindings">}}
 \describe{
+\item{\code{npar}}{(\code{integer(1)})\cr
+The length of the target argument.}
+
+\item{\code{partition}}{(\code{character(1)} or \code{list()})\cr
+Defines the parameter partition, and can be either
+\itemize{
+\item \code{"sequential"} for treating each parameter separately,
+\item \code{"random"} for a random partition in each iteration,
+\item \code{"none"} for no partition (which is equivalent to joint optimization),
+\item or a \code{list} of vectors of parameter indices, specifying a custom
+partition for the alternating optimization process.
+}}
+
+\item{\code{new_block_probability}}{(\code{numeric(1)})\cr
+Only relevant if \code{partition = "random"}.
+The probability for a new parameter block when creating a random
+partitions.
+Values close to 0 result in larger parameter blocks, values close to 1
+result in smaller parameter blocks.}
+
+\item{\code{minimum_block_number}}{(\code{integer(1)})\cr
+Only relevant if \code{partition = "random"}.
+The minimum number of blocks in random partitions.}
+
 \item{\code{verbose}}{(\code{logical(1)})\cr
 Whether to print tracing details during the alternating optimization
 process.}
@@ -86,10 +110,10 @@ accepted (column \code{update_code}, where \code{0} stands for an accepted updat
 \subsection{Public methods}{
 \itemize{
 \item \href{#method-Procedure-new}{\code{Procedure$new()}}
-\item \href{#method-Procedure-print}{\code{Procedure$print()}}
-\item \href{#method-Procedure-status}{\code{Procedure$status()}}
+\item \href{#method-Procedure-print_status}{\code{Procedure$print_status()}}
 \item \href{#method-Procedure-initialize_details}{\code{Procedure$initialize_details()}}
 \item \href{#method-Procedure-update_details}{\code{Procedure$update_details()}}
+\item \href{#method-Procedure-get_partition}{\code{Procedure$get_partition()}}
 \item \href{#method-Procedure-get_details}{\code{Procedure$get_details()}}
 \item \href{#method-Procedure-get_value}{\code{Procedure$get_value()}}
 \item \href{#method-Procedure-get_value_latest}{\code{Procedure$get_value_latest()}}
@@ -107,12 +131,16 @@ accepted (column \code{update_code}, where \code{0} stands for an accepted updat
 Creates a new object of this \link[R6:R6Class]{R6} class.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Procedure$new(
+  npar = integer(),
+  partition = "sequential",
+  new_block_probability = 0.3,
+  minimum_block_number = 2,
   verbose = FALSE,
   minimize = TRUE,
   iteration_limit = Inf,
   seconds_limit = Inf,
-  tolerance_value = 0,
-  tolerance_parameter = 0,
+  tolerance_value = 1e-06,
+  tolerance_parameter = 1e-06,
   tolerance_parameter_norm = function(x, y) sqrt(sum((x - y)^2))
 )}\if{html}{\out{</div>}}
 }
@@ -120,6 +148,30 @@ Creates a new object of this \link[R6:R6Class]{R6} class.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
+\item{\code{npar}}{(\code{integer(1)})\cr
+The (total) length of the target argument(s).}
+
+\item{\code{partition}}{(\code{character(1)} or \code{list()})\cr
+Defines the parameter partition, and can be either
+\itemize{
+\item \code{"sequential"} for treating each parameter separately,
+\item \code{"random"} for a random partition in each iteration,
+\item \code{"none"} for no partition (which is equivalent to joint optimization),
+\item or a \code{list} of vectors of parameter indices, specifying a custom
+partition for the alternating optimization process.
+}}
+
+\item{\code{new_block_probability}}{(\code{numeric(1)})\cr
+Only relevant if \code{partition = "random"}.
+The probability for a new parameter block when creating a random
+partitions.
+Values close to 0 result in larger parameter blocks, values close to 1
+result in smaller parameter blocks.}
+
+\item{\code{minimum_block_number}}{(\code{integer(1)})\cr
+Only relevant if \code{partition = "random"}.
+The minimum number of blocks in random partitions.}
+
 \item{\code{verbose}}{(\code{logical(1)})\cr
 Whether to print tracing details during the alternating optimization
 process.}
@@ -169,22 +221,12 @@ is used.}
 }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Procedure-print"></a>}}
-\if{latex}{\out{\hypertarget{method-Procedure-print}{}}}
-\subsection{Method \code{print()}}{
-Print details about this object.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Procedure$print()}\if{html}{\out{</div>}}
-}
-
-}
-\if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Procedure-status"></a>}}
-\if{latex}{\out{\hypertarget{method-Procedure-status}{}}}
-\subsection{Method \code{status()}}{
+\if{html}{\out{<a id="method-Procedure-print_status"></a>}}
+\if{latex}{\out{\hypertarget{method-Procedure-print_status}{}}}
+\subsection{Method \code{print_status()}}{
 Prints a status message.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Procedure$status(message, message_type = 8, verbose = self$verbose)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Procedure$print_status(message, message_type = 8, verbose = self$verbose)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -219,7 +261,7 @@ process.}
 \subsection{Method \code{initialize_details()}}{
 Initializes the \code{details} part of the output.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Procedure$initialize_details(initial_parameter, initial_value, npar)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Procedure$initialize_details(initial_parameter, initial_value)}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{
@@ -230,9 +272,6 @@ The starting parameter values for the procedure.}
 
 \item{\code{initial_value}}{(\code{numeric(1)})\cr
 The function value at the initial parameters.}
-
-\item{\code{npar}}{(\code{integer(1)})\cr
-The length of the target argument.}
 }
 \if{html}{\out{</div>}}
 }
@@ -272,6 +311,16 @@ The currently active parameter block, represented as parameter indices.}
 }
 \if{html}{\out{</div>}}
 }
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Procedure-get_partition"></a>}}
+\if{latex}{\out{\hypertarget{method-Procedure-get_partition}{}}}
+\subsection{Method \code{get_partition()}}{
+Get a parameter partition.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Procedure$get_partition()}\if{html}{\out{</div>}}
+}
+
 }
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Procedure-get_details"></a>}}
@@ -490,56 +539,8 @@ optimization procedure.
 \subsection{Method \code{check_stopping()}}{
 Checks if the alternating optimization procedure can be terminated.
 \subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Procedure$check_stopping(
-  iteration_limit = self$iteration_limit,
-  seconds_limit = self$seconds_limit,
-  tolerance_value = self$tolerance_value,
-  tolerance_parameter = self$tolerance_parameter,
-  tolerance_parameter_norm = self$tolerance_parameter_norm
-)}\if{html}{\out{</div>}}
+\if{html}{\out{<div class="r">}}\preformatted{Procedure$check_stopping()}\if{html}{\out{</div>}}
 }
 
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{iteration_limit}}{(\code{integer(1)} or \code{Inf})\cr
-The maximum number of iterations through the parameter partition before
-the alternating optimization process is terminated.
-Can also be \code{Inf} for no iteration limit.}
-
-\item{\code{seconds_limit}}{(\code{numeric(1)})\cr
-The time limit in seconds before the alternating optimization process is
-terminated.
-Can also be \code{Inf} for no time limit.
-Note that this stopping criteria is only checked \emph{after}
-a sub-problem is solved and not \emph{within} solving a sub-problem, so the
-actual process time can exceed this limit.}
-
-\item{\code{tolerance_value}}{(\code{numeric(1)})\cr
-A non-negative tolerance value. The alternating optimization terminates
-if the absolute difference between the current function value and the one
-from the last iteration is smaller than \code{tolerance_value}.
-Can be \code{0} for no value threshold.}
-
-\item{\code{tolerance_parameter}}{(\code{numeric(1)})\cr
-A non-negative tolerance value. The alternating optimization terminates
-if the distance between the current estimate and the one from the last
-iteration is smaller than \code{tolerance_parameter}.
-Can be \code{0} for no parameter threshold.
-By default, the distance is measured using the euclidean norm, but
-another norm can be specified via the \code{tolerance_parameter_norm}
-field.}
-
-\item{\code{tolerance_parameter_norm}}{(\code{function})\cr
-The norm that measures the distance between the current estimate and the
-one from the last iteration. If the distance is smaller than
-\code{tolerance_parameter}, the procedure is terminated.
-It must be of the form \code{function(x, y)} for two vector inputs
-\code{x} and \code{y}, and return a single \code{numeric} value.
-By default, the euclidean norm \code{function(x, y) sqrt(sum((x - y)^2))}
-is used.}
-}
-\if{html}{\out{</div>}}
-}
 }
 }
