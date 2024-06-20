@@ -1,3 +1,9 @@
+# ao 1.0.0
+
+* Implemented random partitions and other stopping criteria.
+
+* The `ao()` API has changes a lot, please check the documentation.
+
 # ao 0.3.3
 
 * Now using `{cli}` to improve error messages.

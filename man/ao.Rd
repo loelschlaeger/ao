@@ -6,95 +6,198 @@
 \usage{
 ao(
   f,
-  p,
+  initial,
+  target = NULL,
+  npar = NULL,
+  gradient = NULL,
   ...,
-  partition = as.list(1:length(p)),
-  base_optimizer = optimizeR::Optimizer$new("stats::optim"),
-  iterations = 10,
-  tolerance = 1e-06,
-  f_partition = vector(mode = "list", length = length(partition)),
-  joint_end = FALSE,
+  partition = "sequential",
+  new_block_probability = 0.3,
+  minimum_block_number = 2,
+  minimize = TRUE,
+  lower = -Inf,
+  upper = Inf,
+  iteration_limit = Inf,
+  seconds_limit = Inf,
+  tolerance_value = 1e-06,
+  tolerance_parameter = 1e-06,
+  tolerance_parameter_norm = function(x, y) sqrt(sum((x - y)^2)),
+  base_optimizer = Optimizer$new("stats::optim", method = "L-BFGS-B"),
   verbose = FALSE
 )
 }
 \arguments{
-\item{f}{A \code{function} to be optimized, returning a single \code{numeric}.
-The first argument of \code{f} must be a \code{numeric} of the same length as
-\code{p} followed by any other arguments specified by the \code{...}
-argument.}
+\item{f}{(\code{function})\cr
+A \code{function} to be optimized, returning a single \code{numeric} value.
 
-\item{p}{A \code{numeric} vector, the starting parameter values for the optimization.}
+The first argument of \code{f} should be a \code{numeric} of the same length
+as \code{initial}, followed by any other arguments specified by the
+\code{...} argument.
 
-\item{...}{Additional arguments to be passed to \code{f}.}
+If \code{f} is to be optimized over an argument other than the first, or more
+than one argument, this has to be specified via the \code{target} argument.}
 
-\item{partition}{A \code{list} of vectors of indices of \code{p}, specifying the partition of
-the parameter vector in the alternating optimization process.
-The default is \code{as.list(1:length(p))}, i.e. each parameter is
-optimized separately.
-Parameter indices can be members of multiple subsets.}
+\item{initial}{(\code{numeric()})\cr
+The starting parameter values for the target argument(s).}
 
-\item{base_optimizer}{An \code{Optimizer} object, which can be created via
-\code{\link[optimizeR]{Optimizer}}.
-It numerically solves the optimization problems in the partitions.}
+\item{target}{(\code{character()} or \code{NULL})\cr
+The name(s) of the argument(s) over which \code{f} gets optimized.
 
-\item{iterations}{An \code{integer}, the maximum number of iterations through
-\code{partitions} before the alternating optimization process is terminated.
-Can also be \code{Inf}, in which case \code{tolerance} is responsible for the
-termination.
-The default is \code{10}.}
+This can only be \code{numeric} arguments.
 
-\item{tolerance}{A non-negative \code{numeric}. The alternating optimization terminates
-prematurely (i.e., before \code{interations} is reached) if the euclidean
-distance between the current estimate and the one from the last iteration is
-smaller than \code{tolerance}.
-The default is \code{1e-6}.}
+Can be \code{NULL} (default), then it is the first argument of \code{f}.}
 
-\item{f_partition}{A \code{list} of the same length as \code{partition}.
-The \code{i}-th element can be a \code{function} that computes the value of
-\code{f} for the \code{i}-th parameter set defined in \code{partition}.
-The \code{function} must be of the form
-\code{function(theta_part, theta_rest, ...)}, where
+\item{npar}{(\code{integer()})\cr
+The length of the target argument(s).
+
+Must be specified if more than two target arguments are specified via
+the \code{target} argument.
+
+Can be \code{NULL} if there is only one target argument, in which case \code{npar} is
+set to be \code{length(initial)}.}
+
+\item{gradient}{(\code{function} or \code{NULL})\cr
+A \code{function} that returns the gradient of \code{f}.
+
+The function call of \code{gradient} must be identical to \code{f}.
+
+Can be \code{NULL}, in which case a finite-difference approximation will be used.}
+
+\item{...}{Additional arguments to be passed to \code{f} (and \code{gradient}).}
+
+\item{partition}{(\code{character(1)} or \code{list()})\cr
+Defines the parameter partition, and can be either
 \itemize{
-\item \code{theta_part} receives the parameter set for the current partition
-(this argument can be named differently),
-\item \code{theta_rest} receives the remaining parameters
-(this argument must be named \code{theta_rest}),
-\item \code{...} receives the additional arguments to \code{f}.
-Alternatively, it can be \code{NULL}, in which case \code{f} is used.
+\item \code{"sequential"} for treating each parameter separately,
+\item \code{"random"} for a random partition in each iteration,
+\item \code{"none"} for no partition (which is equivalent to joint optimization),
+\item or a \code{list} of vectors of parameter indices, specifying a custom
+partition for the alternating optimization process.
 }}
 
-\item{joint_end}{If \code{TRUE}, the parameter set is optimized jointly after the alternating
-optimization process is terminated.
-The default is \code{FALSE}.}
+\item{new_block_probability}{(\code{numeric(1)})\cr
+Only relevant if \code{partition = "random"}.
+The probability for a new parameter block when creating a random
+partitions.
+Values close to 0 result in larger parameter blocks, values close to 1
+result in smaller parameter blocks.}
 
-\item{verbose}{If \code{TRUE}, full tracing details are printed during the alternating
-optimization process.
-The default is \code{FALSE}.}
+\item{minimum_block_number}{(\code{integer(1)})\cr
+Only relevant if \code{partition = "random"}.
+The minimum number of blocks in random partitions.}
+
+\item{minimize}{(\code{logical(1)})\cr
+Whether to minimize during the alternating optimization process.
+If \code{FALSE}, maximization is performed.}
+
+\item{lower}{(\code{numeric()})\cr
+Optionally lower parameter bounds.}
+
+\item{upper}{(\code{numeric()})\cr
+Optionally upper parameter bounds.}
+
+\item{iteration_limit}{(\code{integer(1)} or \code{Inf})\cr
+The maximum number of iterations through the parameter partition before
+the alternating optimization process is terminated.
+Can also be \code{Inf} for no iteration limit.}
+
+\item{seconds_limit}{(\code{numeric(1)})\cr
+The time limit in seconds before the alternating optimization process is
+terminated.
+Can also be \code{Inf} for no time limit.
+Note that this stopping criteria is only checked \emph{after}
+a sub-problem is solved and not \emph{within} solving a sub-problem, so the
+actual process time can exceed this limit.}
+
+\item{tolerance_value}{(\code{numeric(1)})\cr
+A non-negative tolerance value. The alternating optimization terminates
+if the absolute difference between the current function value and the one
+from the last iteration is smaller than \code{tolerance_value}.
+Can be \code{0} for no value threshold.}
+
+\item{tolerance_parameter}{(\code{numeric(1)})\cr
+A non-negative tolerance value. The alternating optimization terminates
+if the distance between the current estimate and the one from the last
+iteration is smaller than \code{tolerance_parameter}.
+Can be \code{0} for no parameter threshold.
+By default, the distance is measured using the euclidean norm, but
+another norm can be specified via the \code{tolerance_parameter_norm}
+field.}
+
+\item{tolerance_parameter_norm}{(\code{function})\cr
+The norm that measures the distance between the current estimate and the
+one from the last iteration. If the distance is smaller than
+\code{tolerance_parameter}, the procedure is terminated.
+It must be of the form \code{function(x, y)} for two vector inputs
+\code{x} and \code{y}, and return a single \code{numeric} value.
+By default, the euclidean norm \code{function(x, y) sqrt(sum((x - y)^2))}
+is used.}
+
+\item{base_optimizer}{(\code{Optimizer})\cr
+An \code{Optimizer} object, which can be created via
+\code{\link[optimizeR]{Optimizer}}. It numerically solves the sub-problems.
+
+By default, the \code{\link[stats]{optim}} optimizer is used. If another
+optimizer is specified, the arguments \code{gradient}, \code{lower}, and
+\code{upper} are ignored.}
+
+\item{verbose}{(\code{logical(1)})\cr
+Whether to print tracing details during the alternating optimization
+process.}
 }
 \value{
-A \code{list} with the elements
+A \code{list} with the following elements:
 \itemize{
-\item \code{estimate}, the optimal parameter vector found,
-\item \code{value}, the value of \code{f} at \code{estimate},
-\item \code{sequence}, a \code{data.frame} of the function values, estimates and
-computation times in the single iterations and partitions,
-\item and \code{seconds}, the overall computation time in seconds.
+\item \code{estimate} is the parameter vector at termination.
+\item \code{value} is the function value at termination.
+\item \code{details} is a \code{data.frame} with full information about the procedure:
+For each iteration (column \code{iteration}) it contains the function value
+(column \code{value}), parameter values (columns starting with \code{p} followed by
+the parameter index), the active parameter block (columns starting with \code{b}
+followed by the parameter index, where \code{1} stands for a parameter contained
+in the active parameter block and \code{0} if not), computation times in seconds
+(column \code{seconds}), and a code that summarizes whether the update got
+accepted (column \code{update_code}, where \code{0} stands for an accepted update,
+\code{1} for a rejected update due to an error when solving the sub-problem, and
+\code{2} for a rejected update because it did not improve the function value).
+\item \code{seconds} is the overall computation time in seconds.
+\item \code{stopping_reason} is a message why the procedure has terminated.
 }
 }
 \description{
-This function performs alternating optimization of the function \code{f}.
+Alternating optimization is an iterative procedure for optimizing a
+real-valued function jointly over all its parameters by alternating
+restricted optimization over parameter partitions.
 }
 \examples{
-# definition of the Himmelblau function
-himmelblau <- function(x) (x[1]^2 + x[2] - 11)^2 + (x[1] + x[2]^2 - 7)^2
+# Example 1: Minimization of Himmelblau's function --------------------------
 
-# alternating minimization separately for x_1 and x_2
-# parameter restriction: -5 <= x_1, x_2 <= 5
+himmelblau <- function(x) (x[1]^2 + x[2] - 11)^2 + (x[1] + x[2]^2 - 7)^2
+ao(f = himmelblau, initial = c(0, 0))
+
+# Example 2: Maximization of 2-class Gaussian mixture log-likelihood --------
+
+# target arguments:
+# - class means mu (2, unrestricted)
+# - class standard deviations sd (2, must be non-negative)
+# - class proportion lambda (only 1 for identification, must be in [0, 1])
+
+normal_mixture_llk <- function(mu, sd, lambda, data) {
+  c1 <- lambda * dnorm(data, mu[1], sd[1])
+  c2 <- (1 - lambda) * dnorm(data, mu[2], sd[2])
+  sum(log(c1 + c2))
+}
+
 ao(
-  f = himmelblau, p = c(0, 0), partition = list(1, 2), iterations = Inf,
-  base_optimizer = optimizeR::Optimizer$new(
-    which = "stats::optim", lower = -5, upper = 5, method = "L-BFGS-B"
-  )
+  f = normal_mixture_llk,
+  initial = c(2, 4, 1, 1, 0.5),
+  target = c("mu", "sd", "lambda"),
+  npar = c(2, 2, 1),
+  data = datasets::faithful$eruptions,
+  partition = "random",
+  minimize = FALSE,
+  lower = c(-Inf, -Inf, 0, 0, 0),
+  upper = c(Inf, Inf, Inf, Inf, 1)
 )
 
 }

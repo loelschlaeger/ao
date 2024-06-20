@@ -1,170 +1,32 @@
-test_that("ao input checks work", {
-  f <- function(x) x
-  expect_error(
-    ao(),
-    "Please specify `f`"
-  )
-  expect_error(
-    ao(f = "not_a_function"),
-    "`f` must be a function"
-  )
-  expect_error(
-    ao(f = f),
-    "Please specify `p`"
-  )
-  expect_error(
-    ao(f = f, p = "not_a_numeric_vector"),
-    "`p` must be a vector of initial values"
-  )
-  expect_error(
-    ao(f = f, p = 1, partition = "a"),
-    "`partition` must be a"
-  )
-  expect_error(
-    ao(f = f, p = 1, base_optimizer = "not_an_optimizer"),
-    "`base_optimizer` must be an"
-  )
-  expect_error(
-    ao(f = f, p = 1, partition = list(1), iterations = "1"),
-    "`iterations` must be an integer greater or equal 1"
-  )
-  expect_error(
-    ao(f = f, p = 1, partition = list(1), iterations = 1, tolerance = -1),
-    "`tolerance` must be a single, non-negative number"
-  )
-  expect_error(
-    ao(f = f, p = 1, partition = list(1), iterations = Inf, tolerance = 0),
-    "`tolerance` cannot be 0 if `iterations` is Inf"
-  )
-  expect_error(
-    ao(f = f, p = 1, partition = list(1), f_partition = "bad"),
-    "`f_partition` must be a"
-  )
-  expect_error(
-    ao(f = f, p = 1, partition = list(1), f_partition = list(NULL, NULL)),
-    "`f_partition` must have the same length as `partition`"
-  )
-  expect_error(
-    ao(f = f, p = 1, joint_end = "bad"),
-    "`joint_end` must be TRUE or FALSE"
-  )
-  expect_error(
-    ao(f = f, p = 1, verbose = "bad"),
-    "`verbose` must be TRUE or FALSE"
-  )
-  expect_error(
-    ao(f = function(x) "not_a_number", p = 1),
-    "not a single, finite number"
-  )
-})
-
 test_that("ao works", {
   himmelblau <- function(x) (x[1]^2 + x[2] - 11)^2 + (x[1] + x[2]^2 - 7)^2
-  out <- ao(
-    f = himmelblau, p = c(0, 0), partition = list(1, 2),
-    base_optimizer = optimizeR::Optimizer$new(
-      which = "stats::optim", lower = -5, upper = 5, method = "L-BFGS-B"
+  gradient <- function(x) {
+    c(
+      4 * x[1] * (x[1]^2 + x[2] - 11) + 2 * (x[1] + x[2]^2 - 7),
+      2 * (x[1]^2 + x[2] - 11) + 4 * x[2] * (x[1] + x[2]^2 - 7)
     )
+  }
+  checkmate::expect_list(
+    ao(f = himmelblau, initial = c(0, 0), gradient = gradient),
+    len = 5
   )
-  expect_type(out, "list")
-  expect_named(out, c("value", "estimate", "sequence", "seconds"))
-  expect_length(out$estimate, 2)
+  checkmate::expect_list(
+    ao(f = himmelblau, initial = c(0, 0), partition = "random", gradient = gradient),
+    len = 5
+  )
 })
 
 test_that("ao with additional parameters works", {
   himmelblau <- function(x, a, b, c) {
     (x[1]^a + x[2] - b)^a + (x[1] + x[2]^a - c)^a
   }
-  out <- ao(
-    f = himmelblau, a = 2, b = 11, c = 7,
-    p = c(0, 0), partition = list(1, 2),
-    base_optimizer = optimizeR::Optimizer$new(
-      which = "stats::optim", lower = -5, upper = 5, method = "L-BFGS-B"
-    )
-  )
-  expect_type(out, "list")
-  expect_named(out, c("value", "estimate", "sequence", "seconds"))
-  expect_length(out$estimate, 2)
-})
-
-test_that("ao works with partition functions", {
-  himmelblau <- function(x, ...) (x[1]^2 + x[2] - 11)^2 + (x[1] + x[2]^2 - 7)^2
-  himmelblau_1 <- function(x_part, x_rest, ...) {
-    himmelblau(c(x_part, x_rest))
-  }
-  himmelblau_2 <- function(x_part, theta_rest) {
-    himmelblau(c(theta_rest, x_part))
-  }
   expect_error(
-    ao(
-      f = himmelblau, p = c(0, 0),
-      f_partition = list(function() {}, himmelblau_2)
-    ),
-    "must have two arguments"
+    ao(f = himmelblau, initial = c(0, 0)),
+    "Function evaluation threw an error: argument \"a\" is missing, with no default"
   )
-  expect_error(
-    ao(
-      f = himmelblau, p = c(0, 0), tmp = "tmp",
-      f_partition = list(NULL, himmelblau_2)
-    ),
-    "must have two arguments and the ... argument"
-  )
-  expect_error(
-    ao(
-      f = himmelblau, p = c(0, 0), tmp = "tmp",
-      f_partition = list(himmelblau_1, NULL)
-    ),
-    "must have a second argument named `theta_rest`"
-  )
-  out <- ao(
-    f = himmelblau, p = c(0, 0), partition = list(1, 2),
-    base_optimizer = optimizeR::Optimizer$new(
-      which = "stats::optim", lower = -5, upper = 5, method = "L-BFGS-B"
-    ), f_partition = list(NULL, himmelblau_2)
-  )
-  expect_type(out, "list")
-  expect_named(out, c("value", "estimate", "sequence", "seconds"))
-  expect_length(out$estimate, 2)
-})
-
-test_that("NULL elements in partition are detected", {
-  himmelblau <- function(x) (x[1]^2 + x[2] - 11)^2 + (x[1] + x[2]^2 - 7)^2
-  expect_error(
-    ao(
-      f = himmelblau, p = c(0, 0), partition = list(1, 2, NULL),
-      base_optimizer = optimizeR::optimizer_optim(
-        which = "stats::optim", lower = -5, upper = 5, method = "L-BFGS-B"
-      )
-    ),
-    "`partition` must only contain vectors of indices of `p`"
-  )
-})
-
-test_that("gradient and Hessian work", {
-  test_fun <- function(x) {
-    structure(
-      x^4 + 2 * x - 5,
-      "gradient" = 4 * x^3 + 2,
-      "hessian" = as.matrix(12 * x^2)
-    )
-  }
-  out <- ao(
-    f = test_fun, p = -3, partition = list(1),
-    base_optimizer = optimizeR::Optimizer$new(which = "stats::nlm")
-  )
-  expect_type(out, "list")
-})
-
-test_that("printing progress works", {
-  f <- function(x) (x + 2)^2
-  expect_output(
-    ao(
-      f = f,
-      p = 0,
-      base_optimizer = optimizeR::Optimizer$new(which = "stats::nlm"),
-      verbose = TRUE,
-      joint_end = TRUE
-    )
+  checkmate::expect_list(
+    ao(f = himmelblau, initial = c(0, 0), a = 2, b = 11, c = 7),
+    len = 5
   )
 })
 
@@ -174,19 +36,35 @@ test_that("ao with NULL values for fixed arguments works", {
       (x[1]^2 + x[2] + a)^2 + (x[1] + x[2]^2 + b)^2 + (x[3] - 1)^2
     }
   }
-  partition <- list(1, 2:3)
   checkmate::expect_list(
-    ao::ao(
-      f = f,
-      p = c(0, 0, 0),
-      a = -11,
-      b = -7,
-      ind = NULL,
-      partition = partition,
-      base_optimizer = optimizeR::optimizer_nlm(),
-      iterations = 10,
-      tolerance = 1e-06,
-      verbose = FALSE
-    )
+    ao(f = f, initial = c(0, 0, 0), a = -11, b = -7, ind = NULL),
+    len = 5
+  )
+})
+
+test_that("ao with a different base optimizer works", {
+  himmelblau <- function(x) (x[1]^2 + x[2] - 11)^2 + (x[1] + x[2]^2 - 7)^2
+  expect_warning(
+    checkmate::expect_list(
+      ao(f = himmelblau, initial = c(0, 0), base_optimizer = optimizeR::optimizer_nlm()),
+      len = 5
+    ),
+    "Arguments `gradient`, `lower`, and `upper` are ignored"
+  )
+})
+
+test_that("ao with random partition works", {
+  f <- function(x) (x[1]^2 + x[2])^2 + (x[1] + x[2]^2)^2 + (x[3] + x[4]^2)^2
+  checkmate::expect_list(
+    ao(f = f, initial = c(1, 1, 1, 1), partition = "random", iteration_limit = 10),
+    len = 5
+  )
+})
+
+test_that("ao with custom partition works", {
+  f <- function(x) (x[1]^2 + x[2])^2 + (x[1] + x[2]^2)^2 + (x[3] + x[4]^2)^2
+  checkmate::expect_list(
+    ao(f = f, initial = c(1, 1, 1, 1), partition = list(1, 2, 3:4)),
+    len = 5
   )
 })

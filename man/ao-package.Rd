@@ -21,5 +21,10 @@ Useful links:
 \author{
 \strong{Maintainer}: Lennart Oelschläger \email{oelschlaeger.lennart@gmail.com} (\href{https://orcid.org/0000-0001-5421-9313}{ORCID})
 
+Other contributors:
+\itemize{
+  \item Siddhartha Chib \email{chib@wustl.edu} [contributor]
+}
+
 }
 \keyword{internal}

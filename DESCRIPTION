@@ -1,15 +1,23 @@
 Package: ao
 Title: Alternating Optimization
-Version: 0.3.3
-Authors@R: 
+Version: 1.0.0
+Authors@R:
+    c(
     person(given = "Lennart",
            family = "Oelschl\U00E4ger",
            role = c("aut", "cre"),
            email = "oelschlaeger.lennart@gmail.com",
-           comment = c(ORCID = "0000-0001-5421-9313"))
-Description: Alternating optimization of (high-dimensional) functions is an 
-    iterative procedure for optimizing jointly over all parameters by 
-    alternately optimizing parameter subsets.
+           comment = c(ORCID = "0000-0001-5421-9313")),
+    person(given = "Siddhartha", 
+           family = "Chib", 
+           role = "ctb",
+           email = "chib@wustl.edu")
+    )
+Description: Alternating optimization is an iterative procedure that optimizes 
+    a function by alternately performing restricted optimization over individual 
+    parameter subsets. Instead of tackling joint optimization directly, it 
+    breaks the problem down into simpler sub-problems. This approach can make 
+    optimization feasible when joint optimization is too difficult.
 URL: https://loelschlaeger.de/ao/, https://github.com/loelschlaeger/ao/
 BugReports: https://github.com/loelschlaeger/ao/issues
 License: GPL-3
@@ -19,9 +27,12 @@ RoxygenNote: 7.3.1
 Imports:
     checkmate,
     cli,
-    oeli,
+    oeli (>= 0.5.2),
+    R6,
+    stats,
     utils
 Suggests:
+    ggplot2,
     knitr,
     rmarkdown,
     testthat (>= 3.0.0)
@@ -29,4 +40,4 @@ Config/testthat/edition: 3
 VignetteBuilder: knitr
 Depends:
     R (>= 4.0.0),
-    optimizeR (>= 1.0.4)
+    optimizeR (>= 1.1.1)
