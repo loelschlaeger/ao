@@ -17,7 +17,7 @@ knitr::opts_chunk$set(
   comment = "#>",
   fig.path = "ao-"
 )
-library("ao") 
+library("ao")
 set.seed(2)
 ```
 
@@ -206,8 +206,8 @@ The random partitions are build as follows:^[`Procedure` is an internal R6 objec
 
 ```{r, partition demo}
 procedure <- ao:::Procedure$new(
-  npar = 10, 
-  partition = "random", 
+  npar = 10,
+  partition = "random",
   new_block_probability = 0.5,
   minimum_block_number = 2
 )

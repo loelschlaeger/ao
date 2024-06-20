@@ -63,12 +63,12 @@ ggplot(grid) +
     fill = "value",
     title = "Rosenbrock function with AO path"
   ) +
-  coord_fixed() + 
+  coord_fixed() +
   scale_x_continuous(breaks = c(1, 2)) +
   scale_y_continuous(breaks = c(1, 2)) +
   geom_path(
     data = out$details, aes(x = p1, y = p2), linewidth = 1
-  ) 
+  )
 ```
 
 ## Contact?

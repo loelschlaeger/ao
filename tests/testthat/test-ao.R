@@ -68,4 +68,3 @@ test_that("ao with custom partition works", {
     len = 5
   )
 })
-

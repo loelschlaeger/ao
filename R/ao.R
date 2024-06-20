@@ -191,9 +191,7 @@ ao <- function(
     tolerance_parameter = 1e-6,
     tolerance_parameter_norm = function(x, y) sqrt(sum((x - y)^2)),
     base_optimizer = Optimizer$new("stats::optim", method = "L-BFGS-B"),
-    verbose = FALSE
-  ) {
-
+    verbose = FALSE) {
   ### input checks and building of objects
   ao_input_check(
     "initial",
