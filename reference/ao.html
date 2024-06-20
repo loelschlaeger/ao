@@ -158,14 +158,9 @@ Whether to minimize during the alternating optimization process.
 If <code>FALSE</code>, maximization is performed.</p></dd>
 
 
-<dt>lower</dt>
+<dt>lower, upper</dt>
 <dd><p>(<code><a href="https://rdrr.io/r/base/numeric.html" class="external-link">numeric()</a></code>)<br>
-Optionally lower parameter bounds.</p></dd>
-
-
-<dt>upper</dt>
-<dd><p>(<code><a href="https://rdrr.io/r/base/numeric.html" class="external-link">numeric()</a></code>)<br>
-Optionally upper parameter bounds.</p></dd>
+Optionally lower and upper parameter bounds.</p></dd>
 
 
 <dt>iteration_limit</dt>
@@ -265,19 +260,19 @@ accepted (column <code>update_code</code>, where <code>0</code> stands for an ac
 <span class="r-out co"><span class="r-pr">#&gt;</span> $details</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    iteration        value       p1        p2 b1 b2     seconds update_code</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1          0 1.700000e+02 0.000000  0.000000  0  0 0.000000000           0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2          1 1.327270e+01 3.395691  0.000000  1  0 0.017799616           0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3          1 1.743664e+00 3.395691 -1.803183  0  1 0.003729105           0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4          2 2.847290e-02 3.581412 -1.803183  1  0 0.002946377           0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5          2 4.687468e-04 3.581412 -1.847412  0  1 0.002515316           0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6          3 7.368057e-06 3.584381 -1.847412  1  0 0.002118826           0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7          3 1.164202e-07 3.584381 -1.848115  0  1 0.016957998           0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8          4 1.893311e-09 3.584427 -1.848115  1  0 0.001723766           0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9          4 9.153860e-11 3.584427 -1.848124  0  1 0.001396656           0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10         5 6.347425e-11 3.584428 -1.848124  1  0 0.001379967           0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11         5 9.606386e-12 3.584428 -1.848126  0  1 0.001330614           0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2          1 1.327270e+01 3.395691  0.000000  1  0 0.017484426           0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3          1 1.743664e+00 3.395691 -1.803183  0  1 0.003738403           0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4          2 2.847290e-02 3.581412 -1.803183  1  0 0.002966881           0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5          2 4.687468e-04 3.581412 -1.847412  0  1 0.002546072           0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6          3 7.368057e-06 3.584381 -1.847412  1  0 0.002136230           0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7          3 1.164202e-07 3.584381 -1.848115  0  1 0.017053604           0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8          4 1.893311e-09 3.584427 -1.848115  1  0 0.001787424           0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9          4 9.153860e-11 3.584427 -1.848124  0  1 0.001352549           0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10         5 6.347425e-11 3.584428 -1.848124  1  0 0.001383781           0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11         5 9.606386e-12 3.584428 -1.848126  0  1 0.001382351           0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $seconds</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.05189824</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.05183172</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $stopping_reason</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "change in function value is &lt; 1e-06"</span>
@@ -344,31 +339,31 @@ accepted (column <code>update_code</code>, where <code>0</code> stands for an ac
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1   0  0 0.000000000           0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 2   0  1          NA           1</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 3   1  0          NA           1</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4   0  0 0.003150463           0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5   0  0 0.002595186           0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6   1  1 0.015542746           0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7   0  0 0.020732164           0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8   0  1 0.007991076           0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9   1  0 0.005781889           0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10  1  1 0.013669968           0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11  0  0 0.010170937           0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 12  0  0 0.002695560           0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 13  1  1 0.010802984           0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 14  1  1 0.011816502           0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 15  0  0 0.003125429           0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 16  1  0 0.007030964           0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 17  0  1 0.005071402           0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 18  0  0 0.004305840           0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 19  1  1 0.004741907           0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 20  0  0 0.002638578           0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 21  1  1 0.004791975           0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 22  1  1 0.004588127           0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 23  0  0 0.001688957           0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 24  1  0 0.002697468           0</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 25  0  1 0.003730774           0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4   0  0 0.003088236           0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5   0  0 0.002639771           0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6   1  1 0.015820026           0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7   0  0 0.020638943           0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8   0  1 0.008169413           0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9   1  0 0.005882263           0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10  1  1 0.013918161           0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11  0  0 0.010354757           0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 12  0  0 0.002726555           0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 13  1  1 0.010658264           0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 14  1  1 0.011896372           0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 15  0  0 0.003704786           0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 16  1  0 0.007141113           0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 17  0  1 0.005143642           0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 18  0  0 0.004330873           0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 19  1  1 0.004777431           0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 20  0  0 0.002664328           0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 21  1  1 0.004784822           0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 22  1  1 0.004620314           0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 23  0  0 0.001704693           0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 24  1  0 0.002703905           0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 25  0  1 0.003630400           0</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $seconds</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.1493609</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.1509991</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $stopping_reason</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "change in function value is &lt; 1e-06"</span>
