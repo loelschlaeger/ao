@@ -41,3 +41,31 @@ test_that("ao with NULL values for fixed arguments works", {
     len = 5
   )
 })
+
+test_that("ao with a different base optimizer works", {
+  himmelblau <- function(x) (x[1]^2 + x[2] - 11)^2 + (x[1] + x[2]^2 - 7)^2
+  expect_warning(
+    checkmate::expect_list(
+      ao(f = himmelblau, initial = c(0, 0), base_optimizer = optimizeR::optimizer_nlm()),
+      len = 5
+    ),
+    "Arguments `gradient`, `lower`, and `upper` are ignored"
+  )
+})
+
+test_that("ao with random partition works", {
+  f <- function(x) (x[1]^2 + x[2])^2 + (x[1] + x[2]^2)^2 + (x[3] + x[4]^2)^2
+  checkmate::expect_list(
+    ao(f = f, initial = c(1, 1, 1, 1), partition = "random", iteration_limit = 10),
+    len = 5
+  )
+})
+
+test_that("ao with custom partition works", {
+  f <- function(x) (x[1]^2 + x[2])^2 + (x[1] + x[2]^2)^2 + (x[3] + x[4]^2)^2
+  checkmate::expect_list(
+    ao(f = f, initial = c(1, 1, 1, 1), partition = list(1, 2, 3:4)),
+    len = 5
+  )
+})
+

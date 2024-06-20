@@ -1,5 +1,7 @@
 ---
 title: "Alternating optimization"
+description: >
+  Learn how to get started with alternating optimization in R.
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{Alternating optimization}
@@ -15,15 +17,21 @@ knitr::opts_chunk$set(
   comment = "#>",
   fig.path = "ao-"
 )
-library("ao")
-# devtools::load_all()
+library("ao") 
+set.seed(2)
 ```
 
-The `{ao}` R package implements the alternating optimization (AO) approach. This vignette gives an overview of the package. For theoretical results on AO, we refer to @bezdek:2002, who explain how AO can avoid getting stuck in local optima; @hu:2002, who show that AO can speed up optimization; and @bezdek:2003, who give more details on how fast AO converges.
+The `{ao}` R package implements the alternating optimization (AO) approach. This vignette provides an overview of the package. For theoretical results on AO, refer to:
+
+- @bezdek:2002, who explain how AO can avoid getting stuck in local optima
+
+- @hu:2002, who show that AO can speed up optimization
+
+- @bezdek:2003, who provide more details on the convergence speed of AO
 
 ## What actually is alternating optimization?
 
-Alternating optimization (AO) is an iterative procedure used to optimize a multivariate function by breaking it down into simpler sub-problems. Specifically, it involves optimizing over one block of function parameters while keeping the others fixed, and then alternating this process among the parameter blocks. AO is useful when the sub-problems are easier to solve than the original joint optimization problem, or when there is a natural partition of the parameters.
+Alternating optimization (AO) is an iterative procedure used to optimize a multivariate function by breaking it down into simpler sub-problems. It involves optimizing over one block of function parameters while keeping the others fixed, and then alternating this process among the parameter blocks. AO is particularly useful when the sub-problems are easier to solve than the original joint optimization problem, or when there is a natural partition of the parameters.
 
 Mathematically, consider a real-valued **objective** function $f(\mathbf{x}, \mathbf{y})$ where $\mathbf{x}$ and $\mathbf{y}$ are two **blocks** of function parameters, namely a **partition** of the parameters. The AO procedure can be described as follows:
 
@@ -43,7 +51,7 @@ The AO procedure can be
 
 - generalized to more than two parameter blocks, i.e., for $f(\mathbf{x}_1, \mathbf{x}_2, \ldots, \mathbf{x}_n)$, the procedure involves cycling through each parameter block $\mathbf{x}_1, \mathbf{x}_2, \ldots, \mathbf{x}_n$ and solving the corresponding sub-problems iteratively (the parameter blocks do not necessarily have to be disjoint),
 
-- **randomized** by changing the parameter partition randomly after each iteration, which can further improve the convergence rate and avoid getting trapped in local optima.
+- **randomized** by changing the parameter partition randomly after each iteration, which can further improve the convergence rate and help avoid getting trapped in local optima.
 
 ## Now how to use the `{ao}` package?
 
@@ -62,7 +70,7 @@ ao(
   gradient = NULL,
   ...,
   partition = "sequential",
-  new_block_probability = 0.3,
+  new_block_probability = 0.5,
   minimum_block_number = 2,
   minimize = TRUE,
   lower = -Inf,
@@ -72,29 +80,40 @@ ao(
   tolerance_value = 1e-6,
   tolerance_parameter = 1e-6,
   tolerance_parameter_norm = function(x, y) sqrt(sum((x - y)^2)),
+  base_optimizer = Optimizer$new("stats::optim", method = "L-BFGS-B"),
   verbose = FALSE
 )
 ```
 
 The arguments have the following meaning:
 
-- `f` is the objective function to be optimized. By default, `f` is optimized over its first argument, but it is also possible to optimize over an argument other than the first, or more than one argument. This then has to be specified via the `npar` and `target` arguments, see the example below. Additional arguments for `f` can be specified via the `...` argument as usual.
+- `f`: The objective function to be optimized. By default, `f` is optimized over its first argument. If optimization should target a different argument or multiple arguments, use `npar` and `target`, [see below](#generalized-objective-functions). Additional arguments for `f` can be passed via the `...` argument as usual.
 
-- `initial` are the starting parameter values for the AO procedure.
+- `initial`: Initial values for the parameters used in the AO procedure.
 
-- `gradient` allows to specify the analytical gradient of `f`. If not specified, a finite-difference approximation will be used.
+- `gradient`: Optional argument to specify the analytical gradient of `f`. If not provided, a finite-difference approximation will be used.
 
-- `partition` defines the parameter partition. The default is `"sequential"`, which optimizes each parameter alone conditional on the others. Other options are `"random"` for a random parameter partition in each iteration, `"none"` for no partition (which is equivalent to joint optimization), or a `list` of vectors of parameter indices that specify a custom partition.
+- `partition`: Specifies how parameters are partitioned for optimization. Can be one of the following:
 
-- `new_block_probability` and `minimum_block_number` are only relevant if `partition = "random"`. In this case, the former controls the probability for creating a new block when building a new random partition, and the latter defines the minimum number of parameter blocks for the random partitions.
+    - `"sequential"`: Optimizes each parameter block sequentially.
 
-- `minimize` can be `TRUE` to conduct minimization or `FALSE` for maximization.
+    - `"random"`: Randomly partitions parameters in each iteration.
 
-- `lower` and `upper` can be used to specify lower and upper parameter limits for constrained optimization.
+    - `"none"`: No partitioning; equivalent to joint optimization.
+
+    - Custom partition can be defined using a list of vectors of parameter indices. 
+
+- `new_block_probability` and `minimum_block_number` are only relevant if `partition = "random"`. In this case, the former controls the probability for creating a new block, and the latter defines the minimum number of parameter blocks.
+
+- `minimize`: Set to `TRUE` for minimization problems (default), or `FALSE` for maximization.
+
+- `lower` and `upper`: Lower and upper limits for constrained optimization.
 
 - `iteration_limit` is the maximum number of AO iterations before termination, while `seconds_limit` is the time limit in seconds. `tolerance_value` and `tolerance_parameter` (in combination with `tolerance_parameter_norm`) specify two other stopping criteria, namely when the change in the function value or the parameter distance, respectively, becomes smaller than these thresholds.
 
-- `verbose` can be set to `TRUE` to print status messages during the AO process.
+- `base_optimizer`: Numerical optimizer used for solving sub-problems.
+
+- `verbose`: Set to `TRUE` to print status messages during the AO process.
 
 ### A simple first example
 
@@ -173,9 +192,34 @@ The gradient function will be used by `ao()` if defined through the `gradient` a
 ao(f = himmelblau, initial = c(0, 0), gradient = gradient)
 ```
 
-The output is not included here because it closely resembles the previous example, where the gradient was not specified and therefore a finite-difference approximation was used. However, in higher-dimensional scenarios, using the analytical gradient can significantly enhance both the speed and stability of the procedure.
+The output is not shown here because it closely resembles the previous example, where the gradient was not specified and thus a finite-difference approximation was employed. However, in scenarios involving higher dimensions, utilizing the analytical gradient can notably improve both the speed and stability of the process.
 
 ### Random parameter partitions
+
+Another version of the AO procedure involves using a new, random partition of the parameters in every iteration. This approach can enhance the convergence rate and prevent being stuck in local optima. It is activated by setting `partition = "random"`. The randomness can be adjusted using two parameters:
+
+- `new_block_probability` determines the probability for creating a new block when building a new partition. Its value ranges from `0` (no blocks are created) to `1` (each parameter is a single block). 
+
+- `minimum_block_number` sets the minimum number of parameter blocks for random partitions. By default, it is configured to `2` to avoid generating trivial partitions.
+
+The random partitions are build as follows:^[`Procedure` is an internal R6 object [@chang:2022].]
+
+```{r, partition demo}
+procedure <- ao:::Procedure$new(
+  npar = 10, 
+  partition = "random", 
+  new_block_probability = 0.5,
+  minimum_block_number = 2
+)
+procedure$get_partition()
+procedure$get_partition()
+```
+
+As an example of AO with random partitions, consider fitting a two-class Gaussian mixture model via maximizing the model's log-likelihood function
+
+$$\ell(\boldsymbol{\theta}) = \sum_{i=1}^n \log\Big( \lambda \phi_{\mu_1, \sigma_1^2}(x_i) + (1-\lambda)\phi_{\mu_2,\sigma_2^2} (x_i) \Big),$$
+
+where the sum goes over all observations $1, \dots, n$, $\phi_{\mu_1, \sigma_1^2}$ and $\phi_{\mu_2, \sigma_2^2}$ denote the normal density for the first and second cluster, respectively, and $\lambda$ is the mixing proportion. The parameter vector to be estimated is thus $\boldsymbol{\theta} = (\mu_1, \mu_2, \sigma_1, \sigma_2, \lambda)$. As there exists no closed-form solution for the maximum likelihood estimator $\boldsymbol{\theta}^* = \arg\max_{\boldsymbol{\theta}} \ell(\boldsymbol{\theta})$, we need numerical optimization for finding the function optimum. The model is fitted to the following data:^[The `faithful` data set contains information about eruption times (`eruptions`) of the Old Faithful geyser in Yellowstone National Park, Wyoming, USA. The data histogram hints at two clusters with short and long eruption times, respectively. For both clusters, we assume a normal distribution, such that we consider a mixture of two Gaussian densities for modeling the overall eruption times.]
 
 ```{r, visualize_faithful, echo = FALSE, message = FALSE, warning = FALSE, fig.align = 'center', out.width = "80%", fig.dim = c(8, 6)}
 library("ggplot2")
@@ -184,51 +228,82 @@ ggplot(datasets::faithful, aes(x = eruptions)) +
   xlab("eruption time (min)")
 ```
 
-```{r, negative normal mixture}
-# negative normal mixture log-likelihood function
-# depends on parameters ('theta') and observation vector ('data')
-# 5 parameters: two class means, two class sds, one class probability
-normal_mixture_nllk <- function(theta, data) {
+The following function calculates the log-likelihood value given the parameter vector `theta` and the observation vector `data`:^[We restrict the standard deviations `sd` to be positive (via the exponential transformation) and `lambda` to be between 0 and 1 (via the logit transformation).]
+
+```{r, normal mixture}
+normal_mixture_llk <- function(theta, data) {
   mu <- theta[1:2]
   sd <- exp(theta[3:4])
   lambda <- plogis(theta[5])
-  c1 <- lambda * dnorm(data, mu[1], sd[1])
-  c2 <- (1 - lambda) * dnorm(data, mu[2], sd[2])
-  -sum(log(c1 + c2))
-}
-```
-
-```{r, ao negative normal mixture}
-ao(
-  f = normal_mixture_nllk,
-  initial = c(2, 4, -1, -1, 0.5),
-  data = datasets::faithful$eruptions,
-  partition = "random",
-  new_block_probability = 0.3,
-  minimum_block_number = 2
-)
-```
-
-- new_block_probability 
-
-- minimum_block_number 
-
-- pseudo code how are blocks created?
-
-### More flexibility
-
-```{r}
-normal_mixture_llk <- function(mu, sd, lambda, data) {
   c1 <- lambda * dnorm(data, mu[1], sd[1])
   c2 <- (1 - lambda) * dnorm(data, mu[2], sd[2])
   sum(log(c1 + c2))
 }
 ```
 
-```{r}
+The `ao()` call for performing alternating *maximization* with random partitions looks as follows, where we simplified the output for brevity:
+
+```{r, ao normal mixture}
+out <- ao(
+  f = normal_mixture_llk,
+  initial = runif(5),
+  data = datasets::faithful$eruptions,
+  partition = "random",
+  minimize = FALSE
+)
+round(out$details)
+```
+
+### More flexibility
+
+The `{ao}` package offers some flexibility for performing AO.^[Do you miss a functionality? Please let us know via an [issue on GitHub](https://github.com/loelschlaeger/ao/issues/new?assignees=&labels=future&projects=&template=suggestion.md).]
+
+#### Generalized objective functions
+
+Optimizers in R generally require that the objective function has a single target argument which must be in the first position. `{ao}` allows for optimization over an argument other than the first, or more than one argument. For example, say, the `normal_mixture_llk` function above has the following form and is supposed to be optimized over the parameters `mu`, `sd`, and `lambda`:
+
+```{r, normal mixture type 2}
+normal_mixture_llk <- function(data, mu, sd, lambda) {
+  sd <- exp(sd)
+  lambda <- plogis(lambda)
+  c1 <- lambda * dnorm(data, mu[1], sd[1])
+  c2 <- (1 - lambda) * dnorm(data, mu[2], sd[2])
+  sum(log(c1 + c2))
+}
+```
+
+In `ao()`, this scenario can be specified by setting
+
+- `target = c("mu", "sd", "lambda")` (the names of the target arguments)
+
+- and `npar = c(2, 2, 1)` (the lengths of the target arguments):
+
+```{r, ao normal mixture type 2, results = "hide"}
 ao(
   f = normal_mixture_llk,
-  initial = c(2, 4, 1, 1, 0.5),
+  initial = runif(5),
+  target = c("mu", "sd", "lambda"),
+  npar = c(2, 2, 1),
+  data = datasets::faithful$eruptions,
+  partition = "random",
+  minimize = FALSE
+)
+```
+
+#### Parameter bounds
+
+Instead of using parameter transformations in the `normal_mixture_llk()` function above, parameter bounds can be directly specified in `ao()` via the arguments `lower` and `upper`, where both can either be a single number (a common bound for all parameters) or a vector of specific bounds per parameter. Therefore, an more straightforward implementation of the mixture example would be:
+
+
+```{r, normal mixture type 3, results = "hide"}
+normal_mixture_llk <- function(mu, sd, lambda, data) {
+  c1 <- lambda * dnorm(data, mu[1], sd[1])
+  c2 <- (1 - lambda) * dnorm(data, mu[2], sd[2])
+  sum(log(c1 + c2))
+}
+ao(
+  f = normal_mixture_llk,
+  initial = runif(5),
   target = c("mu", "sd", "lambda"),
   npar = c(2, 2, 1),
   data = datasets::faithful$eruptions,
@@ -239,14 +314,30 @@ ao(
 )
 ```
 
-- custom partition
+#### Custom parameter partition
 
-- parameter bounds
+`{ao}` allows for the specification of custom parameter partitions. For example, say, the parameters of the Gaussian mixture model are supposed to be grouped by type:
 
-- stopping criteria
+$$\mathbf{x}_1 = (\mu_1, \mu_2),\ \mathbf{x}_2 = (\sigma_1, \sigma_2),\ \mathbf{x}_3 = (\lambda).$$
 
-- arguments (target, npar)
+In `ao()`, custom parameter partitions can be specified by setting `partition = list(1:2, 3:4, 5)`, i.e. by defining a `list` where each element corresponds to a parameter block, containing a vector of parameter indices. Parameter indices can be members of any number of blocks.
 
-- maximization
+#### Stopping criteria
+
+Currently, four different stopping criteria for the AO procedure are implemented:
+
+1. a predefined iteration limit is exceeded (via the `iteration_limit` argument)
+
+2. a predefined time limit is exceeded (via the `seconds_limit` argument)
+
+3. the absolute change in the function value in comparison to the last iteration falls below a predefined threshold (via the `tolerance_value` argument)
+
+4. the change in parameters in comparison to the last iteration falls below a predefined threshold (via the `tolerance_parameter` argument, where the parameter distance is computed via the norm specified as `tolerance_parameter_norm`)
+
+Any number of stopping criteria can be activated or deactivated^[Stopping criteria of the AO procedure can be deactivated, e.g., by setting `iteration_limit = Inf`, `seconds_limit = Inf`, `tolerance_value = 0`, or `tolerance_parameter = 0`.], and the final output contains information about the criterium that caused termination.
+
+#### Optimizer for solving the sub-problems
+
+By default, the L-BFGS-B algorithm [@byrd:1995] implemented in `stats::optim` is used. for solving the sub-problems numerically. However, any other optimizer can be selected by specifying the `base_optimizer` argument. Such an optimizer must be defined through the framework provided by the `{optimizeR}` package, please see [its documentation](https://loelschlaeger.de/optimizeR/) for details. For example, the `stats::nlm` optimizer can be selected by setting `base_optimizer = Optimizer$new("stats::nlm")`.
 
 ## References

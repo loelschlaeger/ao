@@ -110,6 +110,14 @@
 #' By default, the euclidean norm \code{function(x, y) sqrt(sum((x - y)^2))}
 #' is used.
 #'
+#' @param base_optimizer (`Optimizer`)\cr
+#' An \code{Optimizer} object, which can be created via
+#' \code{\link[optimizeR]{Optimizer}}. It numerically solves the sub-problems.
+#'
+#' By default, the \code{\link[stats]{optim}} optimizer is used. If another
+#' optimizer is specified, the arguments \code{gradient}, \code{lower}, and
+#' \code{upper} are ignored.
+#'
 #' @param verbose (`logical(1)`)\cr
 #' Whether to print tracing details during the alternating optimization
 #' process.
@@ -182,7 +190,10 @@ ao <- function(
     tolerance_value = 1e-6,
     tolerance_parameter = 1e-6,
     tolerance_parameter_norm = function(x, y) sqrt(sum((x - y)^2)),
-    verbose = FALSE) {
+    base_optimizer = Optimizer$new("stats::optim", method = "L-BFGS-B"),
+    verbose = FALSE
+  ) {
+
   ### input checks and building of objects
   ao_input_check(
     "initial",
@@ -230,6 +241,15 @@ ao <- function(
   if (!is.null(gradient)) {
     gradient <- Objective$new(f = gradient, target = target, npar = npar, ...)
   }
+  ao_input_check(
+    "base_optimizer",
+    checkmate::check_class(base_optimizer, "Optimizer")
+  )
+  if (base_optimizer$label != "stats::optim") {
+    cli::cli_warn(
+      "Arguments {.var gradient}, {.var lower}, and {.var upper} are ignored"
+    )
+  }
   procedure <- Procedure$new(
     npar = npar,
     partition = partition,
@@ -243,11 +263,6 @@ ao <- function(
     tolerance_parameter = tolerance_parameter,
     tolerance_parameter_norm = tolerance_parameter_norm
   )
-  optimizer <- Optimizer$new(
-    which = "stats::optim",
-    method = "L-BFGS-B",
-    hessian = FALSE
-  )
 
   ### build sub-problem template
   solve_sub_problem <- function(parameter_block, parameter_fixed, block) {
@@ -259,25 +274,25 @@ ao <- function(
       objective$evaluate(theta)
     }
 
-    ### build block gradient function
-    block_gradient <- if (is.null(gradient)) {
-      NULL
-    } else {
-      function(parameter_block, ...) {
-        theta <- numeric(npar)
-        theta[block] <- parameter_block
-        theta[-block] <- parameter_fixed
-        gradient$evaluate(theta)[block]
+    ### build block gradient function and set arguments for 'stats::optim'
+    if (base_optimizer$label == "stats::optim") {
+      block_gradient <- if (is.null(gradient)) {
+        NULL
+      } else {
+        function(parameter_block, ...) {
+          theta <- numeric(npar)
+          theta[block] <- parameter_block
+          theta[-block] <- parameter_fixed
+          gradient$evaluate(theta)[block]
+        }
       }
+      base_optimizer$set_arguments(
+        "gr" = block_gradient, "lower" = lower[block], "upper" = upper[block]
+      )
     }
 
-    ### set optimizer arguments
-    optimizer$set_arguments(
-      "gr" = block_gradient, "lower" = lower[block], "upper" = upper[block]
-    )
-
     ### solve sub-problem
-    optimizer$optimize(
+    base_optimizer$optimize(
       objective = block_objective,
       initial = parameter_block,
       direction = ifelse(procedure$minimize, "min", "max")

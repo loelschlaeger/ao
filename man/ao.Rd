@@ -22,6 +22,7 @@ ao(
   tolerance_value = 1e-06,
   tolerance_parameter = 1e-06,
   tolerance_parameter_norm = function(x, y) sqrt(sum((x - y)^2)),
+  base_optimizer = Optimizer$new("stats::optim", method = "L-BFGS-B"),
   verbose = FALSE
 )
 }
@@ -131,6 +132,14 @@ It must be of the form \code{function(x, y)} for two vector inputs
 \code{x} and \code{y}, and return a single \code{numeric} value.
 By default, the euclidean norm \code{function(x, y) sqrt(sum((x - y)^2))}
 is used.}
+
+\item{base_optimizer}{(\code{Optimizer})\cr
+An \code{Optimizer} object, which can be created via
+\code{\link[optimizeR]{Optimizer}}. It numerically solves the sub-problems.
+
+By default, the \code{\link[stats]{optim}} optimizer is used. If another
+optimizer is specified, the arguments \code{gradient}, \code{lower}, and
+\code{upper} are ignored.}
 
 \item{verbose}{(\code{logical(1)})\cr
 Whether to print tracing details during the alternating optimization
