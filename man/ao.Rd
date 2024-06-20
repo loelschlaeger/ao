@@ -90,11 +90,8 @@ The minimum number of blocks in random partitions.}
 Whether to minimize during the alternating optimization process.
 If \code{FALSE}, maximization is performed.}
 
-\item{lower}{(\code{numeric()})\cr
-Optionally lower parameter bounds.}
-
-\item{upper}{(\code{numeric()})\cr
-Optionally upper parameter bounds.}
+\item{lower, upper}{(\code{numeric()})\cr
+Optionally lower and upper parameter bounds.}
 
 \item{iteration_limit}{(\code{integer(1)} or \code{Inf})\cr
 The maximum number of iterations through the parameter partition before

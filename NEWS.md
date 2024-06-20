@@ -1,8 +1,8 @@
 # ao 1.0.0
 
-* Implemented random partitions and other stopping criteria.
+* Implemented random partitions, parameter bounds, new stopping criteria (iteration limit, time limit, change in function value, change in parameters).
 
-* The `ao()` API has changes a lot, please check the documentation.
+* The `ao()` API did change a lot, please check the documentation.
 
 # ao 0.3.3
 

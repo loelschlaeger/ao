@@ -67,11 +67,8 @@
 #' Whether to minimize during the alternating optimization process.
 #' If \code{FALSE}, maximization is performed.
 #'
-#' @param lower (`numeric()`)\cr
-#' Optionally lower parameter bounds.
-#'
-#' @param upper (`numeric()`)\cr
-#' Optionally upper parameter bounds.
+#' @param lower,upper (`numeric()`)\cr
+#' Optionally lower and upper parameter bounds.
 #'
 #' @param iteration_limit (`integer(1)` or `Inf`)\cr
 #' The maximum number of iterations through the parameter partition before
