@@ -240,7 +240,6 @@ Procedure <- R6::R6Class("Procedure",
     #' @param block (`integer()`)\cr
     #' The currently active parameter block, represented as parameter indices.
     update_details = function(value, parameter_block, seconds, error, block = self$block) {
-
       ### check inputs
       check_block <- checkmate::check_integerish(
         block,

@@ -204,8 +204,7 @@ ao <- function(
     tolerance_history = 1,
     base_optimizer = Optimizer$new("stats::optim", method = "L-BFGS-B"),
     verbose = FALSE,
-    hide_warnings = TRUE
-    ) {
+    hide_warnings = TRUE) {
   ### input checks and building of objects
   ao_input_check(
     "initial",
