@@ -80,8 +80,10 @@ ao(
   tolerance_value = 1e-6,
   tolerance_parameter = 1e-6,
   tolerance_parameter_norm = function(x, y) sqrt(sum((x - y)^2)),
+  tolerance_history = 1,
   base_optimizer = Optimizer$new("stats::optim", method = "L-BFGS-B"),
-  verbose = FALSE
+  verbose = FALSE,
+  hide_warnings = TRUE
 )
 ```
 
@@ -109,11 +111,11 @@ The arguments have the following meaning:
 
 - `lower` and `upper`: Lower and upper limits for constrained optimization.
 
-- `iteration_limit` is the maximum number of AO iterations before termination, while `seconds_limit` is the time limit in seconds. `tolerance_value` and `tolerance_parameter` (in combination with `tolerance_parameter_norm`) specify two other stopping criteria, namely when the change in the function value or the parameter distance, respectively, becomes smaller than these thresholds.
+- `iteration_limit` is the maximum number of AO iterations before termination, while `seconds_limit` is the time limit in seconds. `tolerance_value` and `tolerance_parameter` (in combination with `tolerance_parameter_norm`) specify two other stopping criteria, namely when the difference between the current function value or the current parameter vector and the one before `tolerance_history` iterations, respectively, becomes smaller than these thresholds.
 
 - `base_optimizer`: Numerical optimizer used for solving sub-problems.
 
-- `verbose`: Set to `TRUE` to print status messages during the AO process.
+- Set `verbose` to `TRUE` to print status messages, and `hide_warnings` to `FALSE` to show warning messages during the AO process.
 
 ### A simple first example
 
@@ -167,7 +169,7 @@ Here, we see the output of the alternating optimization procedure, which is a `l
 
 - `value` is the function value at termination.
 
-- `details` is a `data.frame` with full information about the procedure: For each iteration (column `iteration`) it contains the function value (column `value`), parameter values (columns starting with `p` followed by the parameter index), the active parameter block (columns starting with `b` followed by the parameter index, where `1` stands for a parameter contained in the active parameter block and `0` if not), computation times in seconds (column `seconds`), and a code that summarizes whether the update got accepted (column `update_code`, where `0` stands for an accepted update, `1` for a rejected update due to an error when solving the sub-problem, and `2` for a rejected update because it did not improve the function value).
+- `details` is a `data.frame` with full information about the procedure: For each iteration (column `iteration`) it contains the function value (column `value`), parameter values (columns starting with `p` followed by the parameter index), the active parameter block (columns starting with `b` followed by the parameter index, where `1` stands for a parameter contained in the active parameter block and `0` if not), and computation times in seconds (column `seconds`).
 
 - `seconds` is the overall computation time in seconds.
 
@@ -251,7 +253,7 @@ out <- ao(
   partition = "random",
   minimize = FALSE
 )
-round(out$details)
+round(out$details, 2)
 ```
 
 ### More flexibility

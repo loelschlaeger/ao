@@ -46,7 +46,7 @@ test_that("ao with a different base optimizer works", {
   himmelblau <- function(x) (x[1]^2 + x[2] - 11)^2 + (x[1] + x[2]^2 - 7)^2
   expect_warning(
     checkmate::expect_list(
-      ao(f = himmelblau, initial = c(0, 0), base_optimizer = optimizeR::optimizer_nlm()),
+      ao(f = himmelblau, initial = c(0, 0), base_optimizer = optimizeR::optimizer_nlm(), hide_warnings = FALSE),
       len = 5
     ),
     "Arguments `gradient`, `lower`, and `upper` are ignored"

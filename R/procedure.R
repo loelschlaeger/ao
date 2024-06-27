@@ -78,14 +78,18 @@ ao_input_check <- function(
 #' @param tolerance_value (`numeric(1)`)\cr
 #' A non-negative tolerance value. The alternating optimization terminates
 #' if the absolute difference between the current function value and the one
-#' from the last iteration is smaller than \code{tolerance_value}.
+#' before \code{tolerance_history} iterations is smaller than
+#' \code{tolerance_value}.
+#'
 #' Can be `0` for no value threshold.
 #'
 #' @param tolerance_parameter (`numeric(1)`)\cr
-#' A non-negative tolerance value. The alternating optimization terminates
-#' if the distance between the current estimate and the one from the last
-#' iteration is smaller than \code{tolerance_parameter}.
+#' A non-negative tolerance value. The alternating optimization terminates if
+#' the distance between the current estimate and the before
+#' \code{tolerance_history} iterations is smaller than \code{tolerance_parameter}.
+#'
 #' Can be `0` for no parameter threshold.
+#'
 #' By default, the distance is measured using the euclidean norm, but
 #' another norm can be specified via the \code{tolerance_parameter_norm}
 #' field.
@@ -98,6 +102,10 @@ ao_input_check <- function(
 #' \code{x} and \code{y}, and return a single \code{numeric} value.
 #' By default, the euclidean norm \code{function(x, y) sqrt(sum((x - y)^2))}
 #' is used.
+#'
+#' @param tolerance_history (`integer(1)`)\cr
+#' The number of iterations to look back to determine whether
+#' \code{tolerance_value} or \code{tolerance_parameter} has been reached.
 #'
 #' @param which_iteration (`integer()`)\cr
 #' Selects the iteration(s).
@@ -112,8 +120,7 @@ ao_input_check <- function(
 #'
 #' @param which_column (`character()`)\cr
 #' Selects the columns in the `details` part of the output and can be one or
-#' more of `"iteration"`, `"value"`, `"parameter"`, `"block"`, `"seconds"`,
-#' and `"update_code"`.
+#' more of `"iteration"`, `"value"`, `"parameter"`, `"block"`, and `"seconds"`
 #'
 #' @param keep_iteration_column (`logical()`)\cr
 #' Whether to keep the column containing the information about the iteration
@@ -147,7 +154,8 @@ Procedure <- R6::R6Class("Procedure",
                           seconds_limit = Inf,
                           tolerance_value = 1e-6,
                           tolerance_parameter = 1e-6,
-                          tolerance_parameter_norm = function(x, y) sqrt(sum((x - y)^2))) {
+                          tolerance_parameter_norm = function(x, y) sqrt(sum((x - y)^2)),
+                          tolerance_history = 1) {
       ao_input_check(
         "npar",
         checkmate::check_int(npar, lower = 0)
@@ -163,6 +171,7 @@ Procedure <- R6::R6Class("Procedure",
       self$tolerance_value <- tolerance_value
       self$tolerance_parameter <- tolerance_parameter
       self$tolerance_parameter_norm <- tolerance_parameter_norm
+      self$tolerance_history <- tolerance_history
       invisible(self)
     },
 
@@ -208,11 +217,11 @@ Procedure <- R6::R6Class("Procedure",
     initialize_details = function(initial_parameter, initial_value) {
       private$.details <- structure(
         data.frame(
-          t(c(0L, initial_value, initial_parameter, rep(0, self$npar), 0, 0L))
+          t(c(0L, initial_value, initial_parameter, rep(0, self$npar), 0))
         ),
         names = c(
           "iteration", "value", paste0("p", seq_len(self$npar)),
-          paste0("b", seq_len(self$npar)), "seconds", "update_code"
+          paste0("b", seq_len(self$npar)), "seconds"
         )
       )
       invisible(self)
@@ -231,6 +240,7 @@ Procedure <- R6::R6Class("Procedure",
     #' @param block (`integer()`)\cr
     #' The currently active parameter block, represented as parameter indices.
     update_details = function(value, parameter_block, seconds, error, block = self$block) {
+
       ### check inputs
       check_block <- checkmate::check_integerish(
         block,
@@ -249,46 +259,27 @@ Procedure <- R6::R6Class("Procedure",
         na.ok = FALSE, lower = 0, finite = TRUE, null.ok = FALSE
       )
       check_error <- checkmate::check_flag(error)
-
-      ### check whether to accept the update
       check_results <- all(sapply(
         c(check_block, check_value, check_parameter_block, check_seconds, check_error),
         isTRUE
       ))
-      update_code <- if (!check_results || error) {
-        1
-      } else if (self$minimize && any(value >= self$get_value())) {
-        2
-      } else if (!self$minimize && any(value <= self$get_value())) {
-        2
-      } else {
-        0
-      }
 
       ### update details
       rows <- nrow(private$.details)
-      if (update_code == 0) {
+      if (isTRUE(check_results)) {
         parameter <- self$get_parameter_latest("full")
         parameter[block] <- parameter_block
-        private$.details[rows + 1, "iteration"] <- self$iteration
         private$.details[rows + 1, "value"] <- value
-        private$.details[rows + 1, "seconds"] <- seconds
         parameter_columns <- which(startsWith(colnames(private$.details), "p"))
         private$.details[rows + 1, parameter_columns] <- parameter
       } else {
         private$.details[rows + 1, ] <- private$.details[rows, ]
-        message <- switch(update_code,
-          "1" = "an error when solving the sub-problem occured",
-          "2" = "did not improve the function value"
-        )
-        self$print_status(paste("update rejected:", message), 6)
       }
       private$.details[rows + 1, "iteration"] <- self$iteration
       private$.details[rows + 1, "seconds"] <- seconds
       block_columns <- which(startsWith(colnames(private$.details), "b"))
       private$.details[rows + 1, block_columns[block]] <- 1
       private$.details[rows + 1, block_columns[-block]] <- 0
-      private$.details[rows + 1, "update_code"] <- update_code
 
       ### return information
       self$print_status("function value:", 8)
@@ -316,7 +307,7 @@ Procedure <- R6::R6Class("Procedure",
     #' Get the `details` part of the output.
     get_details = function(which_iteration = NULL,
                            which_block = NULL,
-                           which_column = c("iteration", "value", "parameter", "block", "seconds", "update_code")) {
+                           which_column = c("iteration", "value", "parameter", "block", "seconds")) {
       ### input checks
       ao_input_check(
         "which_iteration",
@@ -339,7 +330,7 @@ Procedure <- R6::R6Class("Procedure",
       ao_input_check(
         "which_column",
         checkmate::check_subset(
-          which_column, c("iteration", "value", "parameter", "block", "seconds", "update_code"),
+          which_column, c("iteration", "value", "parameter", "block", "seconds"),
           empty.ok = TRUE
         )
       )
@@ -367,14 +358,12 @@ Procedure <- R6::R6Class("Procedure",
       parameter_columns <- which(startsWith(colnames(details), "p"))
       block_columns <- which(startsWith(colnames(details), "b"))
       seconds_column <- which(colnames(details) == "seconds")
-      update_code_column <- which(colnames(details) == "update_code")
       columns <- c(
         if ("iteration" %in% which_column) iteration_column,
         if ("value" %in% which_column) value_column,
         if ("parameter" %in% which_column) parameter_columns,
         if ("block" %in% which_column) block_columns,
-        if ("seconds" %in% which_column) seconds_column,
-        if ("update_code" %in% which_column) update_code_column
+        if ("seconds" %in% which_column) seconds_column
       )
 
       ### return details
@@ -414,6 +403,18 @@ Procedure <- R6::R6Class("Procedure",
     #' optimization procedure.
     get_value_latest = function() {
       private$.details[nrow(private$.details), "value"]
+    },
+
+    #' @description
+    #' Get the optimum function value in the alternating optimization procedure.
+    get_value_best = function() {
+      values <- private$.details[, "value"]
+      id_best <- if (self$minimize) {
+        which.min(values)
+      } else {
+        which.max(values)
+      }
+      private$.details[id_best, "value"]
     },
 
     #' @description
@@ -468,6 +469,38 @@ Procedure <- R6::R6Class("Procedure",
           return(latest_parameter[self$block])
         } else {
           return(latest_parameter[-self$block])
+        }
+      }
+    },
+
+    #' @description
+    #' Get the optimum parameter value in the alternating optimization procedure.
+    get_parameter_best = function(parameter_type = "full") {
+      ### input checks
+      ao_input_check(
+        "parameter_type",
+        checkmate::check_choice(parameter_type, c("full", "block", "fixed")),
+        "Must be one of {.val full}, {.val block}, or {.val fixed}"
+      )
+
+      ### find best parameter
+      details <- private$.details
+      id_best <- if (self$minimize) {
+        which.min(details[, "value"])
+      } else {
+        which.max(details[, "value"])
+      }
+      parameter_columns <- which(startsWith(colnames(details), "p"))
+      best_parameter <- as.numeric(details[id_best, parameter_columns])
+
+      ### filter for 'parameter_type'
+      if (parameter_type == "full") {
+        return(best_parameter)
+      } else {
+        if (parameter_type == "block") {
+          return(best_parameter[self$block])
+        } else {
+          return(best_parameter[-self$block])
         }
       }
     },
@@ -530,17 +563,22 @@ Procedure <- R6::R6Class("Procedure",
           break
         }
 
-        ### only check tolerance if at least one iteration has been performed
-        if (self$iteration >= 1) {
+        ### only check tolerance if at least 'tolerance_history' iterations have
+        ### been performed
+        if (self$iteration >= self$tolerance_history) {
           ### check value tolerance
           abs_value_change <- abs(
             self$get_value_latest() - self$get_value(
-              which_iteration = self$iteration - 1,
+              which_iteration = self$iteration - self$tolerance_history,
               which_block = "first"
             )
           )
           if (abs_value_change < self$tolerance_value) {
-            message <- paste("change in function value is <", self$tolerance_value)
+            message <- paste(
+              "change in function value between", self$tolerance_history,
+              ifelse(self$tolerance_history > 1, "iterations", "iteration"),
+              "is <", self$tolerance_value
+            )
             stopping <- TRUE
             break
           }
@@ -549,12 +587,16 @@ Procedure <- R6::R6Class("Procedure",
           parameter_change <- self$tolerance_parameter_norm(
             self$get_parameter_latest(),
             self$get_parameter(
-              which_iteration = self$iteration - 1,
+              which_iteration = self$iteration - self$tolerance_history,
               which_block = "first"
             )
           )
           if (parameter_change < self$tolerance_parameter) {
-            message <- paste("distance of parameters is <", self$tolerance_parameter)
+            message <- paste(
+              "change in function parameters between", self$tolerance_history,
+              ifelse(self$tolerance_history > 1, "iterations", "iteration"),
+              "is <", self$tolerance_parameter
+            )
             stopping <- TRUE
             break
           }
@@ -737,7 +779,9 @@ Procedure <- R6::R6Class("Procedure",
     #' @field tolerance_value (`numeric(1)`)\cr
     #' A non-negative tolerance value. The alternating optimization terminates
     #' if the absolute difference between the current function value and the one
-    #' from the last iteration is smaller than \code{tolerance_value}.
+    #' before \code{tolerance_history} iterations is smaller than
+    #' \code{tolerance_value}.
+    #'
     #' Can be `0` for no value threshold.
     tolerance_value = function(value) {
       if (missing(value)) {
@@ -752,10 +796,12 @@ Procedure <- R6::R6Class("Procedure",
     },
 
     #' @field tolerance_parameter (`numeric(1)`)\cr
-    #' A non-negative tolerance value. The alternating optimization terminates
-    #' if the distance between the current estimate and the one from the last
-    #' iteration is smaller than \code{tolerance_parameter}.
+    #' A non-negative tolerance value. The alternating optimization terminates if
+    #' the distance between the current estimate and the before
+    #' \code{tolerance_history} iterations is smaller than \code{tolerance_parameter}.
+    #'
     #' Can be `0` for no parameter threshold.
+    #'
     #' By default, the distance is measured using the euclidean norm, but
     #' another norm can be specified via the \code{tolerance_parameter_norm}
     #' field.
@@ -775,6 +821,7 @@ Procedure <- R6::R6Class("Procedure",
     #' The norm that measures the distance between the current estimate and the
     #' one from the last iteration. If the distance is smaller than
     #' \code{tolerance_parameter}, the procedure is terminated.
+    #'
     #' It must be of the form \code{function(x, y)} for two vector inputs
     #' \code{x} and \code{y}, and return a single \code{numeric} value.
     #' By default, the euclidean norm \code{function(x, y) sqrt(sum((x - y)^2))}
@@ -788,6 +835,21 @@ Procedure <- R6::R6Class("Procedure",
           checkmate::check_function(value, args = c("x", "y"), nargs = 2)
         )
         private$.tolerance_parameter_norm <- list(value)
+      }
+    },
+
+    #' @field tolerance_history (`integer(1)`)\cr
+    #' The number of iterations to look back to determine whether
+    #' \code{tolerance_value} or \code{tolerance_parameter} has been reached.
+    tolerance_history = function(value) {
+      if (missing(value)) {
+        private$.tolerance_history
+      } else {
+        ao_input_check(
+          "tolerance_history",
+          checkmate::check_count(value, positive = TRUE)
+        )
+        private$.tolerance_history <- value
       }
     },
 
@@ -838,18 +900,15 @@ Procedure <- R6::R6Class("Procedure",
     #'   (column `value`), parameter values (columns starting with `p` followed by
     #'   the parameter index), the active parameter block (columns starting with `b`
     #'   followed by the parameter index, where `1` stands for a parameter contained
-    #'   in the active parameter block and `0` if not), computation times in seconds
-    #'   (column `seconds`), and a code that summarizes whether the update got
-    #'   accepted (column `update_code`, where `0` stands for an accepted update,
-    #'   `1` for a rejected update due to an error when solving the sub-problem, and
-    #'   `2` for a rejected update because it did not improve the function value).
+    #'   in the active parameter block and `0` if not), and computation times in seconds
+    #'   (column `seconds`)
     #' * \code{seconds} is the overall computation time in seconds.
     #' * \code{stopping_reason} is a message why the procedure has terminated.
     output = function(value) {
       if (missing(value)) {
         list(
-          "estimate" = self$get_parameter_latest("full"),
-          "value" = self$get_value_latest(),
+          "estimate" = self$get_parameter_best("full"),
+          "value" = self$get_value_best(),
           "details" = self$get_details(),
           "seconds" = self$get_seconds_total(),
           "stopping_reason" = private$.stopping_reason
@@ -875,6 +934,7 @@ Procedure <- R6::R6Class("Procedure",
     .seconds_limit = numeric(),
     .tolerance_value = numeric(),
     .tolerance_parameter = numeric(),
+    .tolerance_history = integer(),
 
     ### must store 'tolerance_parameter_norm' inside list
     .tolerance_parameter_norm = list(function(x, y) sqrt(sum((x - y)^2))),

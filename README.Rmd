@@ -38,10 +38,11 @@ install.packages("ao")
 
 Then load the package via `library("ao")` and you should be ready to go. Here is a simple example of alternating minimization of the [Rosenbrock function](https://en.wikipedia.org/wiki/Rosenbrock_function):
 
-```{r, ao rosenbrock}
+```{r, rosenbrock}
 rosenbrock <- function(x) (1 - x[1])^2 + (x[2] - x[1]^2)^2
-ao(f = rosenbrock, initial = c(2, 2))
 ```
+
+The resulting optimization path ...
 
 ```{r, rosenbrock_ao_path, echo = FALSE}
 out <- ao(f = rosenbrock, initial = c(2, 2))
@@ -69,6 +70,12 @@ ggplot(grid) +
   geom_path(
     data = out$details, aes(x = p1, y = p2), linewidth = 1
   )
+```
+
+... is obtained as follows:
+
+```{r, ao rosenbrock}
+ao(f = rosenbrock, initial = c(2, 2))
 ```
 
 ## Contact?

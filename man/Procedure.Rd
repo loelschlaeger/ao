@@ -57,14 +57,18 @@ actual process time can exceed this limit.}
 \item{\code{tolerance_value}}{(\code{numeric(1)})\cr
 A non-negative tolerance value. The alternating optimization terminates
 if the absolute difference between the current function value and the one
-from the last iteration is smaller than \code{tolerance_value}.
+before \code{tolerance_history} iterations is smaller than
+\code{tolerance_value}.
+
 Can be \code{0} for no value threshold.}
 
 \item{\code{tolerance_parameter}}{(\code{numeric(1)})\cr
-A non-negative tolerance value. The alternating optimization terminates
-if the distance between the current estimate and the one from the last
-iteration is smaller than \code{tolerance_parameter}.
+A non-negative tolerance value. The alternating optimization terminates if
+the distance between the current estimate and the before
+\code{tolerance_history} iterations is smaller than \code{tolerance_parameter}.
+
 Can be \code{0} for no parameter threshold.
+
 By default, the distance is measured using the euclidean norm, but
 another norm can be specified via the \code{tolerance_parameter_norm}
 field.}
@@ -73,10 +77,15 @@ field.}
 The norm that measures the distance between the current estimate and the
 one from the last iteration. If the distance is smaller than
 \code{tolerance_parameter}, the procedure is terminated.
+
 It must be of the form \code{function(x, y)} for two vector inputs
 \code{x} and \code{y}, and return a single \code{numeric} value.
 By default, the euclidean norm \code{function(x, y) sqrt(sum((x - y)^2))}
 is used.}
+
+\item{\code{tolerance_history}}{(\code{integer(1)})\cr
+The number of iterations to look back to determine whether
+\code{tolerance_value} or \code{tolerance_parameter} has been reached.}
 
 \item{\code{iteration}}{(\code{integer(1)})\cr
 The current iteration number.}
@@ -95,11 +104,8 @@ For each iteration (column \code{iteration}) it contains the function value
 (column \code{value}), parameter values (columns starting with \code{p} followed by
 the parameter index), the active parameter block (columns starting with \code{b}
 followed by the parameter index, where \code{1} stands for a parameter contained
-in the active parameter block and \code{0} if not), computation times in seconds
-(column \code{seconds}), and a code that summarizes whether the update got
-accepted (column \code{update_code}, where \code{0} stands for an accepted update,
-\code{1} for a rejected update due to an error when solving the sub-problem, and
-\code{2} for a rejected update because it did not improve the function value).
+in the active parameter block and \code{0} if not), and computation times in seconds
+(column \code{seconds})
 \item \code{seconds} is the overall computation time in seconds.
 \item \code{stopping_reason} is a message why the procedure has terminated.
 }}
@@ -117,8 +123,10 @@ accepted (column \code{update_code}, where \code{0} stands for an accepted updat
 \item \href{#method-Procedure-get_details}{\code{Procedure$get_details()}}
 \item \href{#method-Procedure-get_value}{\code{Procedure$get_value()}}
 \item \href{#method-Procedure-get_value_latest}{\code{Procedure$get_value_latest()}}
+\item \href{#method-Procedure-get_value_best}{\code{Procedure$get_value_best()}}
 \item \href{#method-Procedure-get_parameter}{\code{Procedure$get_parameter()}}
 \item \href{#method-Procedure-get_parameter_latest}{\code{Procedure$get_parameter_latest()}}
+\item \href{#method-Procedure-get_parameter_best}{\code{Procedure$get_parameter_best()}}
 \item \href{#method-Procedure-get_seconds}{\code{Procedure$get_seconds()}}
 \item \href{#method-Procedure-get_seconds_total}{\code{Procedure$get_seconds_total()}}
 \item \href{#method-Procedure-check_stopping}{\code{Procedure$check_stopping()}}
@@ -141,7 +149,8 @@ Creates a new object of this \link[R6:R6Class]{R6} class.
   seconds_limit = Inf,
   tolerance_value = 1e-06,
   tolerance_parameter = 1e-06,
-  tolerance_parameter_norm = function(x, y) sqrt(sum((x - y)^2))
+  tolerance_parameter_norm = function(x, y) sqrt(sum((x - y)^2)),
+  tolerance_history = 1
 )}\if{html}{\out{</div>}}
 }
 
@@ -196,14 +205,18 @@ actual process time can exceed this limit.}
 \item{\code{tolerance_value}}{(\code{numeric(1)})\cr
 A non-negative tolerance value. The alternating optimization terminates
 if the absolute difference between the current function value and the one
-from the last iteration is smaller than \code{tolerance_value}.
+before \code{tolerance_history} iterations is smaller than
+\code{tolerance_value}.
+
 Can be \code{0} for no value threshold.}
 
 \item{\code{tolerance_parameter}}{(\code{numeric(1)})\cr
-A non-negative tolerance value. The alternating optimization terminates
-if the distance between the current estimate and the one from the last
-iteration is smaller than \code{tolerance_parameter}.
+A non-negative tolerance value. The alternating optimization terminates if
+the distance between the current estimate and the before
+\code{tolerance_history} iterations is smaller than \code{tolerance_parameter}.
+
 Can be \code{0} for no parameter threshold.
+
 By default, the distance is measured using the euclidean norm, but
 another norm can be specified via the \code{tolerance_parameter_norm}
 field.}
@@ -216,6 +229,10 @@ It must be of the form \code{function(x, y)} for two vector inputs
 \code{x} and \code{y}, and return a single \code{numeric} value.
 By default, the euclidean norm \code{function(x, y) sqrt(sum((x - y)^2))}
 is used.}
+
+\item{\code{tolerance_history}}{(\code{integer(1)})\cr
+The number of iterations to look back to determine whether
+\code{tolerance_value} or \code{tolerance_parameter} has been reached.}
 }
 \if{html}{\out{</div>}}
 }
@@ -331,7 +348,7 @@ Get the \code{details} part of the output.
 \if{html}{\out{<div class="r">}}\preformatted{Procedure$get_details(
   which_iteration = NULL,
   which_block = NULL,
-  which_column = c("iteration", "value", "parameter", "block", "seconds", "update_code")
+  which_column = c("iteration", "value", "parameter", "block", "seconds")
 )}\if{html}{\out{</div>}}
 }
 
@@ -353,8 +370,7 @@ Selects the parameter block in the partition and can be one of
 
 \item{\code{which_column}}{(\code{character()})\cr
 Selects the columns in the \code{details} part of the output and can be one or
-more of \code{"iteration"}, \code{"value"}, \code{"parameter"}, \code{"block"}, \code{"seconds"},
-and \code{"update_code"}.}
+more of \code{"iteration"}, \code{"value"}, \code{"parameter"}, \code{"block"}, and \code{"seconds"}}
 }
 \if{html}{\out{</div>}}
 }
@@ -413,6 +429,16 @@ optimization procedure.
 
 }
 \if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Procedure-get_value_best"></a>}}
+\if{latex}{\out{\hypertarget{method-Procedure-get_value_best}{}}}
+\subsection{Method \code{get_value_best()}}{
+Get the optimum function value in the alternating optimization procedure.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Procedure$get_value_best()}\if{html}{\out{</div>}}
+}
+
+}
+\if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Procedure-get_parameter"></a>}}
 \if{latex}{\out{\hypertarget{method-Procedure-get_parameter}{}}}
 \subsection{Method \code{get_parameter()}}{
@@ -462,6 +488,31 @@ Get the parameter value in the latest step of the alternating
 optimization procedure.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Procedure$get_parameter_latest(parameter_type = "full")}\if{html}{\out{</div>}}
+}
+
+\subsection{Arguments}{
+\if{html}{\out{<div class="arguments">}}
+\describe{
+\item{\code{parameter_type}}{(\code{character(1)})\cr
+Can be one of
+\itemize{
+\item \code{"full"} (default) to get the full parameter vector,
+\item \code{"block"} to get the parameter values for the current block,
+i.e., the parameters with the indices \code{self$block}
+\item \code{"fixed"} to get the parameter values which are currently fixed,
+i.e., all except for those with the indices \code{self$block}
+}}
+}
+\if{html}{\out{</div>}}
+}
+}
+\if{html}{\out{<hr>}}
+\if{html}{\out{<a id="method-Procedure-get_parameter_best"></a>}}
+\if{latex}{\out{\hypertarget{method-Procedure-get_parameter_best}{}}}
+\subsection{Method \code{get_parameter_best()}}{
+Get the optimum parameter value in the alternating optimization procedure.
+\subsection{Usage}{
+\if{html}{\out{<div class="r">}}\preformatted{Procedure$get_parameter_best(parameter_type = "full")}\if{html}{\out{</div>}}
 }
 
 \subsection{Arguments}{

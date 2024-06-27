@@ -1,3 +1,11 @@
+# ao 1.0.1
+
+* Removed `update_code` from output. Updates are now accepted regardless whether they improve the function value. In the end, the best solution is returned.
+
+* Added `tolerance_history` argument to compare function value and parameters between more than one iteration.
+
+* Added `hide_warnings` argument to hide warnings during the AO procedure.
+
 # ao 1.0.0
 
 * Implemented random partitions, parameter bounds, new stopping criteria (iteration limit, time limit, change in function value, change in parameters).

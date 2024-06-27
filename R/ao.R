@@ -46,6 +46,7 @@
 #'
 #' @param partition (`character(1)` or `list()`)\cr
 #' Defines the parameter partition, and can be either
+#'
 #' * `"sequential"` for treating each parameter separately,
 #' * `"random"` for a random partition in each iteration,
 #' * `"none"` for no partition (which is equivalent to joint optimization),
@@ -73,12 +74,15 @@
 #' @param iteration_limit (`integer(1)` or `Inf`)\cr
 #' The maximum number of iterations through the parameter partition before
 #' the alternating optimization process is terminated.
+#'
 #' Can also be `Inf` for no iteration limit.
 #'
 #' @param seconds_limit (`numeric(1)`)\cr
 #' The time limit in seconds before the alternating optimization process is
 #' terminated.
+#'
 #' Can also be `Inf` for no time limit.
+#'
 #' Note that this stopping criteria is only checked *after*
 #' a sub-problem is solved and not *within* solving a sub-problem, so the
 #' actual process time can exceed this limit.
@@ -86,14 +90,18 @@
 #' @param tolerance_value (`numeric(1)`)\cr
 #' A non-negative tolerance value. The alternating optimization terminates
 #' if the absolute difference between the current function value and the one
-#' from the last iteration is smaller than \code{tolerance_value}.
+#' before \code{tolerance_history} iterations is smaller than
+#' \code{tolerance_value}.
+#'
 #' Can be `0` for no value threshold.
 #'
 #' @param tolerance_parameter (`numeric(1)`)\cr
-#' A non-negative tolerance value. The alternating optimization terminates
-#' if the distance between the current estimate and the one from the last
-#' iteration is smaller than \code{tolerance_parameter}.
+#' A non-negative tolerance value. The alternating optimization terminates if
+#' the distance between the current estimate and the before
+#' \code{tolerance_history} iterations is smaller than \code{tolerance_parameter}.
+#'
 #' Can be `0` for no parameter threshold.
+#'
 #' By default, the distance is measured using the euclidean norm, but
 #' another norm can be specified via the \code{tolerance_parameter_norm}
 #' field.
@@ -102,10 +110,15 @@
 #' The norm that measures the distance between the current estimate and the
 #' one from the last iteration. If the distance is smaller than
 #' \code{tolerance_parameter}, the procedure is terminated.
+#'
 #' It must be of the form \code{function(x, y)} for two vector inputs
 #' \code{x} and \code{y}, and return a single \code{numeric} value.
 #' By default, the euclidean norm \code{function(x, y) sqrt(sum((x - y)^2))}
 #' is used.
+#'
+#' @param tolerance_history (`integer(1)`)\cr
+#' The number of iterations to look back to determine whether
+#' \code{tolerance_value} or \code{tolerance_parameter} has been reached.
 #'
 #' @param base_optimizer (`Optimizer`)\cr
 #' An \code{Optimizer} object, which can be created via
@@ -119,8 +132,12 @@
 #' Whether to print tracing details during the alternating optimization
 #' process.
 #'
+#' @param hide_warnings (`logical(1)`)\cr
+#' Whether to hide warnings during the alternating optimization process.
+#'
 #' @return
 #' A \code{list} with the following elements:
+#'
 #' * \code{estimate} is the parameter vector at termination.
 #' * \code{value} is the function value at termination.
 #' * \code{details} is a `data.frame` with full information about the procedure:
@@ -128,11 +145,8 @@
 #'   (column `value`), parameter values (columns starting with `p` followed by
 #'   the parameter index), the active parameter block (columns starting with `b`
 #'   followed by the parameter index, where `1` stands for a parameter contained
-#'   in the active parameter block and `0` if not), computation times in seconds
-#'   (column `seconds`), and a code that summarizes whether the update got
-#'   accepted (column `update_code`, where `0` stands for an accepted update,
-#'   `1` for a rejected update due to an error when solving the sub-problem, and
-#'   `2` for a rejected update because it did not improve the function value).
+#'   in the active parameter block and `0` if not), and computation times in
+#'   seconds (column `seconds`)
 #' * \code{seconds} is the overall computation time in seconds.
 #' * \code{stopping_reason} is a message why the procedure has terminated.
 #'
@@ -187,8 +201,11 @@ ao <- function(
     tolerance_value = 1e-6,
     tolerance_parameter = 1e-6,
     tolerance_parameter_norm = function(x, y) sqrt(sum((x - y)^2)),
+    tolerance_history = 1,
     base_optimizer = Optimizer$new("stats::optim", method = "L-BFGS-B"),
-    verbose = FALSE) {
+    verbose = FALSE,
+    hide_warnings = TRUE
+    ) {
   ### input checks and building of objects
   ao_input_check(
     "initial",
@@ -240,11 +257,22 @@ ao <- function(
     "base_optimizer",
     checkmate::check_class(base_optimizer, "Optimizer")
   )
+  ao_input_check(
+    "hide_warnings",
+    checkmate::check_flag(hide_warnings)
+  )
+
+  ### building base optimizer
+  base_optimizer$hide_warnings <- hide_warnings
   if (base_optimizer$label != "stats::optim") {
-    cli::cli_warn(
-      "Arguments {.var gradient}, {.var lower}, and {.var upper} are ignored"
-    )
+    if (!isTRUE(hide_warnings)) {
+      cli::cli_warn(
+        "Arguments {.var gradient}, {.var lower}, and {.var upper} are ignored"
+      )
+    }
   }
+
+  ### building procedure
   procedure <- Procedure$new(
     npar = npar,
     partition = partition,
@@ -256,7 +284,8 @@ ao <- function(
     seconds_limit = seconds_limit,
     tolerance_value = tolerance_value,
     tolerance_parameter = tolerance_parameter,
-    tolerance_parameter_norm = tolerance_parameter_norm
+    tolerance_parameter_norm = tolerance_parameter_norm,
+    tolerance_history = tolerance_history
   )
 
   ### build sub-problem template

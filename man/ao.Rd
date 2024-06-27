@@ -22,8 +22,10 @@ ao(
   tolerance_value = 1e-06,
   tolerance_parameter = 1e-06,
   tolerance_parameter_norm = function(x, y) sqrt(sum((x - y)^2)),
+  tolerance_history = 1,
   base_optimizer = Optimizer$new("stats::optim", method = "L-BFGS-B"),
-  verbose = FALSE
+  verbose = FALSE,
+  hide_warnings = TRUE
 )
 }
 \arguments{
@@ -96,12 +98,15 @@ Optionally lower and upper parameter bounds.}
 \item{iteration_limit}{(\code{integer(1)} or \code{Inf})\cr
 The maximum number of iterations through the parameter partition before
 the alternating optimization process is terminated.
+
 Can also be \code{Inf} for no iteration limit.}
 
 \item{seconds_limit}{(\code{numeric(1)})\cr
 The time limit in seconds before the alternating optimization process is
 terminated.
+
 Can also be \code{Inf} for no time limit.
+
 Note that this stopping criteria is only checked \emph{after}
 a sub-problem is solved and not \emph{within} solving a sub-problem, so the
 actual process time can exceed this limit.}
@@ -109,14 +114,18 @@ actual process time can exceed this limit.}
 \item{tolerance_value}{(\code{numeric(1)})\cr
 A non-negative tolerance value. The alternating optimization terminates
 if the absolute difference between the current function value and the one
-from the last iteration is smaller than \code{tolerance_value}.
+before \code{tolerance_history} iterations is smaller than
+\code{tolerance_value}.
+
 Can be \code{0} for no value threshold.}
 
 \item{tolerance_parameter}{(\code{numeric(1)})\cr
-A non-negative tolerance value. The alternating optimization terminates
-if the distance between the current estimate and the one from the last
-iteration is smaller than \code{tolerance_parameter}.
+A non-negative tolerance value. The alternating optimization terminates if
+the distance between the current estimate and the before
+\code{tolerance_history} iterations is smaller than \code{tolerance_parameter}.
+
 Can be \code{0} for no parameter threshold.
+
 By default, the distance is measured using the euclidean norm, but
 another norm can be specified via the \code{tolerance_parameter_norm}
 field.}
@@ -125,10 +134,15 @@ field.}
 The norm that measures the distance between the current estimate and the
 one from the last iteration. If the distance is smaller than
 \code{tolerance_parameter}, the procedure is terminated.
+
 It must be of the form \code{function(x, y)} for two vector inputs
 \code{x} and \code{y}, and return a single \code{numeric} value.
 By default, the euclidean norm \code{function(x, y) sqrt(sum((x - y)^2))}
 is used.}
+
+\item{tolerance_history}{(\code{integer(1)})\cr
+The number of iterations to look back to determine whether
+\code{tolerance_value} or \code{tolerance_parameter} has been reached.}
 
 \item{base_optimizer}{(\code{Optimizer})\cr
 An \code{Optimizer} object, which can be created via
@@ -141,6 +155,9 @@ optimizer is specified, the arguments \code{gradient}, \code{lower}, and
 \item{verbose}{(\code{logical(1)})\cr
 Whether to print tracing details during the alternating optimization
 process.}
+
+\item{hide_warnings}{(\code{logical(1)})\cr
+Whether to hide warnings during the alternating optimization process.}
 }
 \value{
 A \code{list} with the following elements:
@@ -152,11 +169,8 @@ For each iteration (column \code{iteration}) it contains the function value
 (column \code{value}), parameter values (columns starting with \code{p} followed by
 the parameter index), the active parameter block (columns starting with \code{b}
 followed by the parameter index, where \code{1} stands for a parameter contained
-in the active parameter block and \code{0} if not), computation times in seconds
-(column \code{seconds}), and a code that summarizes whether the update got
-accepted (column \code{update_code}, where \code{0} stands for an accepted update,
-\code{1} for a rejected update due to an error when solving the sub-problem, and
-\code{2} for a rejected update because it did not improve the function value).
+in the active parameter block and \code{0} if not), and computation times in
+seconds (column \code{seconds})
 \item \code{seconds} is the overall computation time in seconds.
 \item \code{stopping_reason} is a message why the procedure has terminated.
 }
