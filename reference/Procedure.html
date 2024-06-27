@@ -10,7 +10,7 @@
     
     <a class="navbar-brand me-2" href="../index.html">ao</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.0.1</small>
 
     
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -118,17 +118,18 @@ actual process time can exceed this limit.</p></dd>
 <dd><p>(<code>numeric(1)</code>)<br>
 A non-negative tolerance value. The alternating optimization terminates
 if the absolute difference between the current function value and the one
-from the last iteration is smaller than <code>tolerance_value</code>.
-Can be <code>0</code> for no value threshold.</p></dd>
+before <code>tolerance_history</code> iterations is smaller than
+<code>tolerance_value</code>.</p>
+<p>Can be <code>0</code> for no value threshold.</p></dd>
 
 
 <dt><code>tolerance_parameter</code></dt>
 <dd><p>(<code>numeric(1)</code>)<br>
-A non-negative tolerance value. The alternating optimization terminates
-if the distance between the current estimate and the one from the last
-iteration is smaller than <code>tolerance_parameter</code>.
-Can be <code>0</code> for no parameter threshold.
-By default, the distance is measured using the euclidean norm, but
+A non-negative tolerance value. The alternating optimization terminates if
+the distance between the current estimate and the before
+<code>tolerance_history</code> iterations is smaller than <code>tolerance_parameter</code>.</p>
+<p>Can be <code>0</code> for no parameter threshold.</p>
+<p>By default, the distance is measured using the euclidean norm, but
 another norm can be specified via the <code>tolerance_parameter_norm</code>
 field.</p></dd>
 
@@ -137,11 +138,17 @@ field.</p></dd>
 <dd><p>(<code>function</code>)<br>
 The norm that measures the distance between the current estimate and the
 one from the last iteration. If the distance is smaller than
-<code>tolerance_parameter</code>, the procedure is terminated.
-It must be of the form <code>function(x, y)</code> for two vector inputs
+<code>tolerance_parameter</code>, the procedure is terminated.</p>
+<p>It must be of the form <code>function(x, y)</code> for two vector inputs
 <code>x</code> and <code>y</code>, and return a single <code>numeric</code> value.
 By default, the euclidean norm <code>function(x, y) sqrt(sum((x - y)^2))</code>
 is used.</p></dd>
+
+
+<dt><code>tolerance_history</code></dt>
+<dd><p>(<code>integer(1)</code>)<br>
+The number of iterations to look back to determine whether
+<code>tolerance_value</code> or <code>tolerance_parameter</code> has been reached.</p></dd>
 
 
 <dt><code>iteration</code></dt>
@@ -164,11 +171,8 @@ For each iteration (column <code>iteration</code>) it contains the function valu
 (column <code>value</code>), parameter values (columns starting with <code>p</code> followed by
 the parameter index), the active parameter block (columns starting with <code>b</code>
 followed by the parameter index, where <code>1</code> stands for a parameter contained
-in the active parameter block and <code>0</code> if not), computation times in seconds
-(column <code>seconds</code>), and a code that summarizes whether the update got
-accepted (column <code>update_code</code>, where <code>0</code> stands for an accepted update,
-<code>1</code> for a rejected update due to an error when solving the sub-problem, and
-<code>2</code> for a rejected update because it did not improve the function value).</p></li>
+in the active parameter block and <code>0</code> if not), and computation times in seconds
+(column <code>seconds</code>)</p></li>
 <li><p><code>seconds</code> is the overall computation time in seconds.</p></li>
 <li><p><code>stopping_reason</code> is a message why the procedure has terminated.</p></li>
 </ul></dd>
@@ -190,8 +194,10 @@ accepted (column <code>update_code</code>, where <code>0</code> stands for an ac
 <li><p><a href="#method-Procedure-get_details"><code>Procedure$get_details()</code></a></p></li>
 <li><p><a href="#method-Procedure-get_value"><code>Procedure$get_value()</code></a></p></li>
 <li><p><a href="#method-Procedure-get_value_latest"><code>Procedure$get_value_latest()</code></a></p></li>
+<li><p><a href="#method-Procedure-get_value_best"><code>Procedure$get_value_best()</code></a></p></li>
 <li><p><a href="#method-Procedure-get_parameter"><code>Procedure$get_parameter()</code></a></p></li>
 <li><p><a href="#method-Procedure-get_parameter_latest"><code>Procedure$get_parameter_latest()</code></a></p></li>
+<li><p><a href="#method-Procedure-get_parameter_best"><code>Procedure$get_parameter_best()</code></a></p></li>
 <li><p><a href="#method-Procedure-get_seconds"><code>Procedure$get_seconds()</code></a></p></li>
 <li><p><a href="#method-Procedure-get_seconds_total"><code>Procedure$get_seconds_total()</code></a></p></li>
 <li><p><a href="#method-Procedure-check_stopping"><code>Procedure$check_stopping()</code></a></p></li>
@@ -210,7 +216,8 @@ accepted (column <code>update_code</code>, where <code>0</code> stands for an ac
 <span>  seconds_limit <span class="op">=</span> <span class="cn">Inf</span>,</span>
 <span>  tolerance_value <span class="op">=</span> <span class="fl">1e-06</span>,</span>
 <span>  tolerance_parameter <span class="op">=</span> <span class="fl">1e-06</span>,</span>
-<span>  tolerance_parameter_norm <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">sqrt</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="op">(</span><span class="va">x</span> <span class="op">-</span> <span class="va">y</span><span class="op">)</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span></span>
+<span>  tolerance_parameter_norm <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">sqrt</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="op">(</span><span class="va">x</span> <span class="op">-</span> <span class="va">y</span><span class="op">)</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  tolerance_history <span class="op">=</span> <span class="fl">1</span></span>
 <span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -279,17 +286,18 @@ actual process time can exceed this limit.</p></dd>
 <dd><p>(<code>numeric(1)</code>)<br>
 A non-negative tolerance value. The alternating optimization terminates
 if the absolute difference between the current function value and the one
-from the last iteration is smaller than <code>tolerance_value</code>.
-Can be <code>0</code> for no value threshold.</p></dd>
+before <code>tolerance_history</code> iterations is smaller than
+<code>tolerance_value</code>.</p>
+<p>Can be <code>0</code> for no value threshold.</p></dd>
 
 
 <dt><code>tolerance_parameter</code></dt>
 <dd><p>(<code>numeric(1)</code>)<br>
-A non-negative tolerance value. The alternating optimization terminates
-if the distance between the current estimate and the one from the last
-iteration is smaller than <code>tolerance_parameter</code>.
-Can be <code>0</code> for no parameter threshold.
-By default, the distance is measured using the euclidean norm, but
+A non-negative tolerance value. The alternating optimization terminates if
+the distance between the current estimate and the before
+<code>tolerance_history</code> iterations is smaller than <code>tolerance_parameter</code>.</p>
+<p>Can be <code>0</code> for no parameter threshold.</p>
+<p>By default, the distance is measured using the euclidean norm, but
 another norm can be specified via the <code>tolerance_parameter_norm</code>
 field.</p></dd>
 
@@ -303,6 +311,12 @@ It must be of the form <code>function(x, y)</code> for two vector inputs
 <code>x</code> and <code>y</code>, and return a single <code>numeric</code> value.
 By default, the euclidean norm <code>function(x, y) sqrt(sum((x - y)^2))</code>
 is used.</p></dd>
+
+
+<dt><code>tolerance_history</code></dt>
+<dd><p>(<code>integer(1)</code>)<br>
+The number of iterations to look back to determine whether
+<code>tolerance_value</code> or <code>tolerance_parameter</code> has been reached.</p></dd>
 
 
 </dl><p></p></div>
@@ -424,7 +438,7 @@ The currently active parameter block, represented as parameter indices.</p></dd>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Procedure</span><span class="op">$</span><span class="fu">get_details</span><span class="op">(</span></span>
 <span>  which_iteration <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  which_block <span class="op">=</span> <span class="cn">NULL</span>,</span>
-<span>  which_column <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"iteration"</span>, <span class="st">"value"</span>, <span class="st">"parameter"</span>, <span class="st">"block"</span>, <span class="st">"seconds"</span>, <span class="st">"update_code"</span><span class="op">)</span></span>
+<span>  which_column <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"iteration"</span>, <span class="st">"value"</span>, <span class="st">"parameter"</span>, <span class="st">"block"</span>, <span class="st">"seconds"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -448,8 +462,7 @@ Selects the parameter block in the partition and can be one of</p><ul><li><p><co
 <dt><code>which_column</code></dt>
 <dd><p>(<code><a href="https://rdrr.io/r/base/character.html" class="external-link">character()</a></code>)<br>
 Selects the columns in the <code>details</code> part of the output and can be one or
-more of <code>"iteration"</code>, <code>"value"</code>, <code>"parameter"</code>, <code>"block"</code>, <code>"seconds"</code>,
-and <code>"update_code"</code>.</p></dd>
+more of <code>"iteration"</code>, <code>"value"</code>, <code>"parameter"</code>, <code>"block"</code>, and <code>"seconds"</code></p></dd>
 
 
 </dl><p></p></div>
@@ -509,11 +522,19 @@ optimization procedure.</p><div class="section">
 </div>
 
 
+</div><p></p><hr><a id="method-Procedure-get_value_best"></a><div class="section">
+<h3 id="method-get-value-best-">Method <code>get_value_best()</code><a class="anchor" aria-label="anchor" href="#method-get-value-best-"></a></h3>
+<p>Get the optimum function value in the alternating optimization procedure.</p><div class="section">
+<h4 id="usage-8">Usage<a class="anchor" aria-label="anchor" href="#usage-8"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Procedure</span><span class="op">$</span><span class="fu">get_value_best</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+
 </div><p></p><hr><a id="method-Procedure-get_parameter"></a><div class="section">
 <h3 id="method-get-parameter-">Method <code>get_parameter()</code><a class="anchor" aria-label="anchor" href="#method-get-parameter-"></a></h3>
 <p>Get the parameter values in different steps of the alternating
 optimization procedure.</p><div class="section">
-<h4 id="usage-8">Usage<a class="anchor" aria-label="anchor" href="#usage-8"></a></h4>
+<h4 id="usage-9">Usage<a class="anchor" aria-label="anchor" href="#usage-9"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Procedure</span><span class="op">$</span><span class="fu">get_parameter</span><span class="op">(</span></span>
 <span>  which_iteration <span class="op">=</span> <span class="va">self</span><span class="op">$</span><span class="va">iteration</span>,</span>
 <span>  which_block <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -558,7 +579,7 @@ parameter block in the output.</p></dd>
 <h3 id="method-get-parameter-latest-">Method <code>get_parameter_latest()</code><a class="anchor" aria-label="anchor" href="#method-get-parameter-latest-"></a></h3>
 <p>Get the parameter value in the latest step of the alternating
 optimization procedure.</p><div class="section">
-<h4 id="usage-9">Usage<a class="anchor" aria-label="anchor" href="#usage-9"></a></h4>
+<h4 id="usage-10">Usage<a class="anchor" aria-label="anchor" href="#usage-10"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Procedure</span><span class="op">$</span><span class="fu">get_parameter_latest</span><span class="op">(</span>parameter_type <span class="op">=</span> <span class="st">"full"</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -577,11 +598,33 @@ i.e., all except for those with the indices <code>self$block</code></p></li>
 </dl><p></p></div>
 </div>
 
+</div><p></p><hr><a id="method-Procedure-get_parameter_best"></a><div class="section">
+<h3 id="method-get-parameter-best-">Method <code>get_parameter_best()</code><a class="anchor" aria-label="anchor" href="#method-get-parameter-best-"></a></h3>
+<p>Get the optimum parameter value in the alternating optimization procedure.</p><div class="section">
+<h4 id="usage-11">Usage<a class="anchor" aria-label="anchor" href="#usage-11"></a></h4>
+<p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Procedure</span><span class="op">$</span><span class="fu">get_parameter_best</span><span class="op">(</span>parameter_type <span class="op">=</span> <span class="st">"full"</span><span class="op">)</span></span></code></pre></div><p></p></div>
+</div>
+
+<div class="section">
+<h4 id="arguments-8">Arguments<a class="anchor" aria-label="anchor" href="#arguments-8"></a></h4>
+<p></p><div class="arguments"><dl><dt><code>parameter_type</code></dt>
+<dd><p>(<code>character(1)</code>)<br>
+Can be one of</p><ul><li><p><code>"full"</code> (default) to get the full parameter vector,</p></li>
+<li><p><code>"block"</code> to get the parameter values for the current block,
+i.e., the parameters with the indices <code>self$block</code></p></li>
+<li><p><code>"fixed"</code> to get the parameter values which are currently fixed,
+i.e., all except for those with the indices <code>self$block</code></p></li>
+</ul></dd>
+
+
+</dl><p></p></div>
+</div>
+
 </div><p></p><hr><a id="method-Procedure-get_seconds"></a><div class="section">
 <h3 id="method-get-seconds-">Method <code>get_seconds()</code><a class="anchor" aria-label="anchor" href="#method-get-seconds-"></a></h3>
 <p>Get the optimization time in seconds in different steps of the
 alternating optimization procedure.</p><div class="section">
-<h4 id="usage-10">Usage<a class="anchor" aria-label="anchor" href="#usage-10"></a></h4>
+<h4 id="usage-12">Usage<a class="anchor" aria-label="anchor" href="#usage-12"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Procedure</span><span class="op">$</span><span class="fu">get_seconds</span><span class="op">(</span></span>
 <span>  which_iteration <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  which_block <span class="op">=</span> <span class="cn">NULL</span>,</span>
@@ -591,7 +634,7 @@ alternating optimization procedure.</p><div class="section">
 </div>
 
 <div class="section">
-<h4 id="arguments-8">Arguments<a class="anchor" aria-label="anchor" href="#arguments-8"></a></h4>
+<h4 id="arguments-9">Arguments<a class="anchor" aria-label="anchor" href="#arguments-9"></a></h4>
 <p></p><div class="arguments"><dl><dt><code>which_iteration</code></dt>
 <dd><p>(<code><a href="https://rdrr.io/r/base/integer.html" class="external-link">integer()</a></code>)<br>
 Selects the iteration(s).
@@ -626,7 +669,7 @@ parameter block in the output.</p></dd>
 <h3 id="method-get-seconds-total-">Method <code>get_seconds_total()</code><a class="anchor" aria-label="anchor" href="#method-get-seconds-total-"></a></h3>
 <p>Get the total optimization time in seconds of the alternating
 optimization procedure.</p><div class="section">
-<h4 id="usage-11">Usage<a class="anchor" aria-label="anchor" href="#usage-11"></a></h4>
+<h4 id="usage-13">Usage<a class="anchor" aria-label="anchor" href="#usage-13"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Procedure</span><span class="op">$</span><span class="fu">get_seconds_total</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
@@ -634,7 +677,7 @@ optimization procedure.</p><div class="section">
 </div><p></p><hr><a id="method-Procedure-check_stopping"></a><div class="section">
 <h3 id="method-check-stopping-">Method <code>check_stopping()</code><a class="anchor" aria-label="anchor" href="#method-check-stopping-"></a></h3>
 <p>Checks if the alternating optimization procedure can be terminated.</p><div class="section">
-<h4 id="usage-12">Usage<a class="anchor" aria-label="anchor" href="#usage-12"></a></h4>
+<h4 id="usage-14">Usage<a class="anchor" aria-label="anchor" href="#usage-14"></a></h4>
 <p></p><div class="r"><div class="sourceCode"><pre><code><span><span class="va">Procedure</span><span class="op">$</span><span class="fu">check_stopping</span><span class="op">(</span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
 
