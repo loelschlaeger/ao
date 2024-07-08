@@ -18,6 +18,8 @@
 #' @param initial (`numeric()`)\cr
 #' The starting parameter values for the target argument(s).
 #'
+#' TODO: can also be a list
+#'
 #' @param target (`character()` or `NULL`)\cr
 #' The name(s) of the argument(s) over which \code{f} gets optimized.
 #'
@@ -52,6 +54,8 @@
 #' * `"none"` for no partition (which is equivalent to joint optimization),
 #' * or a `list` of vectors of parameter indices, specifying a custom
 #'   partition for the alternating optimization process.
+#'
+#' TODO: can also be a list
 #'
 #' @param new_block_probability (`numeric(1)`)\cr
 #' Only relevant if `partition = "random"`.
@@ -204,7 +208,17 @@ ao <- function(
     tolerance_history = 1,
     base_optimizer = Optimizer$new("stats::optim", method = "L-BFGS-B"),
     verbose = FALSE,
-    hide_warnings = TRUE) {
+    hide_warnings = TRUE
+  ) {
+
+  ### parallel version
+  # if multiple initial or multiple partition
+  # run ao separately for each combination of initial and partition
+  # must set verbose = FALSE here
+  # use future to parallelize and progressr to print progress messages
+
+
+
   ### input checks and building of objects
   ao_input_check(
     "initial",

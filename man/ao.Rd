@@ -40,7 +40,7 @@ If \code{f} is to be optimized over an argument other than the first, or more
 than one argument, this has to be specified via the \code{target} argument.}
 
 \item{initial}{(\code{numeric()})\cr
-The starting parameter values for the target argument(s).}
+The starting parameter values for the target argument(s).TODO: can also be a list}
 
 \item{target}{(\code{character()} or \code{NULL})\cr
 The name(s) of the argument(s) over which \code{f} gets optimized.
@@ -75,7 +75,7 @@ Defines the parameter partition, and can be either
 \item \code{"none"} for no partition (which is equivalent to joint optimization),
 \item or a \code{list} of vectors of parameter indices, specifying a custom
 partition for the alternating optimization process.
-}}
+}TODO: can also be a list}
 
 \item{new_block_probability}{(\code{numeric(1)})\cr
 Only relevant if \code{partition = "random"}.
@@ -179,6 +179,9 @@ seconds (column \code{seconds})
 Alternating optimization is an iterative procedure for optimizing a
 real-valued function jointly over all its parameters by alternating
 restricted optimization over parameter partitions.
+}
+\details{
+TODO: parallelize using future and progress updates using progressr
 }
 \examples{
 # Example 1: Minimization of Himmelblau's function --------------------------
