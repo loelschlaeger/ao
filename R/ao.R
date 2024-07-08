@@ -208,9 +208,7 @@ ao <- function(
     tolerance_history = 1,
     base_optimizer = Optimizer$new("stats::optim", method = "L-BFGS-B"),
     verbose = FALSE,
-    hide_warnings = TRUE
-  ) {
-
+    hide_warnings = TRUE) {
   ### parallel version
   # if multiple initial or multiple partition
   # run ao separately for each combination of initial and partition
