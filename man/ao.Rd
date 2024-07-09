@@ -33,14 +33,16 @@ ao(
 A \code{function} to be optimized, returning a single \code{numeric} value.
 
 The first argument of \code{f} should be a \code{numeric} of the same length
-as \code{initial}, followed by any other arguments specified by the
-\code{...} argument.
+as \code{initial}, optionally followed by any other arguments specified by
+the \code{...} argument.
 
 If \code{f} is to be optimized over an argument other than the first, or more
 than one argument, this has to be specified via the \code{target} argument.}
 
-\item{initial}{(\code{numeric()})\cr
-The starting parameter values for the target argument(s).TODO: can also be a list}
+\item{initial}{(\code{numeric()} or \code{list()})\cr
+The starting parameter values for the target argument(s).
+
+This can also be a \code{list} of multiple starting parameter values, see details.}
 
 \item{target}{(\code{character()} or \code{NULL})\cr
 The name(s) of the argument(s) over which \code{f} gets optimized.
@@ -75,21 +77,27 @@ Defines the parameter partition, and can be either
 \item \code{"none"} for no partition (which is equivalent to joint optimization),
 \item or a \code{list} of vectors of parameter indices, specifying a custom
 partition for the alternating optimization process.
-}TODO: can also be a list}
+}
+
+This can also be a \code{list} of multiple partition definitions, see details.}
 
 \item{new_block_probability}{(\code{numeric(1)})\cr
 Only relevant if \code{partition = "random"}.
+
 The probability for a new parameter block when creating a random
 partitions.
+
 Values close to 0 result in larger parameter blocks, values close to 1
 result in smaller parameter blocks.}
 
 \item{minimum_block_number}{(\code{integer(1)})\cr
 Only relevant if \code{partition = "random"}.
+
 The minimum number of blocks in random partitions.}
 
 \item{minimize}{(\code{logical(1)})\cr
 Whether to minimize during the alternating optimization process.
+
 If \code{FALSE}, maximization is performed.}
 
 \item{lower, upper}{(\code{numeric()})\cr
@@ -107,9 +115,9 @@ terminated.
 
 Can also be \code{Inf} for no time limit.
 
-Note that this stopping criteria is only checked \emph{after}
-a sub-problem is solved and not \emph{within} solving a sub-problem, so the
-actual process time can exceed this limit.}
+Note that this stopping criteria is only checked \emph{after} a sub-problem is
+solved and not \emph{within} solving a sub-problem, so the actual process time can
+exceed this limit.}
 
 \item{tolerance_value}{(\code{numeric(1)})\cr
 A non-negative tolerance value. The alternating optimization terminates
@@ -122,13 +130,13 @@ Can be \code{0} for no value threshold.}
 \item{tolerance_parameter}{(\code{numeric(1)})\cr
 A non-negative tolerance value. The alternating optimization terminates if
 the distance between the current estimate and the before
-\code{tolerance_history} iterations is smaller than \code{tolerance_parameter}.
+\code{tolerance_history} iterations is smaller than
+\code{tolerance_parameter}.
 
 Can be \code{0} for no parameter threshold.
 
-By default, the distance is measured using the euclidean norm, but
-another norm can be specified via the \code{tolerance_parameter_norm}
-field.}
+By default, the distance is measured using the euclidean norm, but another
+norm can be specified via the \code{tolerance_parameter_norm} argument.}
 
 \item{tolerance_parameter_norm}{(\code{function})\cr
 The norm that measures the distance between the current estimate and the
@@ -144,13 +152,15 @@ is used.}
 The number of iterations to look back to determine whether
 \code{tolerance_value} or \code{tolerance_parameter} has been reached.}
 
-\item{base_optimizer}{(\code{Optimizer})\cr
+\item{base_optimizer}{(\code{Optimizer} or \code{list()})\cr
 An \code{Optimizer} object, which can be created via
 \code{\link[optimizeR]{Optimizer}}. It numerically solves the sub-problems.
 
 By default, the \code{\link[stats]{optim}} optimizer is used. If another
 optimizer is specified, the arguments \code{gradient}, \code{lower}, and
-\code{upper} are ignored.}
+\code{upper} are ignored.
+
+This can also be a \code{list} of multiple base optimizers, see details.}
 
 \item{verbose}{(\code{logical(1)})\cr
 Whether to print tracing details during the alternating optimization
@@ -174,6 +184,8 @@ seconds (column \code{seconds})
 \item \code{seconds} is the overall computation time in seconds.
 \item \code{stopping_reason} is a message why the procedure has terminated.
 }
+
+In the case of multiple threads, the output changes slightly, see details.
 }
 \description{
 Alternating optimization is an iterative procedure for optimizing a
@@ -181,7 +193,62 @@ real-valued function jointly over all its parameters by alternating
 restricted optimization over parameter partitions.
 }
 \details{
-TODO: parallelize using future and progress updates using progressr
+\subsection{Multiple threads}{
+
+Alternating optimization can suffer from local optima. To increase the
+likelihood of reaching the global optimum, you can specify:
+\itemize{
+\item multiple starting parameters
+\item multiple parameter partitions
+\item multiple base optimizers
+}
+
+Use the \code{initial}, \code{partition}, and/or \code{base_optimizer} arguments to provide
+a \code{list} of possible values for each parameter. Each combination of initial
+values, parameter partitions, and base optimizers will create a separate
+alternating optimization thread.
+\subsection{Output value}{
+
+In the case of multiple threads, the output changes slightly in comparison
+to the standard case. It is still a \code{list} with the following elements:
+\itemize{
+\item \code{estimate} is the optimal parameter vector over all threads.
+\item \code{value} is the optimal function value over all threads.
+\item \code{details} combines details of the single threads and has an additional
+column \code{thread} with an index for the different threads.
+\item \code{seconds} gives the computation time in seconds for each thread.
+\item \code{stopping_reason} gives the termination message for each thread.
+\item \code{threads} give details how the different threads were specified.
+}
+}
+
+\subsection{Parallel computation}{
+
+By default, threads run sequentially. However, since they are independent,
+they can be parallelized. To enable parallel computation, use the
+\href{https://future.futureverse.org/}{\code{{future}} framework}. For example, run the
+following \emph{before} the \code{ao()} call:
+\preformatted{
+future::plan(future::multisession, workers = 4)
+}
+}
+
+\subsection{Progress updates}{
+
+When using multiple threads, setting \code{verbose = TRUE} to print tracing
+details during alternating optimization is not supported. However, you can
+still track the progress of threads using the
+\href{https://progressr.futureverse.org/}{\code{{progressr}} framework}. For example,
+run the following \emph{before} the \code{ao()} call:
+\preformatted{
+progressr::handlers(global = TRUE)
+progressr::handlers(
+  progressr::handler_progress(":percent :eta :message")
+)
+}
+}
+
+}
 }
 \examples{
 # Example 1: Minimization of Himmelblau's function --------------------------

@@ -51,7 +51,9 @@ The AO procedure can be
 
 - generalized to more than two parameter blocks, i.e., for $f(\mathbf{x}_1, \mathbf{x}_2, \ldots, \mathbf{x}_n)$, the procedure involves cycling through each parameter block $\mathbf{x}_1, \mathbf{x}_2, \ldots, \mathbf{x}_n$ and solving the corresponding sub-problems iteratively (the parameter blocks do not necessarily have to be disjoint),
 
-- **randomized** by changing the parameter partition randomly after each iteration, which can further improve the convergence rate and help avoid getting trapped in local optima.
+- **randomized** by changing the parameter partition randomly after each iteration, which can further improve the convergence rate and help avoid getting trapped in local optima,
+
+- run in **multiple threads** for different initial values, parameter partitions, and/or base optimizers.
 
 ## Now how to use the `{ao}` package?
 
@@ -341,5 +343,46 @@ Any number of stopping criteria can be activated or deactivated^[Stopping criter
 #### Optimizer for solving the sub-problems
 
 By default, the L-BFGS-B algorithm [@byrd:1995] implemented in `stats::optim` is used. for solving the sub-problems numerically. However, any other optimizer can be selected by specifying the `base_optimizer` argument. Such an optimizer must be defined through the framework provided by the `{optimizeR}` package, please see [its documentation](https://loelschlaeger.de/optimizeR/) for details. For example, the `stats::nlm` optimizer can be selected by setting `base_optimizer = Optimizer$new("stats::nlm")`.
+
+#### Multiple threads
+Alternating optimization can suffer from local optima. To increase the likelihood of reaching the global optimum, users can specify
+
+- multiple starting parameters,
+
+- multiple parameter partitions,
+
+- multiple base optimizers.
+
+Use the `initial`, `partition`, and/or `base_optimizer` arguments to provide a `list` of possible values for each parameter. Each combination of initial values, parameter partitions, and base optimizers will create a separate alternating optimization thread.
+
+In the case of multiple threads, the output changes slightly in comparison
+to the standard case. It is still a `list` with the following elements:
+
+- `estimate` is the optimal parameter vector over all threads.
+
+- `value` is the optimal function value over all threads.
+
+- `details` combines details of the single threads and has an additional column `thread` with an index for the different threads.
+
+- `seconds` gives the computation time in seconds for each thread.
+
+- `stopping_reason` gives the termination message for each thread.
+
+- `threads` give details how the different threads were specified.
+
+By default, threads run sequentially. However, since they are independent, they can be parallelized. To enable parallel computation, use the [`{future}` framework](https://future.futureverse.org/). For example, run the following *before* the `ao()` call:
+
+```r
+future::plan(future::multisession, workers = 4)
+```
+
+When using multiple threads, setting `verbose = TRUE` to print tracing details during alternating optimization is not supported. However, progress of threads can still be tracked using the [`{progressr}` framework](https://progressr.futureverse.org/). For example, run the following *before* the `ao()` call:
+
+```r
+progressr::handlers(global = TRUE)
+progressr::handlers(
+  progressr::handler_progress(":percent :eta :message")
+)
+```
 
 ## References

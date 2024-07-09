@@ -1,6 +1,6 @@
 Package: ao
 Title: Alternating Optimization
-Version: 1.0.1
+Version: 1.1.0
 Authors@R:
     c(
     person(given = "Lennart",
@@ -27,7 +27,9 @@ RoxygenNote: 7.3.1
 Imports:
     checkmate,
     cli,
+    future.apply,
     oeli (>= 0.5.2),
+    progressr,
     R6,
     stats,
     utils
