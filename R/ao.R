@@ -263,9 +263,7 @@ ao <- function(
     tolerance_history = 1,
     base_optimizer = Optimizer$new("stats::optim", method = "L-BFGS-B"),
     verbose = FALSE,
-    hide_warnings = TRUE
-  ) {
-
+    hide_warnings = TRUE) {
   ### check if required arguments are specified
   ao_input_check(
     argument_name = "f", check_result = !missing(f),
@@ -281,10 +279,9 @@ ao <- function(
   ### multiple threads?
   if (
     is.list(initial) ||
-    (is.list(partition) && !checkmate::test_list(partition, "numeric")) ||
-    is.list(base_optimizer)
+      (is.list(partition) && !checkmate::test_list(partition, "numeric")) ||
+      is.list(base_optimizer)
   ) {
-
     ### build threads
     if (!is.list(initial)) {
       initial <- list(initial)
@@ -316,7 +313,8 @@ ao <- function(
       seq_len(nthreads),
       function(thread) {
         progress_step(
-          paste0("[thread ", thread, "] started"), amount = 0, class = "sticky"
+          paste0("[thread ", thread, "] started"),
+          amount = 0, class = "sticky"
         )
         out <- ao(
           f = f,
@@ -342,7 +340,8 @@ ao <- function(
           hide_warnings = hide_warnings
         )
         progress_step(
-          paste0("[thread ", thread, "] finished"), class = "sticky"
+          paste0("[thread ", thread, "] finished"),
+          class = "sticky"
         )
         return(out)
       },
