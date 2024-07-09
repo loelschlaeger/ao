@@ -5,18 +5,67 @@
 #' real-valued function jointly over all its parameters by alternating
 #' restricted optimization over parameter partitions.
 #'
+#' @details
+#' ## Multiple threads
+#' Alternating optimization can suffer from local optima. To increase the
+#' likelihood of reaching the global optimum, you can specify:
+#' - multiple starting parameters
+#' - multiple parameter partitions
+#' - multiple base optimizers
+#'
+#' Use the `initial`, `partition`, and/or `base_optimizer` arguments to provide
+#' a `list` of possible values for each parameter. Each combination of initial
+#' values, parameter partitions, and base optimizers will create a separate
+#' alternating optimization thread.
+#'
+#' ### Output value
+#' In the case of multiple threads, the output changes slightly in comparison
+#' to the standard case. It is still a \code{list} with the following elements:
+#'
+#' * \code{estimate} is the optimal parameter vector over all threads.
+#' * \code{value} is the optimal function value over all threads.
+#' * \code{details} combines details of the single threads and has an additional
+#'   column `thread` with an index for the different threads.
+#' * \code{seconds} gives the computation time in seconds for each thread.
+#' * \code{stopping_reason} gives the termination message for each thread.
+#' * \code{threads} give details how the different threads were specified.
+#'
+#' ### Parallel computation
+#' By default, threads run sequentially. However, since they are independent,
+#' they can be parallelized. To enable parallel computation, use the
+#' [`{future}` framework](https://future.futureverse.org/). For example, run the
+#' following *before* the `ao()` call:
+#' \preformatted{
+#' future::plan(future::multisession, workers = 4)
+#' }
+#'
+#' ### Progress updates
+#' When using multiple threads, setting `verbose = TRUE` to print tracing
+#' details during alternating optimization is not supported. However, you can
+#' still track the progress of threads using the
+#' [`{progressr}` framework](https://progressr.futureverse.org/). For example,
+#' run the following *before* the `ao()` call:
+#' \preformatted{
+#' progressr::handlers(global = TRUE)
+#' progressr::handlers(
+#'   progressr::handler_progress(":percent :eta :message")
+#' )
+#' }
+#'
 #' @param f (`function`)\cr
 #' A \code{function} to be optimized, returning a single \code{numeric} value.
 #'
 #' The first argument of \code{f} should be a \code{numeric} of the same length
-#' as \code{initial}, followed by any other arguments specified by the
-#' \code{...} argument.
+#' as \code{initial}, optionally followed by any other arguments specified by
+#' the \code{...} argument.
 #'
 #' If \code{f} is to be optimized over an argument other than the first, or more
 #' than one argument, this has to be specified via the \code{target} argument.
 #'
-#' @param initial (`numeric()`)\cr
+#' @param initial (`numeric()` or `list()`)\cr
 #' The starting parameter values for the target argument(s).
+#'
+#' This can also be a `list` of multiple starting parameter values, see details.
 #'
 #' @param target (`character()` or `NULL`)\cr
 #' The name(s) of the argument(s) over which \code{f} gets optimized.
@@ -53,19 +102,25 @@
 #' * or a `list` of vectors of parameter indices, specifying a custom
 #'   partition for the alternating optimization process.
 #'
+#' This can also be a `list` of multiple partition definitions, see details.
+#'
 #' @param new_block_probability (`numeric(1)`)\cr
 #' Only relevant if `partition = "random"`.
+#'
 #' The probability for a new parameter block when creating a random
 #' partitions.
+#'
 #' Values close to 0 result in larger parameter blocks, values close to 1
 #' result in smaller parameter blocks.
 #'
 #' @param minimum_block_number (`integer(1)`)\cr
 #' Only relevant if `partition = "random"`.
+#'
 #' The minimum number of blocks in random partitions.
 #'
 #' @param minimize (`logical(1)`)\cr
 #' Whether to minimize during the alternating optimization process.
+#'
 #' If \code{FALSE}, maximization is performed.
 #'
 #' @param lower,upper (`numeric()`)\cr
@@ -83,9 +138,9 @@
 #'
 #' Can also be `Inf` for no time limit.
 #'
-#' Note that this stopping criteria is only checked *after*
-#' a sub-problem is solved and not *within* solving a sub-problem, so the
-#' actual process time can exceed this limit.
+#' Note that this stopping criteria is only checked *after* a sub-problem is
+#' solved and not *within* solving a sub-problem, so the actual process time can
+#' exceed this limit.
 #'
 #' @param tolerance_value (`numeric(1)`)\cr
 #' A non-negative tolerance value. The alternating optimization terminates
@@ -98,13 +153,13 @@
 #' @param tolerance_parameter (`numeric(1)`)\cr
 #' A non-negative tolerance value. The alternating optimization terminates if
 #' the distance between the current estimate and the before
-#' \code{tolerance_history} iterations is smaller than \code{tolerance_parameter}.
+#' \code{tolerance_history} iterations is smaller than
+#' \code{tolerance_parameter}.
 #'
 #' Can be `0` for no parameter threshold.
 #'
-#' By default, the distance is measured using the euclidean norm, but
-#' another norm can be specified via the \code{tolerance_parameter_norm}
-#' field.
+#' By default, the distance is measured using the euclidean norm, but another
+#' norm can be specified via the \code{tolerance_parameter_norm} argument.
 #'
 #' @param tolerance_parameter_norm (`function`)\cr
 #' The norm that measures the distance between the current estimate and the
@@ -120,13 +175,15 @@
 #' The number of iterations to look back to determine whether
 #' \code{tolerance_value} or \code{tolerance_parameter} has been reached.
 #'
-#' @param base_optimizer (`Optimizer`)\cr
+#' @param base_optimizer (`Optimizer` or `list()`)\cr
 #' An \code{Optimizer} object, which can be created via
 #' \code{\link[optimizeR]{Optimizer}}. It numerically solves the sub-problems.
 #'
 #' By default, the \code{\link[stats]{optim}} optimizer is used. If another
 #' optimizer is specified, the arguments \code{gradient}, \code{lower}, and
 #' \code{upper} are ignored.
+#'
+#' This can also be a `list` of multiple base optimizers, see details.
 #'
 #' @param verbose (`logical(1)`)\cr
 #' Whether to print tracing details during the alternating optimization
@@ -149,6 +206,8 @@
 #'   seconds (column `seconds`)
 #' * \code{seconds} is the overall computation time in seconds.
 #' * \code{stopping_reason} is a message why the procedure has terminated.
+#'
+#' In the case of multiple threads, the output changes slightly, see details.
 #'
 #' @examples
 #' # Example 1: Minimization of Himmelblau's function --------------------------
@@ -205,6 +264,112 @@ ao <- function(
     base_optimizer = Optimizer$new("stats::optim", method = "L-BFGS-B"),
     verbose = FALSE,
     hide_warnings = TRUE) {
+  ### check if required arguments are specified
+  ao_input_check(
+    argument_name = "f", check_result = !missing(f),
+    error_message = "Please specify argument {.var {argument_name}}",
+    prefix = ""
+  )
+  ao_input_check(
+    argument_name = "initial", check_result = !missing(initial),
+    error_message = "Please specify argument {.var {argument_name}}",
+    prefix = ""
+  )
+
+  ### multiple threads?
+  if (
+    is.list(initial) ||
+      (is.list(partition) && !checkmate::test_list(partition, "numeric")) ||
+      is.list(base_optimizer)
+  ) {
+    ### build threads
+    if (!is.list(initial)) {
+      initial <- list(initial)
+    }
+    if (!is.list(partition) || checkmate::test_list(partition, "numeric")) {
+      partition <- list(partition)
+    }
+    if (!is.list(base_optimizer)) {
+      base_optimizer <- list(base_optimizer)
+    }
+    threads <- expand.grid(
+      initial = initial, partition = partition, base_optimizer = base_optimizer
+    )
+    nthreads <- nrow(threads)
+
+    ### run threads
+    if (isTRUE(verbose)) {
+      verbose <- FALSE
+      if (!isTRUE(hide_warnings)) {
+        cli::cli_warn("Argument {.var verbose} is set to {.code FALSE}")
+      }
+    }
+    progress_step <- progressr::progressor(steps = nthreads)
+    progress_step(
+      paste("running", nthreads, "alternating optimization threads"),
+      amount = 0, class = "sticky"
+    )
+    results <- future.apply::future_lapply(
+      seq_len(nthreads),
+      function(thread) {
+        progress_step(
+          paste0("[thread ", thread, "] started"),
+          amount = 0, class = "sticky"
+        )
+        out <- ao(
+          f = f,
+          initial = threads[thread, "initial"][[1]],
+          target = target,
+          npar = npar,
+          gradient = gradient,
+          ...,
+          partition = threads[thread, "partition"][[1]],
+          new_block_probability = new_block_probability,
+          minimum_block_number = minimum_block_number,
+          minimize = minimize,
+          lower = lower,
+          upper = upper,
+          iteration_limit = iteration_limit,
+          seconds_limit = seconds_limit,
+          tolerance_value = tolerance_value,
+          tolerance_parameter = tolerance_parameter,
+          tolerance_parameter_norm = tolerance_parameter_norm,
+          tolerance_history = tolerance_history,
+          base_optimizer = threads[thread, "base_optimizer"][[1]],
+          verbose = verbose,
+          hide_warnings = hide_warnings
+        )
+        progress_step(
+          paste0("[thread ", thread, "] finished"),
+          class = "sticky"
+        )
+        return(out)
+      },
+      future.seed = TRUE
+    )
+
+    ### combine results
+    values <- vapply(results, `[[`, numeric(1), "value")
+    optimal_thread <- ifelse(isTRUE(minimize), which.min(values), which.max(values))
+    details_list <- list()
+    for (thread in seq_len(nthreads)) {
+      details_list[[thread]] <- cbind(
+        thread = thread,
+        results[[thread]][["details"]]
+      )
+    }
+    return(
+      list(
+        "estimate" = lapply(results, `[[`, "estimate")[[optimal_thread]],
+        "value" = values[optimal_thread],
+        "details" = do.call("rbind", details_list),
+        "seconds" = vapply(results, `[[`, numeric(1), "seconds"),
+        "stopping_reason" = vapply(results, `[[`, character(1), "stopping_reason"),
+        "threads" = threads
+      )
+    )
+  }
+
   ### input checks and building of objects
   ao_input_check(
     "initial",

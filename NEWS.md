@@ -1,3 +1,7 @@
+# ao 1.1.0
+
+* Alternating optimization can now be run in multiple (possibly parallel) threads by providing a `list` of values for the `initial`, `partition`, and/or `base_optimizer` parameters, where each combination creates a separate alternating optimization thread.
+
 # ao 1.0.1
 
 * Removed `update_code` from output. Updates are now accepted regardless whether they improve the function value. In the end, the best solution is returned.
