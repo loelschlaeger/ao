@@ -51,7 +51,7 @@ The AO procedure can be
 
 - generalized to more than two parameter blocks, i.e., for $f(\mathbf{x}_1, \mathbf{x}_2, \ldots, \mathbf{x}_n)$, the procedure involves cycling through each parameter block $\mathbf{x}_1, \mathbf{x}_2, \ldots, \mathbf{x}_n$ and solving the corresponding sub-problems iteratively (the parameter blocks do not necessarily have to be disjoint),
 
-- **randomized** by changing the parameter partition randomly after each iteration, which can further improve the convergence rate and help avoid getting trapped in local optima,
+- **randomized** by changing the parameter partition randomly after each iteration, which can further improve the convergence rate and help avoid getting trapped in local optima [@chib:2010],
 
 - run in **multiple threads** for different initial values, parameter partitions, and/or base optimizers.
 
