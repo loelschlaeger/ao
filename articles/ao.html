@@ -147,7 +147,8 @@ and solving the corresponding sub-problems iteratively (the parameter
 blocks do not necessarily have to be disjoint),</p></li>
 <li><p><strong>randomized</strong> by changing the parameter partition
 randomly after each iteration, which can further improve the convergence
-rate and help avoid getting trapped in local optima,</p></li>
+rate and help avoid getting trapped in local optima <span class="citation">(<a href="#ref-chib:2010">Chib and Ramamurthy
+2010</a>)</span>,</p></li>
 <li><p>run in <strong>multiple threads</strong> for different initial
 values, parameter partitions, and/or base optimizers.</p></li>
 </ul>
@@ -273,19 +274,19 @@ can be accomplished as follows:</p>
 <span><span class="co">#&gt; $details</span></span>
 <span><span class="co">#&gt;    iteration        value       p1        p2 b1 b2     seconds</span></span>
 <span><span class="co">#&gt; 1          0 1.700000e+02 0.000000  0.000000  0  0 0.000000000</span></span>
-<span><span class="co">#&gt; 2          1 1.327270e+01 3.395691  0.000000  1  0 0.017988443</span></span>
-<span><span class="co">#&gt; 3          1 1.743664e+00 3.395691 -1.803183  0  1 0.003721476</span></span>
-<span><span class="co">#&gt; 4          2 2.847290e-02 3.581412 -1.803183  1  0 0.003882647</span></span>
-<span><span class="co">#&gt; 5          2 4.687468e-04 3.581412 -1.847412  0  1 0.003314495</span></span>
-<span><span class="co">#&gt; 6          3 7.368057e-06 3.584381 -1.847412  1  0 0.002761126</span></span>
-<span><span class="co">#&gt; 7          3 1.164202e-07 3.584381 -1.848115  0  1 0.022248507</span></span>
-<span><span class="co">#&gt; 8          4 1.893311e-09 3.584427 -1.848115  1  0 0.002326965</span></span>
-<span><span class="co">#&gt; 9          4 9.153860e-11 3.584427 -1.848124  0  1 0.001767635</span></span>
-<span><span class="co">#&gt; 10         5 6.347425e-11 3.584428 -1.848124  1  0 0.001777887</span></span>
-<span><span class="co">#&gt; 11         5 9.606386e-12 3.584428 -1.848126  0  1 0.001779079</span></span>
+<span><span class="co">#&gt; 2          1 1.327270e+01 3.395691  0.000000  1  0 0.018008232</span></span>
+<span><span class="co">#&gt; 3          1 1.743664e+00 3.395691 -1.803183  0  1 0.003805161</span></span>
+<span><span class="co">#&gt; 4          2 2.847290e-02 3.581412 -1.803183  1  0 0.003932714</span></span>
+<span><span class="co">#&gt; 5          2 4.687468e-04 3.581412 -1.847412  0  1 0.003320694</span></span>
+<span><span class="co">#&gt; 6          3 7.368057e-06 3.584381 -1.847412  1  0 0.002850771</span></span>
+<span><span class="co">#&gt; 7          3 1.164202e-07 3.584381 -1.848115  0  1 0.022559643</span></span>
+<span><span class="co">#&gt; 8          4 1.893311e-09 3.584427 -1.848115  1  0 0.002321720</span></span>
+<span><span class="co">#&gt; 9          4 9.153860e-11 3.584427 -1.848124  0  1 0.001801968</span></span>
+<span><span class="co">#&gt; 10         5 6.347425e-11 3.584428 -1.848124  1  0 0.001797199</span></span>
+<span><span class="co">#&gt; 11         5 9.606386e-12 3.584428 -1.848126  0  1 0.001785517</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $seconds</span></span>
-<span><span class="co">#&gt; [1] 0.06156826</span></span>
+<span><span class="co">#&gt; [1] 0.06218362</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $stopping_reason</span></span>
 <span><span class="co">#&gt; [1] "change in function value between 1 iteration is &lt; 1e-06"</span></span></code></pre></div>
@@ -666,6 +667,11 @@ Optimization.”</span> <em>SIAM Journal on Scientific Computing</em> 16
 <div id="ref-chang:2022" class="csl-entry">
 Chang, Winston. 2022. <em>R6: Encapsulated Classes with Reference
 Semantics</em>.
+</div>
+<div id="ref-chib:2010" class="csl-entry">
+Chib, Siddhartha, and Srikanth Ramamurthy. 2010. <span>“Tailored
+Randomized Block MCMC Methods with Application to DSGE Models.”</span>
+<em>Journal of Econometrics</em> 155 (1): 19–38.
 </div>
 <div id="ref-hu:2002" class="csl-entry">
 Hu, Y, and R Hathaway. 2002. <span>“On Efficiency of Optimization in
