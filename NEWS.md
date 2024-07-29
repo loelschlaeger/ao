@@ -1,3 +1,7 @@
+# ao 1.1.1
+
+* In the case of multiple threads, the output now contains the additional elements `estimates` and `values` with results for all threads.
+
 # ao 1.1.0
 
 * Alternating optimization can now be run in multiple (possibly parallel) threads by providing a `list` of values for the `initial`, `partition`, and/or `base_optimizer` parameters, where each combination creates a separate alternating optimization thread.
