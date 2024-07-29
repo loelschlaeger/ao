@@ -210,10 +210,12 @@ alternating optimization thread.
 \subsection{Output value}{
 
 In the case of multiple threads, the output changes slightly in comparison
-to the standard case. It is still a \code{list} with the following elements:
+to the standard case. It is a \code{list} with the following elements:
 \itemize{
 \item \code{estimate} is the optimal parameter vector over all threads.
+\item \code{estimates} is a \code{list} of optimal parameters in each thread.
 \item \code{value} is the optimal function value over all threads.
+\item \code{values} is a \code{list} of optimal function values in each thread.
 \item \code{details} combines details of the single threads and has an additional
 column \code{thread} with an index for the different threads.
 \item \code{seconds} gives the computation time in seconds for each thread.
@@ -269,13 +271,15 @@ normal_mixture_llk <- function(mu, sd, lambda, data) {
   sum(log(c1 + c2))
 }
 
+set.seed(123)
+
 ao(
   f = normal_mixture_llk,
-  initial = c(2, 4, 1, 1, 0.5),
+  initial = runif(5),
   target = c("mu", "sd", "lambda"),
   npar = c(2, 2, 1),
   data = datasets::faithful$eruptions,
-  partition = "random",
+  partition = list("sequential", "random", "none"),
   minimize = FALSE,
   lower = c(-Inf, -Inf, 0, 0, 0),
   upper = c(Inf, Inf, Inf, Inf, 1)

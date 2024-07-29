@@ -353,14 +353,38 @@ Alternating optimization can suffer from local optima. To increase the likelihoo
 
 - multiple base optimizers.
 
-Use the `initial`, `partition`, and/or `base_optimizer` arguments to provide a `list` of possible values for each parameter. Each combination of initial values, parameter partitions, and base optimizers will create a separate alternating optimization thread.
+Use the `initial`, `partition`, and/or `base_optimizer` arguments to provide a `list` of possible values for each parameter. Each combination of initial values, parameter partitions, and base optimizers will create a separate alternating optimization thread:
+
+```{r, normal mixture type 4}
+normal_mixture_llk <- function(mu, sd, lambda, data) {
+  c1 <- lambda * dnorm(data, mu[1], sd[1])
+  c2 <- (1 - lambda) * dnorm(data, mu[2], sd[2])
+  sum(log(c1 + c2))
+}
+out <- ao(
+  f = normal_mixture_llk,
+  initial = list(runif(5), runif(5)),
+  target = c("mu", "sd", "lambda"),
+  npar = c(2, 2, 1),
+  data = datasets::faithful$eruptions,
+  partition = list("random", "random", "random"),
+  minimize = FALSE,
+  lower = c(-Inf, -Inf, 0, 0, 0),
+  upper = c(Inf, Inf, Inf, Inf, 1)
+)
+out$values
+```
 
 In the case of multiple threads, the output changes slightly in comparison
-to the standard case. It is still a `list` with the following elements:
+to the standard case. It is a `list` with the following elements:
 
 - `estimate` is the optimal parameter vector over all threads.
 
+- `estimates` is a `list` of optimal parameters in each thread.
+
 - `value` is the optimal function value over all threads.
+
+- `values` is a `list` of optimal function values in each thread.
 
 - `details` combines details of the single threads and has an additional column `thread` with an index for the different threads.
 

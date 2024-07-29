@@ -20,10 +20,12 @@
 #'
 #' ### Output value
 #' In the case of multiple threads, the output changes slightly in comparison
-#' to the standard case. It is still a \code{list} with the following elements:
+#' to the standard case. It is a \code{list} with the following elements:
 #'
 #' * \code{estimate} is the optimal parameter vector over all threads.
+#' * \code{estimates} is a \code{list} of optimal parameters in each thread.
 #' * \code{value} is the optimal function value over all threads.
+#' * \code{values} is a \code{list} of optimal function values in each thread.
 #' * \code{details} combines details of the single threads and has an additional
 #'   column `thread` with an index for the different threads.
 #' * \code{seconds} gives the computation time in seconds for each thread.
@@ -228,13 +230,15 @@
 #'   sum(log(c1 + c2))
 #' }
 #'
+#' set.seed(123)
+#'
 #' ao(
 #'   f = normal_mixture_llk,
-#'   initial = c(2, 4, 1, 1, 0.5),
+#'   initial = runif(5),
 #'   target = c("mu", "sd", "lambda"),
 #'   npar = c(2, 2, 1),
 #'   data = datasets::faithful$eruptions,
-#'   partition = "random",
+#'   partition = list("sequential", "random", "none"),
 #'   minimize = FALSE,
 #'   lower = c(-Inf, -Inf, 0, 0, 0),
 #'   upper = c(Inf, Inf, Inf, Inf, 1)
@@ -361,7 +365,9 @@ ao <- function(
     return(
       list(
         "estimate" = lapply(results, `[[`, "estimate")[[optimal_thread]],
+        "estimates" = lapply(results, `[[`, "estimate"),
         "value" = values[optimal_thread],
+        "values" = as.list(values),
         "details" = do.call("rbind", details_list),
         "seconds" = vapply(results, `[[`, numeric(1), "seconds"),
         "stopping_reason" = vapply(results, `[[`, character(1), "stopping_reason"),
