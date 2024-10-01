@@ -142,7 +142,7 @@ Creates a new object of this \link[R6:R6Class]{R6} class.
   npar = integer(),
   partition = "sequential",
   new_block_probability = 0.3,
-  minimum_block_number = 2,
+  minimum_block_number = 1,
   verbose = FALSE,
   minimize = TRUE,
   iteration_limit = Inf,

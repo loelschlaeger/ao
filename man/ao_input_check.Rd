@@ -12,13 +12,13 @@ ao_input_check(
 )
 }
 \arguments{
-\item{argument_name}{(\code{character(1)})\cr
+\item{argument_name}{[\code{character(1)}]\cr
 The name of the argument that is checked.}
 
-\item{check_result}{(\code{logical(1)})\cr
+\item{check_result}{[\code{logical(1)}]\cr
 \code{TRUE} if the check was successful.}
 
-\item{error_message}{(\code{character(1)})\cr
+\item{error_message}{[\code{character(1)}]\cr
 An error message to be printed.}
 
 \item{prefix}{(\code{character(1)})\cr

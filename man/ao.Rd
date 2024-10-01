@@ -10,13 +10,14 @@ ao(
   target = NULL,
   npar = NULL,
   gradient = NULL,
+  hessian = NULL,
   ...,
   partition = "sequential",
   new_block_probability = 0.3,
-  minimum_block_number = 2,
+  minimum_block_number = 1,
   minimize = TRUE,
-  lower = -Inf,
-  upper = Inf,
+  lower = NULL,
+  upper = NULL,
   iteration_limit = Inf,
   seconds_limit = Inf,
   tolerance_value = 1e-06,
@@ -29,7 +30,7 @@ ao(
 )
 }
 \arguments{
-\item{f}{(\code{function})\cr
+\item{f}{[\code{function}]\cr
 A \code{function} to be optimized, returning a single \code{numeric} value.
 
 The first argument of \code{f} should be a \code{numeric} of the same length
@@ -39,20 +40,20 @@ the \code{...} argument.
 If \code{f} is to be optimized over an argument other than the first, or more
 than one argument, this has to be specified via the \code{target} argument.}
 
-\item{initial}{(\code{numeric()} or \code{list()})\cr
+\item{initial}{[\code{numeric()} | \code{list()}]\cr
 The starting parameter values for the target argument(s).
 
 This can also be a \code{list} of multiple starting parameter values, see details.}
 
-\item{target}{(\code{character()} or \code{NULL})\cr
+\item{target}{[\code{character()} | \code{NULL}]\cr
 The name(s) of the argument(s) over which \code{f} gets optimized.
 
 This can only be \code{numeric} arguments.
 
 Can be \code{NULL} (default), then it is the first argument of \code{f}.}
 
-\item{npar}{(\code{integer()})\cr
-The length of the target argument(s).
+\item{npar}{[\code{integer()}]\cr
+The length(s) of the target argument(s).
 
 Must be specified if more than two target arguments are specified via
 the \code{target} argument.
@@ -60,16 +61,23 @@ the \code{target} argument.
 Can be \code{NULL} if there is only one target argument, in which case \code{npar} is
 set to be \code{length(initial)}.}
 
-\item{gradient}{(\code{function} or \code{NULL})\cr
-A \code{function} that returns the gradient of \code{f}.
+\item{gradient}{[\code{function} | \code{NULL}]\cr
+Optionally a \code{function} that returns the gradient of \code{f}.
 
 The function call of \code{gradient} must be identical to \code{f}.
 
-Can be \code{NULL}, in which case a finite-difference approximation will be used.}
+Ignored if \code{base_optimizer} does not support supplied gradient.}
+
+\item{hessian}{[\code{function} | \code{NULL}]\cr
+Optionally a \code{function} that returns the Hessian of \code{f}.
+
+The function call of \code{hessian} must be identical to \code{f}.
+
+Ignored if \code{base_optimizer} does not support supplied Hessian.}
 
 \item{...}{Additional arguments to be passed to \code{f} (and \code{gradient}).}
 
-\item{partition}{(\code{character(1)} or \code{list()})\cr
+\item{partition}{[\code{character(1)} | \code{list()}]\cr
 Defines the parameter partition, and can be either
 \itemize{
 \item \code{"sequential"} for treating each parameter separately,
@@ -81,7 +89,7 @@ partition for the alternating optimization process.
 
 This can also be a \code{list} of multiple partition definitions, see details.}
 
-\item{new_block_probability}{(\code{numeric(1)})\cr
+\item{new_block_probability}{[\code{numeric(1)}]\cr
 Only relevant if \code{partition = "random"}.
 
 The probability for a new parameter block when creating a random
@@ -90,26 +98,28 @@ partitions.
 Values close to 0 result in larger parameter blocks, values close to 1
 result in smaller parameter blocks.}
 
-\item{minimum_block_number}{(\code{integer(1)})\cr
+\item{minimum_block_number}{[\code{integer(1)}]\cr
 Only relevant if \code{partition = "random"}.
 
 The minimum number of blocks in random partitions.}
 
-\item{minimize}{(\code{logical(1)})\cr
+\item{minimize}{[\code{logical(1)}]\cr
 Whether to minimize during the alternating optimization process.
 
 If \code{FALSE}, maximization is performed.}
 
-\item{lower, upper}{(\code{numeric()})\cr
-Optionally lower and upper parameter bounds.}
+\item{lower, upper}{[\code{numeric()} | \code{NULL}]\cr
+Optionally lower and upper parameter bounds.
 
-\item{iteration_limit}{(\code{integer(1)} or \code{Inf})\cr
+Ignored if \code{base_optimizer} does not support parameter bounds.}
+
+\item{iteration_limit}{[\code{integer(1)} | \code{Inf}]\cr
 The maximum number of iterations through the parameter partition before
 the alternating optimization process is terminated.
 
 Can also be \code{Inf} for no iteration limit.}
 
-\item{seconds_limit}{(\code{numeric(1)})\cr
+\item{seconds_limit}{[\code{numeric(1)}]\cr
 The time limit in seconds before the alternating optimization process is
 terminated.
 
@@ -119,7 +129,7 @@ Note that this stopping criteria is only checked \emph{after} a sub-problem is
 solved and not \emph{within} solving a sub-problem, so the actual process time can
 exceed this limit.}
 
-\item{tolerance_value}{(\code{numeric(1)})\cr
+\item{tolerance_value}{[\code{numeric(1)}]\cr
 A non-negative tolerance value. The alternating optimization terminates
 if the absolute difference between the current function value and the one
 before \code{tolerance_history} iterations is smaller than
@@ -127,7 +137,7 @@ before \code{tolerance_history} iterations is smaller than
 
 Can be \code{0} for no value threshold.}
 
-\item{tolerance_parameter}{(\code{numeric(1)})\cr
+\item{tolerance_parameter}{[\code{numeric(1)}]\cr
 A non-negative tolerance value. The alternating optimization terminates if
 the distance between the current estimate and the before
 \code{tolerance_history} iterations is smaller than
@@ -138,7 +148,7 @@ Can be \code{0} for no parameter threshold.
 By default, the distance is measured using the euclidean norm, but another
 norm can be specified via the \code{tolerance_parameter_norm} argument.}
 
-\item{tolerance_parameter_norm}{(\code{function})\cr
+\item{tolerance_parameter_norm}{[\code{function}]\cr
 The norm that measures the distance between the current estimate and the
 one from the last iteration. If the distance is smaller than
 \code{tolerance_parameter}, the procedure is terminated.
@@ -148,26 +158,24 @@ It must be of the form \code{function(x, y)} for two vector inputs
 By default, the euclidean norm \code{function(x, y) sqrt(sum((x - y)^2))}
 is used.}
 
-\item{tolerance_history}{(\code{integer(1)})\cr
+\item{tolerance_history}{[\code{integer(1)}]\cr
 The number of iterations to look back to determine whether
 \code{tolerance_value} or \code{tolerance_parameter} has been reached.}
 
-\item{base_optimizer}{(\code{Optimizer} or \code{list()})\cr
+\item{base_optimizer}{[\code{Optimizer} | \code{list()}]\cr
 An \code{Optimizer} object, which can be created via
 \code{\link[optimizeR]{Optimizer}}. It numerically solves the sub-problems.
 
-By default, the \code{\link[stats]{optim}} optimizer is used. If another
-optimizer is specified, the arguments \code{gradient}, \code{lower}, and
-\code{upper} are ignored.
+By default, the \code{\link[stats]{optim}} optimizer with
+\code{method = "L-BFGS-B"} is used.
 
 This can also be a \code{list} of multiple base optimizers, see details.}
 
-\item{verbose}{(\code{logical(1)})\cr
-Whether to print tracing details during the alternating optimization
-process.}
+\item{verbose}{[\code{logical(1)}]\cr
+Print tracing details during the alternating optimization process?}
 
-\item{hide_warnings}{(\code{logical(1)})\cr
-Whether to hide warnings during the alternating optimization process.}
+\item{hide_warnings}{[\code{logical(1)}]\cr
+Hide warnings during the alternating optimization process?}
 }
 \value{
 A \code{list} with the following elements:

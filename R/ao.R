@@ -54,7 +54,7 @@
 #' )
 #' }
 #'
-#' @param f (`function`)\cr
+#' @param f \[`function`\]\cr
 #' A \code{function} to be optimized, returning a single \code{numeric} value.
 #'
 #' The first argument of \code{f} should be a \code{numeric} of the same length
@@ -64,20 +64,20 @@
 #' If \code{f} is to be optimized over an argument other than the first, or more
 #' than one argument, this has to be specified via the \code{target} argument.
 #'
-#' @param initial (`numeric()` or `list()`)\cr
+#' @param initial \[`numeric()` | `list()`\]\cr
 #' The starting parameter values for the target argument(s).
 #'
 #' This can also be a `list` of multiple starting parameter values, see details.
 #'
-#' @param target (`character()` or `NULL`)\cr
+#' @param target \[`character()` | `NULL`\]\cr
 #' The name(s) of the argument(s) over which \code{f} gets optimized.
 #'
 #' This can only be \code{numeric} arguments.
 #'
 #' Can be `NULL` (default), then it is the first argument of `f`.
 #'
-#' @param npar (`integer()`)\cr
-#' The length of the target argument(s).
+#' @param npar \[`integer()`\]\cr
+#' The length(s) of the target argument(s).
 #'
 #' Must be specified if more than two target arguments are specified via
 #' the `target` argument.
@@ -85,17 +85,24 @@
 #' Can be `NULL` if there is only one target argument, in which case `npar` is
 #' set to be `length(initial)`.
 #'
-#' @param gradient (`function` or `NULL`)\cr
-#' A \code{function} that returns the gradient of \code{f}.
+#' @param gradient \[`function` | `NULL`\]\cr
+#' Optionally a \code{function} that returns the gradient of \code{f}.
 #'
 #' The function call of \code{gradient} must be identical to \code{f}.
 #'
-#' Can be `NULL`, in which case a finite-difference approximation will be used.
+#' Ignored if `base_optimizer` does not support supplied gradient.
+#'
+#' @param hessian \[`function` | `NULL`\]\cr
+#' Optionally a \code{function} that returns the Hessian of \code{f}.
+#'
+#' The function call of \code{hessian} must be identical to \code{f}.
+#'
+#' Ignored if `base_optimizer` does not support supplied Hessian.
 #'
 #' @param ...
 #' Additional arguments to be passed to \code{f} (and \code{gradient}).
 #'
-#' @param partition (`character(1)` or `list()`)\cr
+#' @param partition \[`character(1)` | `list()`\]\cr
 #' Defines the parameter partition, and can be either
 #'
 #' * `"sequential"` for treating each parameter separately,
@@ -106,7 +113,7 @@
 #'
 #' This can also be a `list` of multiple partition definitions, see details.
 #'
-#' @param new_block_probability (`numeric(1)`)\cr
+#' @param new_block_probability \[`numeric(1)`\]\cr
 #' Only relevant if `partition = "random"`.
 #'
 #' The probability for a new parameter block when creating a random
@@ -115,26 +122,28 @@
 #' Values close to 0 result in larger parameter blocks, values close to 1
 #' result in smaller parameter blocks.
 #'
-#' @param minimum_block_number (`integer(1)`)\cr
+#' @param minimum_block_number \[`integer(1)`\]\cr
 #' Only relevant if `partition = "random"`.
 #'
 #' The minimum number of blocks in random partitions.
 #'
-#' @param minimize (`logical(1)`)\cr
+#' @param minimize \[`logical(1)`\]\cr
 #' Whether to minimize during the alternating optimization process.
 #'
 #' If \code{FALSE}, maximization is performed.
 #'
-#' @param lower,upper (`numeric()`)\cr
+#' @param lower,upper \[`numeric()` | `NULL`\]\cr
 #' Optionally lower and upper parameter bounds.
 #'
-#' @param iteration_limit (`integer(1)` or `Inf`)\cr
+#' Ignored if `base_optimizer` does not support parameter bounds.
+#'
+#' @param iteration_limit \[`integer(1)` | `Inf`\]\cr
 #' The maximum number of iterations through the parameter partition before
 #' the alternating optimization process is terminated.
 #'
 #' Can also be `Inf` for no iteration limit.
 #'
-#' @param seconds_limit (`numeric(1)`)\cr
+#' @param seconds_limit \[`numeric(1)`\]\cr
 #' The time limit in seconds before the alternating optimization process is
 #' terminated.
 #'
@@ -144,7 +153,7 @@
 #' solved and not *within* solving a sub-problem, so the actual process time can
 #' exceed this limit.
 #'
-#' @param tolerance_value (`numeric(1)`)\cr
+#' @param tolerance_value \[`numeric(1)`\]\cr
 #' A non-negative tolerance value. The alternating optimization terminates
 #' if the absolute difference between the current function value and the one
 #' before \code{tolerance_history} iterations is smaller than
@@ -152,7 +161,7 @@
 #'
 #' Can be `0` for no value threshold.
 #'
-#' @param tolerance_parameter (`numeric(1)`)\cr
+#' @param tolerance_parameter \[`numeric(1)`\]\cr
 #' A non-negative tolerance value. The alternating optimization terminates if
 #' the distance between the current estimate and the before
 #' \code{tolerance_history} iterations is smaller than
@@ -163,7 +172,7 @@
 #' By default, the distance is measured using the euclidean norm, but another
 #' norm can be specified via the \code{tolerance_parameter_norm} argument.
 #'
-#' @param tolerance_parameter_norm (`function`)\cr
+#' @param tolerance_parameter_norm \[`function`\]\cr
 #' The norm that measures the distance between the current estimate and the
 #' one from the last iteration. If the distance is smaller than
 #' \code{tolerance_parameter}, the procedure is terminated.
@@ -173,26 +182,24 @@
 #' By default, the euclidean norm \code{function(x, y) sqrt(sum((x - y)^2))}
 #' is used.
 #'
-#' @param tolerance_history (`integer(1)`)\cr
+#' @param tolerance_history \[`integer(1)`\]\cr
 #' The number of iterations to look back to determine whether
 #' \code{tolerance_value} or \code{tolerance_parameter} has been reached.
 #'
-#' @param base_optimizer (`Optimizer` or `list()`)\cr
+#' @param base_optimizer \[`Optimizer` | `list()`\]\cr
 #' An \code{Optimizer} object, which can be created via
 #' \code{\link[optimizeR]{Optimizer}}. It numerically solves the sub-problems.
 #'
-#' By default, the \code{\link[stats]{optim}} optimizer is used. If another
-#' optimizer is specified, the arguments \code{gradient}, \code{lower}, and
-#' \code{upper} are ignored.
+#' By default, the \code{\link[stats]{optim}} optimizer with
+#' \code{method = "L-BFGS-B"} is used.
 #'
 #' This can also be a `list` of multiple base optimizers, see details.
 #'
-#' @param verbose (`logical(1)`)\cr
-#' Whether to print tracing details during the alternating optimization
-#' process.
+#' @param verbose \[`logical(1)`\]\cr
+#' Print tracing details during the alternating optimization process?
 #'
-#' @param hide_warnings (`logical(1)`)\cr
-#' Whether to hide warnings during the alternating optimization process.
+#' @param hide_warnings \[`logical(1)`\]\cr
+#' Hide warnings during the alternating optimization process?
 #'
 #' @return
 #' A \code{list} with the following elements:
@@ -252,13 +259,14 @@ ao <- function(
     target = NULL,
     npar = NULL,
     gradient = NULL,
+    hessian = NULL,
     ...,
     partition = "sequential",
     new_block_probability = 0.3,
-    minimum_block_number = 2,
+    minimum_block_number = 1,
     minimize = TRUE,
-    lower = -Inf,
-    upper = Inf,
+    lower = NULL,
+    upper = NULL,
     iteration_limit = Inf,
     seconds_limit = Inf,
     tolerance_value = 1e-6,
@@ -267,7 +275,9 @@ ao <- function(
     tolerance_history = 1,
     base_optimizer = Optimizer$new("stats::optim", method = "L-BFGS-B"),
     verbose = FALSE,
-    hide_warnings = TRUE) {
+    hide_warnings = TRUE
+) {
+
   ### check if required arguments are specified
   ao_input_check(
     argument_name = "f", check_result = !missing(f),
@@ -283,8 +293,8 @@ ao <- function(
   ### multiple threads?
   if (
     is.list(initial) ||
-      (is.list(partition) && !checkmate::test_list(partition, "numeric")) ||
-      is.list(base_optimizer)
+    (is.list(partition) && !checkmate::test_list(partition, "numeric")) ||
+    is.list(base_optimizer)
   ) {
     ### build threads
     if (!is.list(initial)) {
