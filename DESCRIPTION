@@ -13,11 +13,11 @@ Authors@R:
            role = "ctb",
            email = "chib@wustl.edu")
     )
-Description: Alternating optimization is an iterative procedure that optimizes 
-    a function by alternately performing restricted optimization over individual 
-    parameter subsets. Instead of tackling joint optimization directly, it 
-    breaks the problem down into simpler sub-problems. This approach can make 
-    optimization feasible when joint optimization is too difficult.
+Description: An iterative procedure that optimizes a function by alternately 
+    performing restricted optimization over parameter subsets. Instead of joint 
+    optimization, it breaks the optimization problem down into simpler 
+    sub-problems. This approach can make optimization feasible when joint 
+    optimization is too difficult.
 URL: https://loelschlaeger.de/ao/, https://github.com/loelschlaeger/ao/
 BugReports: https://github.com/loelschlaeger/ao/issues
 License: GPL-3
