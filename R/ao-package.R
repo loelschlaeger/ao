@@ -29,13 +29,14 @@ NULL
 
 .onAttach <- function(lib, pkg) {
   doc_link <- "https://loelschlaeger.de/ao"
+  issues_link <- "https://github.com/loelschlaeger/ao/issues"
   msg <- c(
-    paste0(
-      "Thanks for using {ao} version ", utils::packageVersion("ao")
-    ),
+    paste0("This is {ao} ", utils::packageVersion("ao")),
     ", happy alternating optimization!\n",
-    "Documentation: ",
-    cli::style_hyperlink(doc_link, doc_link)
+    "Documentation? ",
+    cli::style_hyperlink(doc_link, doc_link), "\n",
+    "Any issues? ",
+    cli::style_hyperlink(issues_link, issues_link)
   )
   packageStartupMessage(msg)
   invisible()
