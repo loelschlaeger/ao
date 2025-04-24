@@ -6,14 +6,10 @@ test_that("ao works", {
       2 * (x[1]^2 + x[2] - 11) + 4 * x[2] * (x[1] + x[2]^2 - 7)
     )
   }
-  checkmate::expect_list(
-    ao(f = himmelblau, initial = c(0, 0), gradient = gradient),
-    len = 5
-  )
-  checkmate::expect_list(
-    ao(f = himmelblau, initial = c(0, 0), partition = "random", gradient = gradient),
-    len = 5
-  )
+  ao_out <- ao(f = himmelblau, initial = c(0, 0), gradient = gradient)
+  checkmate::expect_list(ao_out, len = 5)
+  ao_random_out <- ao(f = himmelblau, initial = c(0, 0), partition = "random", gradient = gradient)
+  checkmate::expect_list(ao_random_out, len = 5)
 })
 
 test_that("ao with additional parameters works", {
@@ -24,10 +20,8 @@ test_that("ao with additional parameters works", {
     ao(f = himmelblau, initial = c(0, 0)),
     "Function evaluation threw an error: argument \"a\" is missing, with no default"
   )
-  checkmate::expect_list(
-    ao(f = himmelblau, initial = c(0, 0), a = 2, b = 11, c = 7),
-    len = 5
-  )
+  ao_out <- ao(f = himmelblau, initial = c(0, 0), a = 2, b = 11, c = 7)
+  checkmate::expect_list(ao_out, len = 5)
 })
 
 test_that("ao with NULL values for fixed arguments works", {
@@ -36,49 +30,33 @@ test_that("ao with NULL values for fixed arguments works", {
       (x[1]^2 + x[2] + a)^2 + (x[1] + x[2]^2 + b)^2 + (x[3] - 1)^2
     }
   }
-  checkmate::expect_list(
-    ao(f = f, initial = c(0, 0, 0), a = -11, b = -7, ind = NULL),
-    len = 5
-  )
+  ao_out <- ao(f = f, initial = c(0, 0, 0), a = -11, b = -7, ind = NULL)
+  checkmate::expect_list(ao_out, len = 5)
 })
 
 test_that("ao with a different base optimizer works", {
   himmelblau <- function(x) (x[1]^2 + x[2] - 11)^2 + (x[1] + x[2]^2 - 7)^2
-  expect_warning(
-    checkmate::expect_list(
-      ao(f = himmelblau, initial = c(0, 0), base_optimizer = optimizeR::optimizer_nlm(), hide_warnings = FALSE),
-      len = 5
-    ),
-    "Arguments `gradient`, `lower`, and `upper` are ignored"
-  )
-})
-
-test_that("ao with random partition works", {
-  f <- function(x) (x[1]^2 + x[2])^2 + (x[1] + x[2]^2)^2 + (x[3] + x[4]^2)^2
-  checkmate::expect_list(
-    ao(f = f, initial = c(1, 1, 1, 1), partition = "random", iteration_limit = 10),
-    len = 5
-  )
+  ao_out <- ao(f = himmelblau, initial = c(0, 0), base_optimizer = optimizeR::Optimizer$new("stats::nlm"))
+  checkmate::expect_list(ao_out, len = 5)
 })
 
 test_that("ao with custom partition works", {
   f <- function(x) (x[1]^2 + x[2])^2 + (x[1] + x[2]^2)^2 + (x[3] + x[4]^2)^2
-  checkmate::expect_list(
-    ao(f = f, initial = c(1, 1, 1, 1), partition = list(1, 2, 3:4)),
-    len = 5
-  )
+  ao_custom <- ao(f = f, initial = c(1, 1, 1, 1), partition = list(1, 2, 3:4))
+  checkmate::expect_list(ao_custom, len = 5)
 })
 
-test_that("multiple ao threads work", {
+test_that("multiple ao processes work", {
   himmelblau <- function(x) (x[1]^2 + x[2] - 11)^2 + (x[1] + x[2]^2 - 7)^2
-  out <- ao(
+  out_multi <- ao(
     f = himmelblau,
     initial = list(c(0, 0), c(1, 1)),
     partition = list("random", list(2, 1), "none", "sequential"),
     base_optimizer = list(
-      optimizeR::optimizer_nlm(),
-      optimizeR::optimizer_optim()
-    )
+      optimizeR::Optimizer$new("stats::nlm"),
+      optimizeR::Optimizer$new("stats::optim")
+    ),
+    add_details = FALSE
   )
-  checkmate::expect_list(out)
+  checkmate::expect_list(out_multi, len = 4)
 })

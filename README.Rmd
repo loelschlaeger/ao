@@ -17,17 +17,17 @@ library("ao")
 
 <!-- badges: start -->
 [![CRAN status](https://www.r-pkg.org/badges/version/ao)](https://CRAN.R-project.org/package=ao)
-[![CRAN downloads](https://cranlogs.r-pkg.org/badges/last-month/ao)](https://CRAN.R-project.org/package=ao)
+[![CRAN downloads](https://cranlogs.r-pkg.org/badges/grand-total/ao)](https://CRAN.R-project.org/package=ao)
 [![R-CMD-check](https://github.com/loelschlaeger/ao/workflows/R-CMD-check/badge.svg)](https://github.com/loelschlaeger/ao/actions)
 [![future-tests](https://github.com/loelschlaeger/ao/workflows/future_tests/badge.svg)](https://github.com/loelschlaeger/ao/actions)
 [![Codecov test coverage](https://codecov.io/gh/loelschlaeger/ao/branch/main/graph/badge.svg)](https://app.codecov.io/gh/loelschlaeger/ao?branch=main)
 <!-- badges: end -->
 
-The `{ao}` package offers useRs easy access to alternating optimization.
+The `{ao}` package implements alternating optimization (AO) in [R](https://cran.r-project.org/).
 
 ## Why?
 
-Alternating optimization is an iterative procedure that optimizes a function by alternately performing restricted optimization over individual parameter subsets. Instead of tackling joint optimization directly, it breaks the problem down into simpler sub-problems. This approach can make optimization feasible when joint optimization is too difficult. For more details, please refer to the [package vignette](https://loelschlaeger.de/ao/articles/ao.html).
+AO is an iterative process that optimizes a function by alternately performing restricted optimization over parameter subsets. Instead of joint optimization, it breaks the optimization problem down into simpler sub-problems. This approach can make optimization feasible when joint optimization is too difficult. See the [package vignette](https://loelschlaeger.de/ao/articles/ao.html) for more details.
 
 ## How?
 
@@ -45,7 +45,7 @@ rosenbrock <- function(x) (1 - x[1])^2 + (x[2] - x[1]^2)^2
 
 The resulting optimization path ...
 
-```{r, rosenbrock_ao_path, echo = FALSE}
+```{r, rosenbrock_ao_path, echo = FALSE, warning = FALSE}
 out <- ao(f = rosenbrock, initial = c(2, 2))
 library("ggplot2")
 x <- y <- seq(0.9, 2.1, 0.05)
@@ -76,9 +76,9 @@ ggplot(grid) +
 ... is obtained as follows:
 
 ```{r, ao rosenbrock}
-ao(f = rosenbrock, initial = c(2, 2))
+ao(f = rosenbrock, initial = c(2, 2), add_details = TRUE)
 ```
 
 ## Contact?
 
-If you have a question, found a bug, want to request a feature, give feedback, or contribute, we would love to hear from you. [Please file an issue on GitHub](https://github.com/loelschlaeger/ao/issues/new/choose). 😊
+If you have any questions, found a bug, need a feature, [just file an issue on GitHub](https://github.com/loelschlaeger/ao/issues/new/choose). 

@@ -1,39 +1,40 @@
 #' Alternating Optimization
 #'
 #' @description
-#' Alternating optimization is an iterative procedure for optimizing a
+#' Alternating optimization (AO) is an iterative process for optimizing a
 #' real-valued function jointly over all its parameters by alternating
 #' restricted optimization over parameter partitions.
 #'
 #' @details
-#' ## Multiple threads
-#' Alternating optimization can suffer from local optima. To increase the
-#' likelihood of reaching the global optimum, you can specify:
-#' - multiple starting parameters
-#' - multiple parameter partitions
-#' - multiple base optimizers
+#' ## Multiple processes
+#' AO can suffer from local optima. To increase the likelihood of reaching the
+#' global optimum, you can specify:
+#'
+#' * multiple starting parameters
+#' * multiple parameter partitions
+#' * multiple base optimizers
 #'
 #' Use the `initial`, `partition`, and/or `base_optimizer` arguments to provide
 #' a `list` of possible values for each parameter. Each combination of initial
-#' values, parameter partitions, and base optimizers will create a separate
-#' alternating optimization thread.
+#' values, parameter partitions, and base optimizers will create a separate AO
+#' process.
 #'
 #' ### Output value
-#' In the case of multiple threads, the output changes slightly in comparison
-#' to the standard case. It is a \code{list} with the following elements:
+#' In the case of multiple processes, the output values refer to the optimal
+#' (with respect to function value) AO processes.
 #'
-#' * \code{estimate} is the optimal parameter vector over all threads.
-#' * \code{estimates} is a \code{list} of optimal parameters in each thread.
-#' * \code{value} is the optimal function value over all threads.
-#' * \code{values} is a \code{list} of optimal function values in each thread.
-#' * \code{details} combines details of the single threads and has an additional
-#'   column `thread` with an index for the different threads.
-#' * \code{seconds} gives the computation time in seconds for each thread.
-#' * \code{stopping_reason} gives the termination message for each thread.
-#' * \code{threads} give details how the different threads were specified.
+#' If `add_details = TRUE`, the following elements are added:
+#'
+#' * \code{estimates} is a \code{list} of optimal parameters in each process.
+#' * \code{values} is a \code{list} of optimal function values in each process.
+#' * \code{details} combines details of the single processes and has an
+#'   additional column `process` with an index for the different processes.
+#' * \code{seconds_each} gives the computation time in seconds for each process.
+#' * \code{stopping_reasons} gives the termination message for each process.
+#' * \code{processes} give details how the different processes were specified.
 #'
 #' ### Parallel computation
-#' By default, threads run sequentially. However, since they are independent,
+#' By default, processes run sequentially. However, since they are independent,
 #' they can be parallelized. To enable parallel computation, use the
 #' [`{future}` framework](https://future.futureverse.org/). For example, run the
 #' following *before* the `ao()` call:
@@ -42,11 +43,10 @@
 #' }
 #'
 #' ### Progress updates
-#' When using multiple threads, setting `verbose = TRUE` to print tracing
-#' details during alternating optimization is not supported. However, you can
-#' still track the progress of threads using the
-#' [`{progressr}` framework](https://progressr.futureverse.org/). For example,
-#' run the following *before* the `ao()` call:
+#' When using multiple processes, setting `verbose = TRUE` to print tracing
+#' details during AO is not supported. However, you can still track the progress
+#' using the [`{progressr}` framework](https://progressr.futureverse.org/).
+#' For example, run the following *before* the `ao()` call:
 #' \preformatted{
 #' progressr::handlers(global = TRUE)
 #' progressr::handlers(
@@ -54,7 +54,7 @@
 #' )
 #' }
 #'
-#' @param f (`function`)\cr
+#' @param f \[`function`\]\cr
 #' A \code{function} to be optimized, returning a single \code{numeric} value.
 #'
 #' The first argument of \code{f} should be a \code{numeric} of the same length
@@ -64,20 +64,20 @@
 #' If \code{f} is to be optimized over an argument other than the first, or more
 #' than one argument, this has to be specified via the \code{target} argument.
 #'
-#' @param initial (`numeric()` or `list()`)\cr
+#' @param initial \[`numeric()` | `list()`\]\cr
 #' The starting parameter values for the target argument(s).
 #'
 #' This can also be a `list` of multiple starting parameter values, see details.
 #'
-#' @param target (`character()` or `NULL`)\cr
+#' @param target \[`character()` | `NULL`\]\cr
 #' The name(s) of the argument(s) over which \code{f} gets optimized.
 #'
 #' This can only be \code{numeric} arguments.
 #'
 #' Can be `NULL` (default), then it is the first argument of `f`.
 #'
-#' @param npar (`integer()`)\cr
-#' The length of the target argument(s).
+#' @param npar \[`integer()`\]\cr
+#' The length(s) of the target argument(s).
 #'
 #' Must be specified if more than two target arguments are specified via
 #' the `target` argument.
@@ -85,58 +85,66 @@
 #' Can be `NULL` if there is only one target argument, in which case `npar` is
 #' set to be `length(initial)`.
 #'
-#' @param gradient (`function` or `NULL`)\cr
-#' A \code{function} that returns the gradient of \code{f}.
+#' @param gradient \[`function` | `NULL`\]\cr
+#' Optionally a \code{function} that returns the gradient of \code{f}.
 #'
 #' The function call of \code{gradient} must be identical to \code{f}.
 #'
-#' Can be `NULL`, in which case a finite-difference approximation will be used.
+#' Ignored if `base_optimizer` does not support custom gradient.
+#'
+#' @param hessian \[`function` | `NULL`\]\cr
+#' Optionally a \code{function} that returns the Hessian of \code{f}.
+#'
+#' The function call of \code{hessian} must be identical to \code{f}.
+#'
+#' Ignored if `base_optimizer` does not support custom Hessian.
 #'
 #' @param ...
 #' Additional arguments to be passed to \code{f} (and \code{gradient}).
 #'
-#' @param partition (`character(1)` or `list()`)\cr
+#' @param partition \[`character(1)` | `list()`\]\cr
 #' Defines the parameter partition, and can be either
 #'
 #' * `"sequential"` for treating each parameter separately,
 #' * `"random"` for a random partition in each iteration,
 #' * `"none"` for no partition (which is equivalent to joint optimization),
 #' * or a `list` of vectors of parameter indices, specifying a custom
-#'   partition for the alternating optimization process.
+#'   partition for the AO process.
 #'
 #' This can also be a `list` of multiple partition definitions, see details.
 #'
-#' @param new_block_probability (`numeric(1)`)\cr
+#' @param new_block_probability \[`numeric(1)`\]\cr
 #' Only relevant if `partition = "random"`.
 #'
 #' The probability for a new parameter block when creating a random
-#' partitions.
+#' partition.
 #'
 #' Values close to 0 result in larger parameter blocks, values close to 1
 #' result in smaller parameter blocks.
 #'
-#' @param minimum_block_number (`integer(1)`)\cr
+#' @param minimum_block_number \[`integer(1)`\]\cr
 #' Only relevant if `partition = "random"`.
 #'
 #' The minimum number of blocks in random partitions.
 #'
-#' @param minimize (`logical(1)`)\cr
-#' Whether to minimize during the alternating optimization process.
+#' @param minimize \[`logical(1)`\]\cr
+#' Minimize during the AO process?
 #'
 #' If \code{FALSE}, maximization is performed.
 #'
-#' @param lower,upper (`numeric()`)\cr
+#' @param lower,upper \[`numeric()` | `NULL`\]\cr
 #' Optionally lower and upper parameter bounds.
 #'
-#' @param iteration_limit (`integer(1)` or `Inf`)\cr
+#' Ignored if `base_optimizer` does not support parameter bounds.
+#'
+#' @param iteration_limit \[`integer(1)` | `Inf`\]\cr
 #' The maximum number of iterations through the parameter partition before
-#' the alternating optimization process is terminated.
+#' the AO process is terminated.
 #'
 #' Can also be `Inf` for no iteration limit.
 #'
-#' @param seconds_limit (`numeric(1)`)\cr
-#' The time limit in seconds before the alternating optimization process is
-#' terminated.
+#' @param seconds_limit \[`numeric(1)`\]\cr
+#' The time limit in seconds before the AO process is terminated.
 #'
 #' Can also be `Inf` for no time limit.
 #'
@@ -144,16 +152,16 @@
 #' solved and not *within* solving a sub-problem, so the actual process time can
 #' exceed this limit.
 #'
-#' @param tolerance_value (`numeric(1)`)\cr
-#' A non-negative tolerance value. The alternating optimization terminates
+#' @param tolerance_value \[`numeric(1)`\]\cr
+#' A non-negative tolerance value. The AO process terminates
 #' if the absolute difference between the current function value and the one
 #' before \code{tolerance_history} iterations is smaller than
 #' \code{tolerance_value}.
 #'
 #' Can be `0` for no value threshold.
 #'
-#' @param tolerance_parameter (`numeric(1)`)\cr
-#' A non-negative tolerance value. The alternating optimization terminates if
+#' @param tolerance_parameter \[`numeric(1)`\]\cr
+#' A non-negative tolerance value. The AO process terminates if
 #' the distance between the current estimate and the before
 #' \code{tolerance_history} iterations is smaller than
 #' \code{tolerance_parameter}.
@@ -163,53 +171,56 @@
 #' By default, the distance is measured using the euclidean norm, but another
 #' norm can be specified via the \code{tolerance_parameter_norm} argument.
 #'
-#' @param tolerance_parameter_norm (`function`)\cr
+#' @param tolerance_parameter_norm \[`function`\]\cr
 #' The norm that measures the distance between the current estimate and the
 #' one from the last iteration. If the distance is smaller than
-#' \code{tolerance_parameter}, the procedure is terminated.
+#' \code{tolerance_parameter}, the AO process is terminated.
 #'
 #' It must be of the form \code{function(x, y)} for two vector inputs
 #' \code{x} and \code{y}, and return a single \code{numeric} value.
 #' By default, the euclidean norm \code{function(x, y) sqrt(sum((x - y)^2))}
 #' is used.
 #'
-#' @param tolerance_history (`integer(1)`)\cr
+#' @param tolerance_history \[`integer(1)`\]\cr
 #' The number of iterations to look back to determine whether
 #' \code{tolerance_value} or \code{tolerance_parameter} has been reached.
 #'
-#' @param base_optimizer (`Optimizer` or `list()`)\cr
+#' @param base_optimizer \[`Optimizer` | `list()`\]\cr
 #' An \code{Optimizer} object, which can be created via
 #' \code{\link[optimizeR]{Optimizer}}. It numerically solves the sub-problems.
 #'
-#' By default, the \code{\link[stats]{optim}} optimizer is used. If another
-#' optimizer is specified, the arguments \code{gradient}, \code{lower}, and
-#' \code{upper} are ignored.
+#' By default, the \code{\link[stats]{optim}} optimizer with
+#' \code{method = "L-BFGS-B"} is used.
 #'
 #' This can also be a `list` of multiple base optimizers, see details.
 #'
-#' @param verbose (`logical(1)`)\cr
-#' Whether to print tracing details during the alternating optimization
-#' process.
+#' @param verbose \[`logical(1)`\]\cr
+#' Print tracing details during the AO process?
 #'
-#' @param hide_warnings (`logical(1)`)\cr
-#' Whether to hide warnings during the alternating optimization process.
+#' Not supported when using multiple processes, see details.
+#'
+#' @param hide_warnings \[`logical(1)`\]\cr
+#' Hide warnings during the AO process?
+#'
+#' @param add_details \[`logical(1)`\]\cr
+#' Add details about the AO process to the output?
 #'
 #' @return
 #' A \code{list} with the following elements:
 #'
 #' * \code{estimate} is the parameter vector at termination.
 #' * \code{value} is the function value at termination.
-#' * \code{details} is a `data.frame` with full information about the procedure:
+#' * \code{details} is a `data.frame` with information about the AO process:
 #'   For each iteration (column `iteration`) it contains the function value
 #'   (column `value`), parameter values (columns starting with `p` followed by
 #'   the parameter index), the active parameter block (columns starting with `b`
 #'   followed by the parameter index, where `1` stands for a parameter contained
 #'   in the active parameter block and `0` if not), and computation times in
-#'   seconds (column `seconds`)
+#'   seconds (column `seconds`). Only available if `add_details = TRUE`.
 #' * \code{seconds} is the overall computation time in seconds.
-#' * \code{stopping_reason} is a message why the procedure has terminated.
+#' * \code{stopping_reason} is a message why the AO process has terminated.
 #'
-#' In the case of multiple threads, the output changes slightly, see details.
+#' In the case of multiple processes, the output changes slightly, see details.
 #'
 #' @examples
 #' # Example 1: Minimization of Himmelblau's function --------------------------
@@ -241,7 +252,8 @@
 #'   partition = list("sequential", "random", "none"),
 #'   minimize = FALSE,
 #'   lower = c(-Inf, -Inf, 0, 0, 0),
-#'   upper = c(Inf, Inf, Inf, Inf, 1)
+#'   upper = c(Inf, Inf, Inf, Inf, 1),
+#'   add_details = FALSE
 #' )
 #'
 #' @export
@@ -252,13 +264,14 @@ ao <- function(
     target = NULL,
     npar = NULL,
     gradient = NULL,
+    hessian = NULL,
     ...,
     partition = "sequential",
     new_block_probability = 0.3,
-    minimum_block_number = 2,
+    minimum_block_number = 1,
     minimize = TRUE,
-    lower = -Inf,
-    upper = Inf,
+    lower = NULL,
+    upper = NULL,
     iteration_limit = Inf,
     seconds_limit = Inf,
     tolerance_value = 1e-6,
@@ -267,26 +280,27 @@ ao <- function(
     tolerance_history = 1,
     base_optimizer = Optimizer$new("stats::optim", method = "L-BFGS-B"),
     verbose = FALSE,
-    hide_warnings = TRUE) {
+    hide_warnings = TRUE,
+    add_details = TRUE
+) {
+
   ### check if required arguments are specified
-  ao_input_check(
-    argument_name = "f", check_result = !missing(f),
-    error_message = "Please specify argument {.var {argument_name}}",
-    prefix = ""
+  oeli::input_check_response(
+    check = oeli::check_missing(f),
+    var_name = "f"
   )
-  ao_input_check(
-    argument_name = "initial", check_result = !missing(initial),
-    error_message = "Please specify argument {.var {argument_name}}",
-    prefix = ""
+  oeli::input_check_response(
+    check = oeli::check_missing(initial),
+    var_name = "initial"
   )
 
-  ### multiple threads?
+  ### multiple processes?
   if (
     is.list(initial) ||
-      (is.list(partition) && !checkmate::test_list(partition, "numeric")) ||
-      is.list(base_optimizer)
+    (is.list(partition) && !checkmate::test_list(partition, "numeric")) ||
+    is.list(base_optimizer)
   ) {
-    ### build threads
+    ### build processes
     if (!is.list(initial)) {
       initial <- list(initial)
     }
@@ -296,38 +310,38 @@ ao <- function(
     if (!is.list(base_optimizer)) {
       base_optimizer <- list(base_optimizer)
     }
-    threads <- expand.grid(
+    processes <- expand.grid(
       initial = initial, partition = partition, base_optimizer = base_optimizer
     )
-    nthreads <- nrow(threads)
+    nprocesses <- nrow(processes)
 
-    ### run threads
+    ### run processes
     if (isTRUE(verbose)) {
       verbose <- FALSE
       if (!isTRUE(hide_warnings)) {
         cli::cli_warn("Argument {.var verbose} is set to {.code FALSE}")
       }
     }
-    progress_step <- progressr::progressor(steps = nthreads)
+    progress_step <- progressr::progressor(steps = nprocesses)
     progress_step(
-      paste("running", nthreads, "alternating optimization threads"),
+      paste("running", nprocesses, "AO processes"),
       amount = 0, class = "sticky"
     )
     results <- future.apply::future_lapply(
-      seq_len(nthreads),
-      function(thread) {
+      seq_len(nprocesses),
+      function(process) {
         progress_step(
-          paste0("[thread ", thread, "] started"),
+          paste0("[process ", process, "] started"),
           amount = 0, class = "sticky"
         )
         out <- ao(
           f = f,
-          initial = threads[thread, "initial"][[1]],
+          initial = processes[process, "initial"][[1]],
           target = target,
           npar = npar,
           gradient = gradient,
           ...,
-          partition = threads[thread, "partition"][[1]],
+          partition = processes[process, "partition"][[1]],
           new_block_probability = new_block_probability,
           minimum_block_number = minimum_block_number,
           minimize = minimize,
@@ -339,12 +353,13 @@ ao <- function(
           tolerance_parameter = tolerance_parameter,
           tolerance_parameter_norm = tolerance_parameter_norm,
           tolerance_history = tolerance_history,
-          base_optimizer = threads[thread, "base_optimizer"][[1]],
+          base_optimizer = processes[process, "base_optimizer"][[1]],
           verbose = verbose,
-          hide_warnings = hide_warnings
+          hide_warnings = hide_warnings,
+          add_details = add_details
         )
         progress_step(
-          paste0("[thread ", thread, "] finished"),
+          paste0("[process ", process, "] finished"),
           class = "sticky"
         )
         return(out)
@@ -354,96 +369,113 @@ ao <- function(
 
     ### combine results
     values <- vapply(results, `[[`, numeric(1), "value")
-    optimal_thread <- ifelse(isTRUE(minimize), which.min(values), which.max(values))
-    details_list <- list()
-    for (thread in seq_len(nthreads)) {
-      details_list[[thread]] <- cbind(
-        thread = thread,
-        results[[thread]][["details"]]
+    stopping_reasons <- vapply(results, `[[`, character(1), "stopping_reason")
+    optimal_process <- ifelse(isTRUE(minimize), which.min(values), which.max(values))
+    seconds_each <- vapply(results, `[[`, numeric(1), "seconds")
+    if (isTRUE(add_details)) {
+      details_list <- list()
+      for (process in seq_len(nprocesses)) {
+        details_list[[process]] <- cbind(
+          process = process,
+          results[[process]][["details"]]
+        )
+      }
+      return(
+        list(
+          "estimate" = lapply(results, `[[`, "estimate")[[optimal_process]],
+          "estimates" = lapply(results, `[[`, "estimate"),
+          "value" = values[optimal_process],
+          "values" = as.list(values),
+          "details" = do.call("rbind", details_list),
+          "seconds" = sum(seconds_each),
+          "seconds_each" = as.list(seconds_each),
+          "stopping_reason" = stopping_reasons[optimal_process],
+          "stopping_reasons" = as.list(stopping_reasons),
+          "processes" = processes
+        )
+      )
+    } else {
+      return(
+        list(
+          "estimate" = lapply(results, `[[`, "estimate")[[optimal_process]],
+          "value" = values[optimal_process],
+          "seconds" = sum(seconds_each),
+          "stopping_reason" = stopping_reasons[optimal_process]
+        )
       )
     }
-    return(
-      list(
-        "estimate" = lapply(results, `[[`, "estimate")[[optimal_thread]],
-        "estimates" = lapply(results, `[[`, "estimate"),
-        "value" = values[optimal_thread],
-        "values" = as.list(values),
-        "details" = do.call("rbind", details_list),
-        "seconds" = vapply(results, `[[`, numeric(1), "seconds"),
-        "stopping_reason" = vapply(results, `[[`, character(1), "stopping_reason"),
-        "threads" = threads
-      )
-    )
   }
 
   ### input checks and building of objects
-  ao_input_check(
-    "initial",
-    oeli::check_numeric_vector(initial, any.missing = FALSE)
+  oeli::input_check_response(
+    check = oeli::check_numeric_vector(initial, any.missing = FALSE),
+    var_name = "initial"
   )
   if (is.null(npar)) {
     npar <- length(initial)
   }
   objective <- Objective$new(f = f, target = target, npar = npar, ...)
-  npar <- sum(objective$npar)
-  ao_input_check(
-    "initial",
-    oeli::check_numeric_vector(initial, len = npar)
-  )
-  ao_input_check(
-    "lower",
-    oeli::check_numeric_vector(lower, any.missing = FALSE)
-  )
-  if (length(lower) == 1) {
-    lower <- rep(lower, npar)
-  }
-  ao_input_check(
-    "lower",
-    oeli::check_numeric_vector(lower, len = npar)
-  )
-  ao_input_check(
-    "initial",
-    if (any(initial < lower)) "Must respect lower limit {.var lower}" else TRUE
-  )
-  ao_input_check(
-    "upper",
-    oeli::check_numeric_vector(upper, any.missing = FALSE)
-  )
-  if (length(upper) == 1) {
-    upper <- rep(upper, npar)
-  }
-  ao_input_check(
-    "upper",
-    oeli::check_numeric_vector(upper, len = npar)
-  )
-  ao_input_check(
-    "initial",
-    if (any(initial > upper)) "Must respect upper limit {.var upper}" else TRUE
-  )
   if (!is.null(gradient)) {
-    gradient <- Objective$new(f = gradient, target = target, npar = npar, ...)
+    oeli::input_check_response(
+      check = checkmate::check_function(gradient),
+      var_name = "gradient"
+    )
+    objective$set_gradient(gradient = gradient, .verbose = FALSE)
   }
-  ao_input_check(
-    "base_optimizer",
-    checkmate::check_class(base_optimizer, "Optimizer")
+  if (!is.null(hessian)) {
+    oeli::input_check_response(
+      check = checkmate::check_function(hessian),
+      var_name = "hessian"
+    )
+    objective$set_hessian(hessian = hessian, .verbose = FALSE)
+  }
+  npar <- sum(objective$npar)
+  oeli::input_check_response(
+    check = oeli::check_numeric_vector(initial, len = npar),
+    var_name = "initial"
   )
-  ao_input_check(
-    "hide_warnings",
-    checkmate::check_flag(hide_warnings)
+  oeli::input_check_response(
+    check = oeli::check_numeric_vector(lower, any.missing = FALSE, null.ok = TRUE),
+    var_name = "lower"
   )
-
-  ### building base optimizer
-  base_optimizer$hide_warnings <- hide_warnings
-  if (base_optimizer$label != "stats::optim") {
-    if (!isTRUE(hide_warnings)) {
-      cli::cli_warn(
-        "Arguments {.var gradient}, {.var lower}, and {.var upper} are ignored"
-      )
+  if (!is.null(lower)) {
+    if (length(lower) == 1) {
+      lower <- rep(lower, npar)
     }
+    oeli::input_check_response(
+      check = oeli::check_numeric_vector(lower, len = npar),
+      var_name = "lower"
+    )
+    oeli::input_check_response(
+      check = if (any(initial < lower)) "Must respect lower limit" else TRUE,
+      var_name = "initial"
+    )
   }
+  oeli::input_check_response(
+    check = oeli::check_numeric_vector(upper, any.missing = FALSE, null.ok = TRUE),
+    var_name = "upper"
+  )
+  if (!is.null(upper)) {
+    if (length(upper) == 1) {
+      upper <- rep(upper, npar)
+    }
+    oeli::input_check_response(
+      check = oeli::check_numeric_vector(upper, len = npar),
+      var_name = "upper"
+    )
+    oeli::input_check_response(
+      check = if (any(initial > upper)) "Must respect upper limit" else TRUE,
+      var_name = "initial"
+    )
+  }
+  oeli::input_check_response(
+    check = checkmate::check_class(base_optimizer, "Optimizer"),
+    var_name = "base_optimizer"
+  )
+  base_optimizer$hide_warnings <- hide_warnings
 
-  ### building procedure
-  procedure <- Procedure$new(
+  ### building AO process
+  process <- Process$new(
     npar = npar,
     partition = partition,
     new_block_probability = new_block_probability,
@@ -455,33 +487,45 @@ ao <- function(
     tolerance_value = tolerance_value,
     tolerance_parameter = tolerance_parameter,
     tolerance_parameter_norm = tolerance_parameter_norm,
-    tolerance_history = tolerance_history
+    tolerance_history = tolerance_history,
+    add_details = add_details
   )
 
   ### build sub-problem template
   solve_sub_problem <- function(parameter_block, parameter_fixed, block) {
-    ### build block objective function
-    block_objective <- function(parameter_block) {
-      theta <- numeric(npar)
-      theta[block] <- parameter_block
-      theta[-block] <- parameter_fixed
-      objective$evaluate(theta)
-    }
 
-    ### build block gradient function and set arguments for 'stats::optim'
-    if (base_optimizer$label == "stats::optim") {
-      block_gradient <- if (is.null(gradient)) {
-        NULL
-      } else {
-        function(parameter_block, ...) {
+    block_objective <- Objective$new(
+      f = function(p) {
+        theta <- numeric(npar)
+        theta[block] <- p
+        theta[-block] <- parameter_fixed
+        objective$evaluate(theta)
+      },
+      target = "p",
+      npar = length(block)
+    )
+
+    ### build block gradient and Hessian functions
+    if (!is.null(gradient)) {
+      block_objective$set_gradient(
+        gradient = function(p) {
           theta <- numeric(npar)
-          theta[block] <- parameter_block
+          theta[block] <- p
           theta[-block] <- parameter_fixed
-          gradient$evaluate(theta)[block]
-        }
-      }
-      base_optimizer$set_arguments(
-        "gr" = block_gradient, "lower" = lower[block], "upper" = upper[block]
+          objective$evaluate_gradient(theta)[block]
+        },
+        .verbose = FALSE
+      )
+    }
+    if (!is.null(hessian)) {
+      block_objective$set_hessian(
+        hessian = function(p) {
+          theta <- numeric(npar)
+          theta[block] <- p
+          theta[-block] <- parameter_fixed
+          objective$evaluate_hessian(theta)[block, block, drop = FALSE]
+        },
+        .verbose = FALSE
       )
     }
 
@@ -489,36 +533,38 @@ ao <- function(
     base_optimizer$optimize(
       objective = block_objective,
       initial = parameter_block,
-      direction = ifelse(procedure$minimize, "min", "max")
+      lower = if (!is.null(lower)) lower[block] else NA,
+      upper = if (!is.null(upper)) upper[block] else NA,
+      direction = ifelse(process$minimize, "min", "max")
     )
   }
 
-  ### start alternating optimization
-  procedure$initialize_details(
+  ### start AO
+  process$initialize_details(
     initial_parameter = initial,
     initial_value = objective$evaluate(initial)
   )
   while (TRUE) {
     ### check stopping criteria
-    if (procedure$check_stopping()) {
+    if (process$check_stopping()) {
       break
     } else {
-      procedure$iteration <- procedure$iteration + 1L
+      process$iteration <- process$iteration + 1L
     }
 
     ### optimize over each parameter block in partition
-    for (block in procedure$get_partition()) {
-      procedure$block <- block
+    for (block in process$get_partition()) {
+      process$block <- block
 
       ### optimize block objective function
       sub_problem_out <- solve_sub_problem(
-        parameter_block = procedure$get_parameter_latest("block"),
-        parameter_fixed = procedure$get_parameter_latest("fixed"),
+        parameter_block = process$get_parameter_latest("block"),
+        parameter_fixed = process$get_parameter_latest("fixed"),
         block = block
       )
 
       ### check acceptance and update
-      procedure$update_details(
+      process$update_details(
         value = sub_problem_out[["value"]],
         parameter_block = sub_problem_out[["parameter"]],
         seconds = sub_problem_out[["seconds"]],
@@ -528,5 +574,5 @@ ao <- function(
   }
 
   ### return results
-  procedure$output
+  process$output
 }

@@ -1,10 +1,16 @@
+# ao 1.2.0
+
+* Parameter bounds, analytical gradient and Hessian are now supported more generally.
+
+* Argument `add_details = FALSE` can be used to reduce information in the output.
+
 # ao 1.1.1
 
-* In the case of multiple threads, the output now contains the additional elements `estimates` and `values` with results for all threads.
+* In the case of multiple AO processes, the output now contains the additional elements `estimates` and `values` with results for all processes.
 
 # ao 1.1.0
 
-* Alternating optimization can now be run in multiple (possibly parallel) threads by providing a `list` of values for the `initial`, `partition`, and/or `base_optimizer` parameters, where each combination creates a separate alternating optimization thread.
+* AO can now be run in multiple (possibly parallel) processes by providing a `list` of values for the `initial`, `partition`, and/or `base_optimizer` parameters, where each combination creates a separate AO process.
 
 # ao 1.0.1
 
@@ -12,7 +18,7 @@
 
 * Added `tolerance_history` argument to compare function value and parameters between more than one iteration.
 
-* Added `hide_warnings` argument to hide warnings during the AO procedure.
+* Added `hide_warnings` argument to hide warnings during the AO process.
 
 # ao 1.0.0
 
@@ -48,7 +54,7 @@
 
 * Added input `f_partition` to optionally specify functions for the partitions.
 
-* Added input `joint_end` to optionally optimize jointly in the end of the alternating optimization procedure.
+* Added input `joint_end` to optionally optimize jointly in the end of the AO process.
 
 * Input `iterlim` can be `Inf` now.
 
