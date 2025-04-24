@@ -27,7 +27,7 @@ The `{ao}` package implements alternating optimization (AO) in [R](https://cran.
 
 ## Why?
 
-AO is an iterative procedure that optimizes a function by alternately performing restricted optimization over parameter subsets. Instead of joint optimization, it breaks the optimization problem down into simpler sub-problems. This approach can make optimization feasible when joint optimization is too difficult. See the [package vignette](https://loelschlaeger.de/ao/articles/ao.html) for more details.
+AO is an iterative process that optimizes a function by alternately performing restricted optimization over parameter subsets. Instead of joint optimization, it breaks the optimization problem down into simpler sub-problems. This approach can make optimization feasible when joint optimization is too difficult. See the [package vignette](https://loelschlaeger.de/ao/articles/ao.html) for more details.
 
 ## How?
 
@@ -76,7 +76,7 @@ ggplot(grid) +
 ... is obtained as follows:
 
 ```{r, ao rosenbrock}
-ao(f = rosenbrock, initial = c(2, 2))
+ao(f = rosenbrock, initial = c(2, 2), add_details = TRUE)
 ```
 
 ## Contact?

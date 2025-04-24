@@ -25,9 +25,9 @@ The `{ao}` package implements alternating optimization in R. This vignette demon
 
 ## What is alternating optimization?
 
-Alternating optimization (AO) is an iterative procedure for optimizing a multivariate function by breaking it down into simpler sub-problems. It involves optimizing over one block of function parameters while keeping the others fixed, and then alternating this process among the parameter blocks. AO is particularly useful when the sub-problems are easier to solve than the original joint optimization problem, or when there is a natural partitioning of the parameters, see @bezdek:2002, @hu:2002, and @bezdek:2003.
+Alternating optimization (AO) is an iterative process for optimizing a multivariate function by breaking it down into simpler sub-problems. It involves optimizing over one block of function parameters while keeping the others fixed, and then alternating this process among the parameter blocks. AO is particularly useful when the sub-problems are easier to solve than the original joint optimization problem, or when there is a natural partitioning of the parameters. See @bezdek:2002, @hu:2002, and @bezdek:2003 for more details.
 
-Consider a real-valued **objective** function $f(\mathbf{x}, \mathbf{y})$ where $\mathbf{x}$ and $\mathbf{y}$ are two **blocks** of function parameters, namely a **partition** of the parameters. The AO procedure can be described as follows:
+Consider a real-valued **objective** function $f(\mathbf{x}, \mathbf{y})$ where $\mathbf{x}$ and $\mathbf{y}$ are two **blocks** of function parameters, namely a **partition** of the parameters. The AO process can be described as follows:
 
 1. **Initialization**: Start with initial guesses $\mathbf{x}^{(0)}$ and $\mathbf{y}^{(0)}$.
 
@@ -37,17 +37,17 @@ Consider a real-valued **objective** function $f(\mathbf{x}, \mathbf{y})$ where 
 
 3. **Convergence**: Repeat the iterative steps until a **convergence criterion** is met, such as when the change in the objective function or the parameters falls below a specified threshold, or when a pre-defined iteration limit is reached.
 
-The AO procedure can be
+The AO process can be
 
 - viewed as a generalization of joint optimization, where the parameter partition is trivial, consisting of the entire parameter vector as a single block,
 
 - also used for maximization problems by simply replacing $\arg \min$ by $\arg \max$ above,
 
-- generalized to more than two parameter blocks, i.e., for $f(\mathbf{x}_1, \mathbf{x}_2, \ldots, \mathbf{x}_n)$, the procedure involves cycling through each parameter block $\mathbf{x}_1, \mathbf{x}_2, \ldots, \mathbf{x}_n$ and solving the corresponding sub-problems iteratively (the parameter blocks do not necessarily have to be disjoint),
+- generalized to more than two parameter blocks, i.e., for $f(\mathbf{x}_1, \mathbf{x}_2, \ldots, \mathbf{x}_n)$, the process involves cycling through each parameter block $\mathbf{x}_1, \mathbf{x}_2, \ldots, \mathbf{x}_n$ and solving the corresponding sub-problems iteratively (the parameter blocks do not necessarily have to be disjoint),
 
 - **randomized** by changing the parameter partition randomly after each iteration, which can further improve the convergence rate and help avoid getting trapped in local optima [@chib:2010],
 
-- run in **multiple threads** for different initial values, parameter partitions, and/or base optimizers.
+- run in **multiple processes** for different initial values, parameter partitions, and/or base optimizers.
 
 ## How to use the package?
 
@@ -64,13 +64,14 @@ ao(
   target = NULL,
   npar = NULL,
   gradient = NULL,
+  hessian = NULL,
   ...,
   partition = "sequential",
-  new_block_probability = 0.5,
-  minimum_block_number = 2,
+  new_block_probability = 0.3,
+  minimum_block_number = 1,
   minimize = TRUE,
-  lower = -Inf,
-  upper = Inf,
+  lower = NULL,
+  upper = NULL,
   iteration_limit = Inf,
   seconds_limit = Inf,
   tolerance_value = 1e-6,
@@ -79,7 +80,8 @@ ao(
   tolerance_history = 1,
   base_optimizer = Optimizer$new("stats::optim", method = "L-BFGS-B"),
   verbose = FALSE,
-  hide_warnings = TRUE
+  hide_warnings = TRUE,
+  add_details = TRUE
 )
 ```
 
@@ -87,9 +89,9 @@ The arguments have the following meaning:
 
 - `f`: The objective function to be optimized. By default, `f` is optimized over its first argument. If optimization should target a different argument or multiple arguments, use `npar` and `target`, [see below](#generalized-objective-functions). Additional arguments for `f` can be passed via the `...` argument as usual.
 
-- `initial`: Initial values for the parameters used in the AO procedure.
+- `initial`: Initial values for the parameters used in the AO process.
 
-- `gradient`: Optional argument to specify the analytical gradient of `f`.
+- `gradient` and `hessian`: Optional arguments to specify the analytical gradient and/or Hessian of `f`.
 
 - `partition`: Specifies how parameters are partitioned for optimization. Can be one of the following:
 
@@ -111,7 +113,7 @@ The arguments have the following meaning:
 
 - `base_optimizer`: Numerical optimizer used for solving sub-problems, [see below](#base-optimizer).
 
-- Set `verbose` to `TRUE` to print status messages, and `hide_warnings` to `FALSE` to show warning messages during the AO process.
+- Set `verbose` to `TRUE` to print status messages, and `hide_warnings` to `FALSE` to show warning messages during the AO process. `add_details = TRUE` adds additional details about the AO process to the output.
 
 ### A simple first example
 
@@ -159,17 +161,17 @@ Minimizing Himmelblau's function through alternating minimization over $\mathbf{
 ao(f = himmelblau, initial = c(0, 0))
 ```
 
-Here, we see the output of the AO procedure, which is a `list` that contains the following elements:
+Here, we see the output of the AO process, which is a `list` that contains the following elements:
 
 - `estimate` is the parameter vector at termination.
 
 - `value` is the function value at termination.
 
-- `details` is a `data.frame` with full information about the procedure: For each iteration (column `iteration`) it contains the function value (column `value`), parameter values (columns starting with `p` followed by the parameter index), the active parameter block (columns starting with `b` followed by the parameter index, where `1` stands for a parameter contained in the active parameter block and `0` if not), and computation times in seconds (column `seconds`).
+- `details` is a `data.frame` with full information about the process: For each iteration (column `iteration`) it contains the function value (column `value`), parameter values (columns starting with `p` followed by the parameter index), the active parameter block (columns starting with `b` followed by the parameter index, where `1` stands for a parameter contained in the active parameter block and `0` if not), and computation times in seconds (column `seconds`).
 
 - `seconds` is the overall computation time in seconds.
 
-- `stopping_reason` is a message why the procedure has terminated.
+- `stopping_reason` is a message why the process has terminated.
 
 ### Using the analytical gradient
 
@@ -186,31 +188,31 @@ gradient <- function(x) {
 
 The gradient function is used by `ao()` if provided via the `gradient` argument as follows:
 
-```{r, ao himmelblau with gradient, eval = FALSE}
-ao(f = himmelblau, initial = c(0, 0), gradient = gradient)
+```{r, ao himmelblau with gradient}
+ao(f = himmelblau, initial = c(0, 0), gradient = gradient, add_details = FALSE)
 ```
 
-The output is not shown here because it closely resembles the previous example, where the gradient was not specified and thus a finite-difference approximation was employed. However, in scenarios involving higher dimensions, utilizing the analytical gradient can notably improve both the speed and stability of the process.
+In scenarios involving higher dimensions, utilizing the analytical gradient can notably improve both the speed and stability of the process. The analytical Hessian can be utilized analogously. 
 
 ### Random parameter partitions
 
-Another version of the AO procedure involves using a new, random partition of the parameters in every iteration. This approach can enhance the convergence rate and prevent being stuck in local optima. It is activated by setting `partition = "random"`. The randomness can be adjusted using two parameters:
+Another version of the AO process involves using a new, random partition of the parameters in every iteration. This approach can enhance the convergence rate and prevent being stuck in local optima. It is activated by setting `partition = "random"`. The randomness can be adjusted using two parameters:
 
 - `new_block_probability` determines the probability for creating a new block when building a new partition. Its value ranges from `0` (no blocks are created) to `1` (each parameter is a single block). 
 
-- `minimum_block_number` sets the minimum number of parameter blocks for random partitions. By default, it is configured to `2` to avoid generating trivial partitions.
+- `minimum_block_number` sets the minimum number of parameter blocks for random partitions. Here, it is configured as `2` to avoid generating trivial partitions.
 
-The random partitions are build as follows:^[`Procedure` is an internal R6 object [@chang:2022], which users typically do not need to interact with.]
+The random partitions are build as follows:^[`Process` is an internal R6 object [@chang:2022], which users typically do not need to interact with.]
 
 ```{r, partition demo}
-procedure <- ao:::Procedure$new(
+process <- ao:::Process$new(
   npar = 10,
   partition = "random",
   new_block_probability = 0.5,
   minimum_block_number = 2
 )
-procedure$get_partition()
-procedure$get_partition()
+process$get_partition()
+process$get_partition()
 ```
 
 As an example of AO with random partitions, consider fitting a two-class Gaussian mixture model via maximizing the model's log-likelihood function
@@ -321,7 +323,7 @@ In `ao()`, custom parameter partitions can be specified by setting `partition = 
 
 #### Stopping criteria
 
-Currently, four different stopping criteria for the AO procedure are implemented:
+Currently, four different stopping criteria for the AO process are implemented:
 
 1. a predefined iteration limit is exceeded (via the `iteration_limit` argument)
 
@@ -331,13 +333,13 @@ Currently, four different stopping criteria for the AO procedure are implemented
 
 4. the change in parameters in comparison to the last iteration falls below a predefined threshold (via the `tolerance_parameter` argument, where the parameter distance is computed via the norm specified as `tolerance_parameter_norm`)
 
-Any number of stopping criteria can be activated or deactivated^[Stopping criteria of the AO procedure can be deactivated, e.g., by setting `iteration_limit = Inf`, `seconds_limit = Inf`, `tolerance_value = 0`, or `tolerance_parameter = 0`.], and the final output contains information about the criterium that caused termination.
+Any number of stopping criteria can be activated or deactivated^[Stopping criteria of the AO process can be deactivated by setting `iteration_limit = Inf`, `seconds_limit = Inf`, `tolerance_value = 0`, or `tolerance_parameter = 0`.], and the final output contains information about the criterium that caused termination.
 
 #### Base optimizer
 
 By default, the L-BFGS-B algorithm [@byrd:1995] implemented in `stats::optim` is used for solving the sub-problems numerically. However, any other optimizer can be selected by specifying the `base_optimizer` argument. Such an optimizer must be defined through the framework provided by the `{optimizeR}` package, see [its documentation](https://loelschlaeger.de/optimizeR/) for details. For example, the `stats::nlm` optimizer can be selected by setting `base_optimizer = Optimizer$new("stats::nlm")`.
 
-#### Multiple threads
+#### Multiple processes
 AO can suffer from local optima. To increase the likelihood of reaching the global optimum, users can specify
 
 - multiple starting parameters,
@@ -346,7 +348,7 @@ AO can suffer from local optima. To increase the likelihood of reaching the glob
 
 - multiple base optimizers.
 
-Use the `initial`, `partition`, and/or `base_optimizer` arguments to provide a `list` of possible values for each parameter. Each combination of initial values, parameter partitions, and base optimizers will create a separate AO thread:
+Use the `initial`, `partition`, and/or `base_optimizer` arguments to provide a `list` of possible values for each parameter. Each combination of initial values, parameter partitions, and base optimizers will create a separate AO process:
 
 ```{r, normal mixture type 4, warning = FALSE}
 normal_mixture_llk <- function(mu, sd, lambda, data) {
@@ -369,32 +371,15 @@ names(out)
 out$values
 ```
 
-In the case of multiple threads, the output changes slightly in comparison
-to the standard case. It is a `list` with the following elements:
+In the case of multiple processes, the output provides information for the best process (with respect to the function value) as well as information on every single process.
 
-- `estimate` is the optimal parameter vector over all threads.
-
-- `estimates` is a `list` of optimal parameters in each thread.
-
-- `value` is the optimal function value over all threads.
-
-- `values` is a `list` of optimal function values in each thread.
-
-- `details` combines details of the single threads and has an additional column `thread` with an index for the different threads.
-
-- `seconds` gives the computation time in seconds for each thread.
-
-- `stopping_reason` gives the termination message for each thread.
-
-- `threads` give details how the different threads were specified.
-
-By default, threads run sequentially. However, since they are independent of each other, they can be parallelized. For parallel computation, we use the [`{future}` framework](https://future.futureverse.org/). For example, run the following *before* the `ao()` call:
+By default, processes run sequentially. However, since they are independent of each other, they can be parallelized. For parallel computation, `{ao}` supports the [`{future}` framework](https://future.futureverse.org/). For example, run the following *before* the `ao()` call:
 
 ```r
 future::plan(future::multisession, workers = 4)
 ```
 
-When using multiple threads, setting `verbose = TRUE` to print tracing details during AO is not supported. However, progress of threads can still be tracked using the [`{progressr}` framework](https://progressr.futureverse.org/). For example, run the following *before* the `ao()` call:
+When using multiple processes, setting `verbose = TRUE` to print tracing details during AO is not supported. However, progress of processes can still be tracked using the [`{progressr}` framework](https://progressr.futureverse.org/). For example, run the following *before* the `ao()` call:
 
 ```r
 progressr::handlers(global = TRUE)

@@ -1,149 +1,139 @@
-#' Input checks
+#' Process Object
 #'
 #' @description
-#' This helper function checks the inputs for the \code{\link{ao}} function.
+#' This object specifies an AO process.
 #'
-#' @param argument_name \[`character(1)`\]\cr
-#' The name of the argument that is checked.
-#'
-#' @param check_result \[`logical(1)`\]\cr
-#' \code{TRUE} if the check was successful.
-#'
-#' @param error_message \[`character(1)`\]\cr
-#' An error message to be printed.
-#'
-#' @param prefix (`character(1)`)\cr
-#' A prefix before the error message.
-#'
-#' @return
-#' Either throws an error, or invisible \code{TRUE}.
-
-ao_input_check <- function(
-    argument_name, check_result, error_message = check_result,
-    prefix = "Input {.var {argument_name}} is bad:") {
-  if (!isTRUE(check_result)) {
-    cli::cli_abort(paste(prefix, error_message), call = NULL)
-  }
-  invisible(TRUE)
-}
-
-#' Procedure Object
-#'
-#' @description
-#' This object specifies alternating optimization procedure.
-#'
-#' @param npar (`integer(1)`)\cr
+#' @param npar \[`integer(1)`\]\cr
 #' The (total) length of the target argument(s).
 #'
-#' @param partition (`character(1)` or `list()`)\cr
+#' @param partition \[`character(1)` | `list()`\]\cr
 #' Defines the parameter partition, and can be either
+#'
 #' * `"sequential"` for treating each parameter separately,
 #' * `"random"` for a random partition in each iteration,
 #' * `"none"` for no partition (which is equivalent to joint optimization),
 #' * or a `list` of vectors of parameter indices, specifying a custom
-#'   partition for the alternating optimization process.
+#'   partition for the AO process.
 #'
-#' @param new_block_probability (`numeric(1)`)\cr
+#' @param new_block_probability \[`numeric(1)`\]\cr
 #' Only relevant if `partition = "random"`.
+#'
 #' The probability for a new parameter block when creating a random
-#' partitions.
+#' partition.
+#'
 #' Values close to 0 result in larger parameter blocks, values close to 1
 #' result in smaller parameter blocks.
 #'
-#' @param minimum_block_number (`integer(1)`)\cr
+#' @param minimum_block_number \[`integer(1)`\]\cr
 #' Only relevant if `partition = "random"`.
+#'
 #' The minimum number of blocks in random partitions.
 #'
-#' @param verbose (`logical(1)`)\cr
-#' Whether to print tracing details during the alternating optimization
-#' process.
+#' @param verbose \[`logical(1)`\]\cr
+#' Print tracing details during the AO process?
 #'
-#' @param minimize (`logical(1)`)\cr
-#' Whether to minimize during the alternating optimization process.
+#' @param minimize \[`logical(1)`\]\cr
+#' Minimize during the AO process?
+#'
 #' If \code{FALSE}, maximization is performed.
 #'
-#' @param iteration_limit (`integer(1)` or `Inf`)\cr
+#' @param iteration_limit \[`integer(1)` | `Inf`\]\cr
 #' The maximum number of iterations through the parameter partition before
-#' the alternating optimization process is terminated.
+#' the AO process is terminated.
+#'
 #' Can also be `Inf` for no iteration limit.
 #'
-#' @param seconds_limit (`numeric(1)`)\cr
-#' The time limit in seconds before the alternating optimization process is
-#' terminated.
-#' Can also be `Inf` for no time limit.
-#' Note that this stopping criteria is only checked *after*
-#' a sub-problem is solved and not *within* solving a sub-problem, so the
-#' actual process time can exceed this limit.
+#' @param seconds_limit \[`numeric(1)`\]\cr
+#' The time limit in seconds before the AO process is terminated.
 #'
-#' @param tolerance_value (`numeric(1)`)\cr
-#' A non-negative tolerance value. The alternating optimization terminates
+#' Can also be `Inf` for no time limit.
+#'
+#' Note that this stopping criteria is only checked *after* a sub-problem is
+#' solved and not *within* solving a sub-problem, so the actual process time can
+#' exceed this limit.
+#'
+#' @param tolerance_value \[`numeric(1)`\]\cr
+#' A non-negative tolerance value. The AO process terminates
 #' if the absolute difference between the current function value and the one
 #' before \code{tolerance_history} iterations is smaller than
 #' \code{tolerance_value}.
 #'
 #' Can be `0` for no value threshold.
 #'
-#' @param tolerance_parameter (`numeric(1)`)\cr
-#' A non-negative tolerance value. The alternating optimization terminates if
+#' @param tolerance_parameter \[`numeric(1)`\]\cr
+#' A non-negative tolerance value. The AO process terminates if
 #' the distance between the current estimate and the before
-#' \code{tolerance_history} iterations is smaller than \code{tolerance_parameter}.
+#' \code{tolerance_history} iterations is smaller than
+#' \code{tolerance_parameter}.
 #'
 #' Can be `0` for no parameter threshold.
 #'
-#' By default, the distance is measured using the euclidean norm, but
-#' another norm can be specified via the \code{tolerance_parameter_norm}
-#' field.
+#' By default, the distance is measured using the euclidean norm, but another
+#' norm can be specified via the \code{tolerance_parameter_norm} field.
 #'
-#' @param tolerance_parameter_norm (`function`)\cr
+#' @param tolerance_parameter_norm \[`function`\]\cr
 #' The norm that measures the distance between the current estimate and the
 #' one from the last iteration. If the distance is smaller than
-#' \code{tolerance_parameter}, the procedure is terminated.
+#' \code{tolerance_parameter}, the AO process is terminated.
+#'
 #' It must be of the form \code{function(x, y)} for two vector inputs
 #' \code{x} and \code{y}, and return a single \code{numeric} value.
 #' By default, the euclidean norm \code{function(x, y) sqrt(sum((x - y)^2))}
 #' is used.
 #'
-#' @param tolerance_history (`integer(1)`)\cr
+#' @param tolerance_history \[`integer(1)`\]\cr
 #' The number of iterations to look back to determine whether
 #' \code{tolerance_value} or \code{tolerance_parameter} has been reached.
 #'
-#' @param which_iteration (`integer()`)\cr
+#' @param which_iteration \[`integer()`\]\cr
 #' Selects the iteration(s).
+#'
 #' Can also be \code{NULL} to select all iterations.
 #'
-#' @param which_block (`character(1)` or `integer()`)\cr
+#' @param which_block \[`character(1)` | `integer()`\]\cr
 #' Selects the parameter block in the partition and can be one of
+#'
 #' - \code{"first"} for the first parameter block,
 #' - \code{"last"} for the last parameter block,
 #' - an `integer` vector of parameter indices,
 #' - or \code{NULL} for all parameter blocks.
 #'
-#' @param which_column (`character()`)\cr
+#' @param which_column \[`character()`\]\cr
 #' Selects the columns in the `details` part of the output and can be one or
-#' more of `"iteration"`, `"value"`, `"parameter"`, `"block"`, and `"seconds"`
+#' more of
 #'
-#' @param keep_iteration_column (`logical()`)\cr
-#' Whether to keep the column containing the information about the iteration
-#' in the output.
+#' - `"iteration"`,
+#' - `"value"`,
+#' - `"parameter"`,
+#' - `"block"`,
+#' - and `"seconds"`.
 #'
-#' @param keep_block_columns (`logical()`)\cr
-#' Whether to keep the column containing the information about the active
-#' parameter block in the output.
+#' @param keep_iteration_column \[`logical(1)`\]\cr
+#' Keep the column containing the information about the iteration in the output?
 #'
-#' @param parameter_type (`character(1)`)\cr
-#' Can be one of
+#' @param keep_block_columns \[`logical(1)`\]\cr
+#' Keep the column containing the information about the active parameter block
+#' in the output?
+#'
+#' @param parameter_type \[`character(1)`\]\cr
+#' Selects the parameter type and can be one of
+#'
 #' - \code{"full"} (default) to get the full parameter vector,
 #' - \code{"block"} to get the parameter values for the current block,
 #'   i.e., the parameters with the indices `self$block`
 #' - \code{"fixed"} to get the parameter values which are currently fixed,
 #'   i.e., all except for those with the indices `self$block`
+#'
+#' @param add_details \[`logical(1)`\]\cr
+#' Add details about the AO process to the output?
 
-Procedure <- R6::R6Class("Procedure",
+Process <- R6::R6Class("Process",
    cloneable = FALSE,
    public = list(
 
    #' @description
    #' Creates a new object of this [R6][R6::R6Class] class.
+
    initialize = function(
      npar = integer(),
      partition = "sequential",
@@ -156,11 +146,12 @@ Procedure <- R6::R6Class("Procedure",
      tolerance_value = 1e-6,
      tolerance_parameter = 1e-6,
      tolerance_parameter_norm = function(x, y) sqrt(sum((x - y)^2)),
-     tolerance_history = 1
+     tolerance_history = 1,
+     add_details = TRUE
     ) {
-     ao_input_check(
-       "npar",
-       checkmate::check_int(npar, lower = 0)
+     oeli::input_check_response(
+       check = checkmate::check_int(npar, lower = 0),
+       var_name = "npar"
      )
      private$.npar <- npar
      self$partition <- partition
@@ -174,15 +165,19 @@ Procedure <- R6::R6Class("Procedure",
      self$tolerance_parameter <- tolerance_parameter
      self$tolerance_parameter_norm <- tolerance_parameter_norm
      self$tolerance_history <- tolerance_history
+     self$add_details <- add_details
      invisible(self)
    },
 
    #' @description
    #' Prints a status message.
-   #' @param message (`character(1)`)\cr
-   #' The status message.
-   #' @param message_type (`integer(1)`)\cr
-   #' The type of the message, one of the following:
+   #'
+   #' @param message \[`character(1)`\]\cr
+   #' A status message.
+   #'
+   #' @param message_type \[`integer(1)`\]\cr
+   #' The message type, one of the following:
+   #'
    #' * `1` for `cli::cli_h1()`
    #' * `2` for `cli::cli_h2()`
    #' * `3` for `cli::cli_h3()`
@@ -191,6 +186,7 @@ Procedure <- R6::R6Class("Procedure",
    #' * `6` for `cli::cli_alert_warning()`
    #' * `7` for `cli::cli_alert_danger()`
    #' * `8` for `cli::cat_line()`
+
    print_status = function(message, message_type = 8, verbose = self$verbose) {
      checkmate::assert_string(message, min.chars = 1)
      checkmate::assert_int(message_type, lower = 1, upper = 8)
@@ -212,10 +208,13 @@ Procedure <- R6::R6Class("Procedure",
 
    #' @description
    #' Initializes the `details` part of the output.
-   #' @param initial_parameter (`numeric()`)\cr
-   #' The starting parameter values for the procedure.
-   #' @param initial_value (`numeric(1)`)\cr
+   #'
+   #' @param initial_parameter \[`numeric()`\]\cr
+   #' The starting parameter values for the AO process.
+   #'
+   #' @param initial_value \[`numeric(1)`\]\cr
    #' The function value at the initial parameters.
+
    initialize_details = function(initial_parameter, initial_value) {
      private$.details <- structure(
        data.frame(
@@ -231,17 +230,24 @@ Procedure <- R6::R6Class("Procedure",
 
    #' @description
    #' Updates the `details` part of the output.
-   #' @param value (`numeric(1)`)\cr
+   #'
+   #' @param value \[`numeric(1)`\]\cr
    #' The updated function value.
-   #' @param parameter_block (`numeric()`)\cr
+   #'
+   #' @param parameter_block \[`numeric()`\]\cr
    #' The updated parameter values for the active parameter block.
-   #' @param seconds (`numeric(1)`)\cr
+   #'
+   #' @param seconds \[`numeric(1)`\]\cr
    #' The time in seconds for solving the sub-problem.
-   #' @param error (`logical(1)`)\cr
-   #' Whether solving the sub-problem resulted in an error.
-   #' @param block (`integer()`)\cr
+   #'
+   #' @param error \[`logical(1)`\]\cr
+   #' Did solving the sub-problem result in an error?
+   #'
+   #' @param block \[`integer()`\]\cr
    #' The currently active parameter block, represented as parameter indices.
+
    update_details = function(value, parameter_block, seconds, error, block = self$block) {
+
      ### check inputs
      check_block <- checkmate::check_integerish(
        block,
@@ -292,6 +298,7 @@ Procedure <- R6::R6Class("Procedure",
 
    #' @description
    #' Get a parameter partition.
+
    get_partition = function() {
      if (checkmate::test_string(self$partition)) {
        switch(self$partition,
@@ -306,34 +313,38 @@ Procedure <- R6::R6Class("Procedure",
 
    #' @description
    #' Get the `details` part of the output.
-   get_details = function(which_iteration = NULL,
-                          which_block = NULL,
-                          which_column = c("iteration", "value", "parameter", "block", "seconds")) {
+
+   get_details = function(
+      which_iteration = NULL,
+      which_block = NULL,
+      which_column = c("iteration", "value", "parameter", "block", "seconds")
+    ) {
+
      ### input checks
-     ao_input_check(
-       "which_iteration",
-       checkmate::check_integerish(
+     oeli::input_check_response(
+       check = checkmate::check_integerish(
          which_iteration,
          lower = 0, null.ok = TRUE, min.len = 1, any.missing = FALSE
-       )
+       ),
+       var_name = "which_iteration"
      )
-     ao_input_check(
-       "which_block",
-       checkmate::test_choice(which_block, c("first", "last"), null.ok = TRUE) ||
+     oeli::input_check_response(
+       check = list(
+         checkmate::test_choice(which_block, c("first", "last"), null.ok = TRUE),
          checkmate::test_integerish(
            which_block,
            lower = 1, upper = self$npar, unique = TRUE,
            min.len = 1, max.len = self$npar, any.missing = FALSE
-         ),
-       "Must be one of {.val first}, {.val last}, {.code NULL}, or of class
-       {.cls integer}"
+         )
+       ),
+       var_name = "which_block"
      )
-     ao_input_check(
-       "which_column",
-       checkmate::check_subset(
+     oeli::input_check_response(
+       check = checkmate::check_subset(
          which_column, c("iteration", "value", "parameter", "block", "seconds"),
          empty.ok = TRUE
-       )
+       ),
+       var_name = "which_column"
      )
 
      ### filter details
@@ -372,20 +383,20 @@ Procedure <- R6::R6Class("Procedure",
    },
 
    #' @description
-   #' Get the function value in different steps of the alternating optimization
-   #' procedure.
+   #' Get the function value in different steps of the AO process.
+
    get_value = function(which_iteration = NULL,
                         which_block = NULL,
                         keep_iteration_column = FALSE,
                         keep_block_columns = FALSE) {
      ### input checks
-     ao_input_check(
-       "keep_iteration_column",
-       checkmate::test_flag(keep_iteration_column)
+     oeli::input_check_response(
+       check = checkmate::test_flag(keep_iteration_column),
+       var_name = "keep_iteration_column"
      )
-     ao_input_check(
-       "keep_block_columns",
-       checkmate::test_flag(keep_block_columns)
+     oeli::input_check_response(
+       check = checkmate::test_flag(keep_block_columns),
+       var_name = "keep_block_columns"
      )
 
      ### return values
@@ -400,14 +411,15 @@ Procedure <- R6::R6Class("Procedure",
    },
 
    #' @description
-   #' Get the function value in the latest step of the alternating
-   #' optimization procedure.
+   #' Get the function value in the latest step of the AO process.
+
    get_value_latest = function() {
      private$.details[nrow(private$.details), "value"]
    },
 
    #' @description
-   #' Get the optimum function value in the alternating optimization procedure.
+   #' Get the optimum function value in the AO process.
+
    get_value_best = function() {
      values <- private$.details[, "value"]
      id_best <- if (self$minimize) {
@@ -419,20 +431,20 @@ Procedure <- R6::R6Class("Procedure",
    },
 
    #' @description
-   #' Get the parameter values in different steps of the alternating
-   #' optimization procedure.
+   #' Get the parameter values in different steps of the AO process.
+
    get_parameter = function(which_iteration = self$iteration,
                             which_block = NULL,
                             keep_iteration_column = FALSE,
                             keep_block_columns = FALSE) {
      ### input checks
-     ao_input_check(
-       "keep_iteration_column",
-       checkmate::test_flag(keep_iteration_column)
+     oeli::input_check_response(
+       check = checkmate::test_flag(keep_iteration_column),
+       var_name = "keep_iteration_column"
      )
-     ao_input_check(
-       "keep_block_columns",
-       checkmate::test_flag(keep_block_columns)
+     oeli::input_check_response(
+       check = checkmate::test_flag(keep_block_columns),
+       var_name = "keep_block_columns"
      )
 
      ### get parameters
@@ -447,14 +459,14 @@ Procedure <- R6::R6Class("Procedure",
    },
 
    #' @description
-   #' Get the parameter value in the latest step of the alternating
-   #' optimization procedure.
+   #' Get the parameter value in the latest step of the AO process.
+
    get_parameter_latest = function(parameter_type = "full") {
+
      ### input checks
-     ao_input_check(
-       "parameter_type",
-       checkmate::check_choice(parameter_type, c("full", "block", "fixed")),
-       "Must be one of {.val full}, {.val block}, or {.val fixed}"
+     oeli::input_check_response(
+       check = checkmate::check_choice(parameter_type, c("full", "block", "fixed")),
+       var_name = "parameter_type"
      )
 
      ### get latest parameter
@@ -475,13 +487,14 @@ Procedure <- R6::R6Class("Procedure",
    },
 
    #' @description
-   #' Get the optimum parameter value in the alternating optimization procedure.
+   #' Get the optimum parameter value in the AO process.
+
    get_parameter_best = function(parameter_type = "full") {
+
      ### input checks
-     ao_input_check(
-       "parameter_type",
-       checkmate::check_choice(parameter_type, c("full", "block", "fixed")),
-       "Must be one of {.val full}, {.val block}, or {.val fixed}"
+     oeli::input_check_response(
+       check = checkmate::check_choice(parameter_type, c("full", "block", "fixed")),
+       var_name = "parameter_type"
      )
 
      ### find best parameter
@@ -507,20 +520,21 @@ Procedure <- R6::R6Class("Procedure",
    },
 
    #' @description
-   #' Get the optimization time in seconds in different steps of the
-   #' alternating optimization procedure.
+   #' Get the optimization time in seconds in different steps of the AO process.
+
    get_seconds = function(which_iteration = NULL,
                           which_block = NULL,
                           keep_iteration_column = FALSE,
                           keep_block_columns = FALSE) {
+
      ### input checks
-     ao_input_check(
-       "keep_iteration_column",
-       checkmate::test_flag(keep_iteration_column)
+     oeli::input_check_response(
+       check = checkmate::test_flag(keep_iteration_column),
+       var_name = "keep_iteration_column"
      )
-     ao_input_check(
-       "keep_block_columns",
-       checkmate::test_flag(keep_block_columns)
+     oeli::input_check_response(
+       check = checkmate::test_flag(keep_block_columns),
+       var_name = "keep_block_columns"
      )
 
      ### get parameters
@@ -535,8 +549,8 @@ Procedure <- R6::R6Class("Procedure",
    },
 
    #' @description
-   #' Get the total optimization time in seconds of the alternating
-   #' optimization procedure.
+   #' Get the total optimization time in seconds of the AO process.
+
    get_seconds_total = function() {
      sum(self$get_seconds(
        which_iteration = NULL, which_block = NULL,
@@ -545,7 +559,8 @@ Procedure <- R6::R6Class("Procedure",
    },
 
    #' @description
-   #' Checks if the alternating optimization procedure can be terminated.
+   #' Checks if the AO process can be terminated.
+
    check_stopping = function() {
      ### check stopping criteria
      stopping <- FALSE
@@ -609,16 +624,18 @@ Procedure <- R6::R6Class("Procedure",
      if (isTRUE(stopping)) {
        private$.stopping_reason <- message
        self$print_status("\n", 8)
-       self$print_status(paste("procedure is terminated:", message), 4)
+       self$print_status(paste("process is terminated:", message), 4)
        self$print_status("\n", 8)
      }
      return(stopping)
    }
  ),
+
  active = list(
 
-   #' @field npar (`integer(1)`)\cr
-   #' The length of the target argument.
+   #' @field npar \[`integer(1)`\]\cr
+   #' The (total) length of the target argument(s).
+
    npar = function(value) {
      if (missing(value)) {
        private$.npar
@@ -630,123 +647,132 @@ Procedure <- R6::R6Class("Procedure",
      }
    },
 
-   #' @field partition (`character(1)` or `list()`)\cr
+   #' @field partition \[`character(1)` | `list()`\]\cr
    #' Defines the parameter partition, and can be either
+   #'
    #' * `"sequential"` for treating each parameter separately,
    #' * `"random"` for a random partition in each iteration,
    #' * `"none"` for no partition (which is equivalent to joint optimization),
    #' * or a `list` of vectors of parameter indices, specifying a custom
-   #'   partition for the alternating optimization process.
+   #'   partition for the AO process.
+
    partition = function(value) {
      if (missing(value)) {
        private$.partition
      } else {
        if (checkmate::test_string(value)) {
-         ao_input_check(
-           "partition",
-           checkmate::check_choice(value, c("sequential", "random", "none")),
-           "Must be one of {.val sequential}, {.val random}, or {.val none}"
+         oeli::input_check_response(
+           check = checkmate::check_choice(value, c("sequential", "random", "none")),
+           var_name = "partition"
          )
        } else if (checkmate::test_list(value)) {
-         ao_input_check(
-           "partition",
-           checkmate::check_list(value)
+         oeli::input_check_response(
+           check = checkmate::check_list(value),
+           var_name = "partition"
          )
 
          ### only parameter indices 1,...,'self$npar' allowed
-         ao_input_check(
-           "partition",
-           checkmate::check_integerish(
+         oeli::input_check_response(
+           check = checkmate::check_integerish(
              unlist(value),
              lower = 1, upper = self$npar, any.missing = FALSE
            ),
+           var_name = "partition",
            prefix = "Elements in {.cls list} {.var partition} are bad:"
          )
        } else {
-         ao_input_check(
-           "partition",
-           FALSE,
-           "Must be {.val sequential}, {.val random}, {.val none}, or of class {.cls list}"
+         oeli::input_check_response(
+           check = "Bad specification",
+           var_name = "partition"
          )
        }
        private$.partition <- value
      }
    },
 
-   #' @field new_block_probability (`numeric(1)`)\cr
+   #' @field new_block_probability \[`numeric(1)`\]\cr
    #' Only relevant if `partition = "random"`.
+   #'
    #' The probability for a new parameter block when creating a random
-   #' partitions.
+   #' partition.
+   #'
    #' Values close to 0 result in larger parameter blocks, values close to 1
    #' result in smaller parameter blocks.
+
    new_block_probability = function(value) {
      if (missing(value)) {
        private$.new_block_probability
      } else {
-       ao_input_check(
-         "new_block_probability",
-         checkmate::check_number(value, lower = 0, upper = 1)
+       oeli::input_check_response(
+         check = checkmate::check_number(value, lower = 0, upper = 1),
+         var_name = "new_block_probability"
        )
        private$.new_block_probability <- value
      }
    },
 
-   #' @field minimum_block_number (`integer(1)`)\cr
+   #' @field minimum_block_number \[`integer(1)`\]\cr
    #' Only relevant if `partition = "random"`.
+   #'
    #' The minimum number of blocks in random partitions.
+
    minimum_block_number = function(value) {
      if (missing(value)) {
        private$.minimum_block_number
      } else {
-       ao_input_check(
-         "minimum_block_number",
-         checkmate::check_int(value, lower = 1, upper = self$npar)
+       oeli::input_check_response(
+         check = checkmate::check_int(value, lower = 1, upper = self$npar),
+         var_name = "minimum_block_number"
        )
        private$.minimum_block_number <- value
      }
    },
 
-   #' @field verbose (`logical(1)`)\cr
-   #' Whether to print tracing details during the alternating optimization
-   #' process.
+   #' @field verbose \[`logical(1)`\]\cr
+   #' Print tracing details during the AO process?
+
    verbose = function(value) {
      if (missing(value)) {
        private$.verbose
      } else {
-       ao_input_check(
-         "verbose",
-         checkmate::check_flag(value)
+       oeli::input_check_response(
+         check = checkmate::check_flag(value),
+         var_name = "verbose"
        )
        private$.verbose <- value
      }
    },
 
-   #' @field minimize (`logical(1)`)\cr
-   #' Whether to minimize during the alternating optimization process.
+   #' @field minimize \[`logical(1)`\]\cr
+   #' Minimize during the AO process?
+   #'
    #' If \code{FALSE}, maximization is performed.
+
    minimize = function(value) {
      if (missing(value)) {
        private$.minimize
      } else {
-       ao_input_check(
-         "minimize",
-         checkmate::check_flag(value)
+       oeli::input_check_response(
+         check = checkmate::check_flag(value),
+         var_name = "minimize"
        )
        private$.minimize <- value
      }
    },
 
-   #' @field iteration_limit (`integer(1)` or `Inf`)\cr
+   #' @field iteration_limit \[`integer(1)` | `Inf`\]\cr
    #' The maximum number of iterations through the parameter partition before
-   #' the alternating optimization process is terminated.
+   #' the AO process is terminated.
+   #'
    #' Can also be `Inf` for no iteration limit.
+
    iteration_limit = function(value) {
      if (missing(value)) {
        private$.iteration_limit
      } else {
-       ao_input_check(
-         "iteration_limit",
-         checkmate::check_number(value, lower = 1, finite = FALSE)
+       oeli::input_check_response(
+         check = checkmate::check_number(value, lower = 1, finite = FALSE),
+         var_name = "iteration_limit"
        )
        if (is.finite(value)) {
          value <- as.integer(value)
@@ -755,114 +781,136 @@ Procedure <- R6::R6Class("Procedure",
      }
    },
 
-   #' @field seconds_limit (`numeric(1)`)\cr
-   #' The time limit in seconds before the alternating optimization process is
-   #' terminated.
+   #' @field seconds_limit \[`numeric(1)`\]\cr
+   #' The time limit in seconds before the AO process is terminated.
+   #'
    #' Can also be `Inf` for no time limit.
-   #' Note that this stopping criteria is only checked *after*
-   #' a sub-problem is solved and not *within* solving a sub-problem, so the
-   #' actual process time can exceed this limit.
+   #'
+   #' Note that this stopping criteria is only checked *after* a sub-problem is
+   #' solved and not *within* solving a sub-problem, so the actual process time can
+   #' exceed this limit.
+
    seconds_limit = function(value) {
      if (missing(value)) {
        private$.seconds_limit
      } else {
-       ao_input_check(
-         "seconds_limit",
-         checkmate::check_number(
+       oeli::input_check_response(
+         check = checkmate::check_number(
            value,
            lower = 0, finite = FALSE, null.ok = FALSE, na.ok = FALSE
-         )
+         ),
+         var_name = "seconds_limit"
        )
        private$.seconds_limit <- value
      }
    },
 
-   #' @field tolerance_value (`numeric(1)`)\cr
-   #' A non-negative tolerance value. The alternating optimization terminates
+   #' @field tolerance_value \[`numeric(1)`\]\cr
+   #' A non-negative tolerance value. The AO process terminates
    #' if the absolute difference between the current function value and the one
    #' before \code{tolerance_history} iterations is smaller than
    #' \code{tolerance_value}.
    #'
    #' Can be `0` for no value threshold.
+
    tolerance_value = function(value) {
      if (missing(value)) {
        private$.tolerance_value
      } else {
-       ao_input_check(
-         "tolerance_value",
-         checkmate::check_number(value, lower = 0, finite = TRUE)
+       oeli::input_check_response(
+         check = checkmate::check_number(value, lower = 0, finite = TRUE),
+         var_name = "tolerance_value"
        )
        private$.tolerance_value <- value
      }
    },
 
-   #' @field tolerance_parameter (`numeric(1)`)\cr
-   #' A non-negative tolerance value. The alternating optimization terminates if
+   #' @field tolerance_parameter \[`numeric(1)`\]\cr
+   #' A non-negative tolerance value. The AO process terminates if
    #' the distance between the current estimate and the before
-   #' \code{tolerance_history} iterations is smaller than \code{tolerance_parameter}.
+   #' \code{tolerance_history} iterations is smaller than
+   #' \code{tolerance_parameter}.
    #'
    #' Can be `0` for no parameter threshold.
    #'
-   #' By default, the distance is measured using the euclidean norm, but
-   #' another norm can be specified via the \code{tolerance_parameter_norm}
-   #' field.
+   #' By default, the distance is measured using the euclidean norm, but another
+   #' norm can be specified via the \code{tolerance_parameter_norm} field.
+
    tolerance_parameter = function(value) {
      if (missing(value)) {
        private$.tolerance_parameter
      } else {
-       ao_input_check(
-         "tolerance_parameter",
-         checkmate::check_number(value, lower = 0, finite = FALSE)
+       oeli::input_check_response(
+         check = checkmate::check_number(value, lower = 0, finite = FALSE),
+         var_name = "tolerance_parameter"
        )
        private$.tolerance_parameter <- value
      }
    },
 
-   #' @field tolerance_parameter_norm (`function`)\cr
+   #' @field tolerance_parameter_norm \[`function`\]\cr
    #' The norm that measures the distance between the current estimate and the
    #' one from the last iteration. If the distance is smaller than
-   #' \code{tolerance_parameter}, the procedure is terminated.
+   #' \code{tolerance_parameter}, the AO process is terminated.
    #'
    #' It must be of the form \code{function(x, y)} for two vector inputs
    #' \code{x} and \code{y}, and return a single \code{numeric} value.
    #' By default, the euclidean norm \code{function(x, y) sqrt(sum((x - y)^2))}
    #' is used.
+
    tolerance_parameter_norm = function(value) {
      if (missing(value)) {
        private$.tolerance_parameter_norm[[1]]
      } else {
-       ao_input_check(
-         "tolerance_parameter_norm",
-         checkmate::check_function(value, args = c("x", "y"), nargs = 2)
+       oeli::input_check_response(
+         check = checkmate::check_function(value, args = c("x", "y"), nargs = 2),
+         var_name = "tolerance_parameter_norm"
        )
        private$.tolerance_parameter_norm <- list(value)
      }
    },
 
-   #' @field tolerance_history (`integer(1)`)\cr
+   #' @field tolerance_history \[`integer(1)`\]\cr
    #' The number of iterations to look back to determine whether
    #' \code{tolerance_value} or \code{tolerance_parameter} has been reached.
+
    tolerance_history = function(value) {
      if (missing(value)) {
        private$.tolerance_history
      } else {
-       ao_input_check(
-         "tolerance_history",
-         checkmate::check_count(value, positive = TRUE)
+       oeli::input_check_response(
+         check = checkmate::check_count(value, positive = TRUE),
+         var_name = "tolerance_history"
        )
        private$.tolerance_history <- value
      }
    },
 
-   #' @field iteration (`integer(1)`)\cr
+   #' @field add_details \[`logical(1)`\]\cr
+   #' Add details about the AO process to the output?
+
+   add_details = function(value) {
+     if (missing(value)) {
+       private$.add_details
+     } else {
+       oeli::input_check_response(
+         check = checkmate::check_flag(value),
+         var_name = "add_details"
+       )
+       private$.add_details <- value
+     }
+   },
+
+   #' @field iteration \[`integer(1)`\]\cr
    #' The current iteration number.
+
    iteration = function(value) {
      if (missing(value)) {
        private$.iteration
      } else {
-       ao_input_check(
-         "iteration",
-         checkmate::check_int(value, lower = 0, na.ok = FALSE)
+       oeli::input_check_response(
+         check = checkmate::check_int(value, lower = 0, na.ok = FALSE),
+         var_name = "iteration"
        )
        private$.iteration <- as.integer(value)
        self$print_status(
@@ -871,18 +919,19 @@ Procedure <- R6::R6Class("Procedure",
      }
    },
 
-   #' @field block (`integer()`)\cr
+   #' @field block \[`integer()`\]\cr
    #' The currently active parameter block, represented as parameter indices.
+
    block = function(value) {
      if (missing(value)) {
        private$.block
      } else {
-       ao_input_check(
-         "block",
-         checkmate::check_integerish(
+       oeli::input_check_response(
+         check = checkmate::check_integerish(
            value,
            unique = TRUE, lower = 1, upper = self$npar
-         )
+         ),
+         var_name = "block"
        )
        private$.block <- value
        self$print_status(
@@ -891,28 +940,34 @@ Procedure <- R6::R6Class("Procedure",
      }
    },
 
-   #' @field output (`list()`, read-only)\cr
-   #' The output of the alternating optimization procedure, which is a
-   #' \code{list} with the following elements:
+   #' @field output \[`list()`, read-only\]\cr
+   #' The output of the AO process, which is a \code{list} with the following
+   #' elements:
+   #'
    #' * \code{estimate} is the parameter vector at termination.
    #' * \code{value} is the function value at termination.
-   #' * \code{details} is a `data.frame` with full information about the procedure:
+   #' * \code{details} is a `data.frame` with full information about the AO process.
    #'   For each iteration (column `iteration`) it contains the function value
    #'   (column `value`), parameter values (columns starting with `p` followed by
    #'   the parameter index), the active parameter block (columns starting with `b`
    #'   followed by the parameter index, where `1` stands for a parameter contained
    #'   in the active parameter block and `0` if not), and computation times in seconds
-   #'   (column `seconds`)
+   #'   (column `seconds`). Only available if `add_details = TRUE`.
    #' * \code{seconds} is the overall computation time in seconds.
-   #' * \code{stopping_reason} is a message why the procedure has terminated.
+   #' * \code{stopping_reason} is a message why the AO process has terminated.
+
    output = function(value) {
      if (missing(value)) {
-       list(
-         "estimate" = self$get_parameter_best("full"),
-         "value" = self$get_value_best(),
-         "details" = self$get_details(),
-         "seconds" = self$get_seconds_total(),
-         "stopping_reason" = private$.stopping_reason
+       c(
+         list(
+           "estimate" = self$get_parameter_best("full"),
+           "value" = self$get_value_best()
+         ),
+         if (self$add_details) list("details" = self$get_details()),
+         list(
+           "seconds" = self$get_seconds_total(),
+           "stopping_reason" = private$.stopping_reason
+         )
        )
      } else {
        cli::cli_abort(
@@ -922,6 +977,7 @@ Procedure <- R6::R6Class("Procedure",
      }
    }
  ),
+
  private = list(
 
    ### inputs
@@ -944,15 +1000,13 @@ Procedure <- R6::R6Class("Procedure",
    .iteration = 0L,
    .block = integer(),
    .details = data.frame(),
+   .add_details = TRUE,
    .stopping_reason = "not terminated yet",
 
    # Generated randomized blocks.
-   # @param x (`integer()`)\cr
-   # The parameter indices.
-   # @param p (`numeric(1)`)\cr
-   # The probability to generate a new block.
-   # @param min (`integer(1)`)\cr
-   # The minimum number of blocks
+   # @param x The parameter indices.
+   # @param p The probability to generate a new block.
+   # @param min The minimum number of blocks.
    # @author Siddhartha Chib
    .generate_random_partition = function(
       x = self$npar,
