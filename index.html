@@ -14,11 +14,11 @@
 <link rel="apple-touch-icon" type="image/png" sizes="60x60" href="apple-touch-icon-60x60.png">
 <script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.4.2/css/all.min.css" rel="stylesheet">
-<link href="deps/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet">
+<script src="deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="Alternating Optimization">
-<meta name="description" content="Alternating optimization is an iterative procedure that optimizes a function by alternately performing restricted optimization over individual parameter subsets. Instead of tackling joint optimization directly, it breaks the problem down into simpler sub-problems. This approach can make optimization feasible when joint optimization is too difficult.">
-<meta property="og:description" content="Alternating optimization is an iterative procedure that optimizes a function by alternately performing restricted optimization over individual parameter subsets. Instead of tackling joint optimization directly, it breaks the problem down into simpler sub-problems. This approach can make optimization feasible when joint optimization is too difficult.">
+<meta name="description" content="An iterative process that optimizes a function by alternately performing restricted optimization over parameter subsets. Instead of joint optimization, it breaks the optimization problem down into simpler sub-problems. This approach can make optimization feasible when joint optimization is too difficult.">
+<meta property="og:description" content="An iterative process that optimizes a function by alternately performing restricted optimization over parameter subsets. Instead of joint optimization, it breaks the optimization problem down into simpler sub-problems. This approach can make optimization feasible when joint optimization is too difficult.">
 <meta property="og:image" content="https://loelschlaeger.de/ao/logo.png">
 </head>
 <body>
@@ -29,7 +29,7 @@
 
     <a class="navbar-brand me-2" href="index.html">ao</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -61,11 +61,11 @@
 </div>
 <!-- badges: start -->
 
-<p>The <a href="https://loelschlaeger.de/ao/">ao</a> package offers useRs easy access to alternating optimization.</p>
+<p>The <a href="https://loelschlaeger.de/ao/">ao</a> package implements alternating optimization (AO) in <a href="https://cran.r-project.org/" class="external-link">R</a>.</p>
 <div class="section level2">
 <h2 id="why">Why?<a class="anchor" aria-label="anchor" href="#why"></a>
 </h2>
-<p>Alternating optimization is an iterative procedure that optimizes a function by alternately performing restricted optimization over individual parameter subsets. Instead of tackling joint optimization directly, it breaks the problem down into simpler sub-problems. This approach can make optimization feasible when joint optimization is too difficult. For more details, please refer to the <a href="https://loelschlaeger.de/ao/articles/ao.html">package vignette</a>.</p>
+<p>AO is an iterative process that optimizes a function by alternately performing restricted optimization over parameter subsets. Instead of joint optimization, it breaks the optimization problem down into simpler sub-problems. This approach can make optimization feasible when joint optimization is too difficult. See the <a href="https://loelschlaeger.de/ao/articles/ao.html">package vignette</a> for more details.</p>
 </div>
 <div class="section level2">
 <h2 id="how">How?<a class="anchor" aria-label="anchor" href="#how"></a>
@@ -80,7 +80,7 @@
 <p><img src="reference/figures/README-rosenbrock_ao_path-1.png"><!-- --></p>
 <p>… is obtained as follows:</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="reference/ao.html">ao</a></span><span class="op">(</span>f <span class="op">=</span> <span class="va">rosenbrock</span>, initial <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="reference/ao.html">ao</a></span><span class="op">(</span>f <span class="op">=</span> <span class="va">rosenbrock</span>, initial <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">2</span><span class="op">)</span>, add_details <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; $estimate</span></span>
 <span><span class="co">#&gt; [1] 1.000895 1.001791</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -88,73 +88,73 @@
 <span><span class="co">#&gt; [1] 8.016137e-07</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $details</span></span>
-<span><span class="co">#&gt;    iteration        value       p1       p2 b1 b2      seconds</span></span>
-<span><span class="co">#&gt; 1          0 5.000000e+00 2.000000 2.000000  0  0 0.0000000000</span></span>
-<span><span class="co">#&gt; 2          1 1.519238e-01 1.366025 2.000000  1  0 0.0020544529</span></span>
-<span><span class="co">#&gt; 3          1 1.339744e-01 1.366025 1.866024  0  1 0.0009624958</span></span>
-<span><span class="co">#&gt; 4          2 1.176778e-01 1.320824 1.866024  1  0 0.0013415813</span></span>
-<span><span class="co">#&gt; 5          2 1.029278e-01 1.320824 1.744575  0  1 0.0009355545</span></span>
-<span><span class="co">#&gt; 6          3 8.966402e-02 1.278883 1.744575  1  0 0.0013275146</span></span>
-<span><span class="co">#&gt; 7          3 7.777546e-02 1.278883 1.635540  0  1 0.0009441376</span></span>
-<span><span class="co">#&gt; 8          4 6.719114e-02 1.240415 1.635540  1  0 0.0013272762</span></span>
-<span><span class="co">#&gt; 9          4 5.779955e-02 1.240415 1.538630  0  1 0.0009331703</span></span>
-<span><span class="co">#&gt; 10         5 4.952339e-02 1.205560 1.538630  1  0 0.0013463497</span></span>
-<span><span class="co">#&gt; 11         5 4.225482e-02 1.205560 1.453374  0  1 0.0009357929</span></span>
-<span><span class="co">#&gt; 12         6 3.591491e-02 1.174366 1.453374  1  0 0.0013477802</span></span>
-<span><span class="co">#&gt; 13         6 3.040344e-02 1.174366 1.379135  0  1 0.0009481907</span></span>
-<span><span class="co">#&gt; 14         7 2.564430e-02 1.146792 1.379135  1  0 0.0013115406</span></span>
-<span><span class="co">#&gt; 15         7 2.154801e-02 1.146792 1.315133  0  1 0.0009262562</span></span>
-<span><span class="co">#&gt; 16         8 1.804492e-02 1.122712 1.315133  1  0 0.0015296936</span></span>
-<span><span class="co">#&gt; 17         8 1.505832e-02 1.122712 1.260483  0  1 0.0009601116</span></span>
-<span><span class="co">#&gt; 18         9 1.252724e-02 1.101923 1.260483  1  0 0.0015218258</span></span>
-<span><span class="co">#&gt; 19         9 1.038836e-02 1.101923 1.214235  0  1 0.0009334087</span></span>
-<span><span class="co">#&gt; 20        10 8.590837e-03 1.084167 1.214235  1  0 0.0032966137</span></span>
-<span><span class="co">#&gt; 21        10 7.084101e-03 1.084167 1.175418  0  1 0.0009722710</span></span>
-<span><span class="co">#&gt; 22        11 5.827377e-03 1.069149 1.175418  1  0 0.0035614967</span></span>
-<span><span class="co">#&gt; 23        11 4.781578e-03 1.069149 1.143079  0  1 0.0009627342</span></span>
-<span><span class="co">#&gt; 24        12 3.915156e-03 1.056558 1.143079  1  0 0.0035083294</span></span>
-<span><span class="co">#&gt; 25        12 3.198754e-03 1.056558 1.116314  0  1 0.0050704479</span></span>
-<span><span class="co">#&gt; 26        13 2.608707e-03 1.046082 1.116314  1  0 0.0096364021</span></span>
-<span><span class="co">#&gt; 27        13 2.123531e-03 1.046082 1.094287  0  1 0.0010223389</span></span>
-<span><span class="co">#&gt; 28        14 1.725945e-03 1.037424 1.094287  1  0 0.0011823177</span></span>
-<span><span class="co">#&gt; 29        14 1.400576e-03 1.037424 1.076249  0  1 0.0010311604</span></span>
-<span><span class="co">#&gt; 30        15 1.135093e-03 1.030310 1.076249  1  0 0.0012366772</span></span>
-<span><span class="co">#&gt; 31        15 9.187038e-04 1.030310 1.061539  0  1 0.0010347366</span></span>
-<span><span class="co">#&gt; 32        16 7.427825e-04 1.024492 1.061539  1  0 0.0014419556</span></span>
-<span><span class="co">#&gt; 33        16 5.998755e-04 1.024492 1.049585  0  1 0.0009484291</span></span>
-<span><span class="co">#&gt; 34        17 4.840462e-04 1.019754 1.049585  1  0 0.0011548996</span></span>
-<span><span class="co">#&gt; 35        17 3.902161e-04 1.019754 1.039898  0  1 0.0009682178</span></span>
-<span><span class="co">#&gt; 36        18 3.143566e-04 1.015907 1.039898  1  0 0.0011923313</span></span>
-<span><span class="co">#&gt; 37        18 2.530454e-04 1.015907 1.032068  0  1 0.0009942055</span></span>
-<span><span class="co">#&gt; 38        19 2.035803e-04 1.012794 1.032068  1  0 0.0011959076</span></span>
-<span><span class="co">#&gt; 39        19 1.636760e-04 1.012794 1.025751  0  1 0.0009624958</span></span>
-<span><span class="co">#&gt; 40        20 1.315375e-04 1.010279 1.025751  1  0 0.0011341572</span></span>
-<span><span class="co">#&gt; 41        20 1.056496e-04 1.010279 1.020663  0  1 0.0009608269</span></span>
-<span><span class="co">#&gt; 42        21 8.482978e-05 1.008251 1.020663  1  0 0.0011692047</span></span>
-<span><span class="co">#&gt; 43        21 6.807922e-05 1.008251 1.016570  0  1 0.0010235310</span></span>
-<span><span class="co">#&gt; 44        22 5.462405e-05 1.006619 1.016570  1  0 0.0011668205</span></span>
-<span><span class="co">#&gt; 45        22 4.380882e-05 1.006619 1.013281  0  1 0.0010051727</span></span>
-<span><span class="co">#&gt; 46        23 3.513011e-05 1.005307 1.013281  1  0 0.0011425018</span></span>
-<span><span class="co">#&gt; 47        23 2.815916e-05 1.005307 1.010641  0  1 0.0009336472</span></span>
-<span><span class="co">#&gt; 48        24 2.257018e-05 1.004252 1.010641  1  0 0.0011336803</span></span>
-<span><span class="co">#&gt; 49        24 1.808332e-05 1.004252 1.008523  0  1 0.0009269714</span></span>
-<span><span class="co">#&gt; 50        25 1.448872e-05 1.003406 1.008523  1  0 0.0011277199</span></span>
-<span><span class="co">#&gt; 51        25 1.160399e-05 1.003406 1.006825  0  1 0.0009322166</span></span>
-<span><span class="co">#&gt; 52        26 9.294548e-06 1.002728 1.006825  1  0 0.0011436939</span></span>
-<span><span class="co">#&gt; 53        26 7.441548e-06 1.002728 1.005463  0  1 0.0009248257</span></span>
-<span><span class="co">#&gt; 54        27 5.959072e-06 1.002184 1.005463  1  0 0.0011191368</span></span>
-<span><span class="co">#&gt; 55        27 4.769667e-06 1.002184 1.004373  0  1 0.0007314682</span></span>
-<span><span class="co">#&gt; 56        28 3.818729e-06 1.001748 1.004373  1  0 0.0011234283</span></span>
-<span><span class="co">#&gt; 57        28 3.055717e-06 1.001748 1.003499  0  1 0.0009295940</span></span>
-<span><span class="co">#&gt; 58        29 2.446111e-06 1.001399 1.003499  1  0 0.0011372566</span></span>
-<span><span class="co">#&gt; 59        29 1.956863e-06 1.001399 1.002800  0  1 0.0009288788</span></span>
-<span><span class="co">#&gt; 60        30 1.566279e-06 1.001119 1.002800  1  0 0.0011575222</span></span>
-<span><span class="co">#&gt; 61        30 1.252688e-06 1.001119 1.002240  0  1 0.0009603500</span></span>
-<span><span class="co">#&gt; 62        31 1.002554e-06 1.000895 1.002240  1  0 0.0011262894</span></span>
-<span><span class="co">#&gt; 63        31 8.016137e-07 1.000895 1.001791  0  1 0.0007302761</span></span>
+<span><span class="co">#&gt;    iteration        value       p1       p2 b1 b2     seconds</span></span>
+<span><span class="co">#&gt; 1          0 5.000000e+00 2.000000 2.000000  0  0 0.000000000</span></span>
+<span><span class="co">#&gt; 2          1 1.519238e-01 1.366025 2.000000  1  0 0.006363869</span></span>
+<span><span class="co">#&gt; 3          1 1.339744e-01 1.366025 1.866024  0  1 0.002068996</span></span>
+<span><span class="co">#&gt; 4          2 1.176778e-01 1.320824 1.866024  1  0 0.002699137</span></span>
+<span><span class="co">#&gt; 5          2 1.029278e-01 1.320824 1.744575  0  1 0.002110958</span></span>
+<span><span class="co">#&gt; 6          3 8.966402e-02 1.278883 1.744575  1  0 0.002901077</span></span>
+<span><span class="co">#&gt; 7          3 7.777546e-02 1.278883 1.635540  0  1 0.001904011</span></span>
+<span><span class="co">#&gt; 8          4 6.719114e-02 1.240415 1.635540  1  0 0.003144026</span></span>
+<span><span class="co">#&gt; 9          4 5.779955e-02 1.240415 1.538630  0  1 0.001903057</span></span>
+<span><span class="co">#&gt; 10         5 4.952339e-02 1.205560 1.538630  1  0 0.009890079</span></span>
+<span><span class="co">#&gt; 11         5 4.225482e-02 1.205560 1.453374  0  1 0.002016068</span></span>
+<span><span class="co">#&gt; 12         6 3.591491e-02 1.174366 1.453374  1  0 0.002801895</span></span>
+<span><span class="co">#&gt; 13         6 3.040344e-02 1.174366 1.379135  0  1 0.001818895</span></span>
+<span><span class="co">#&gt; 14         7 2.564430e-02 1.146792 1.379135  1  0 0.003333092</span></span>
+<span><span class="co">#&gt; 15         7 2.154801e-02 1.146792 1.315133  0  1 0.002017021</span></span>
+<span><span class="co">#&gt; 16         8 1.804492e-02 1.122712 1.315133  1  0 0.003165960</span></span>
+<span><span class="co">#&gt; 17         8 1.505832e-02 1.122712 1.260483  0  1 0.002074957</span></span>
+<span><span class="co">#&gt; 18         9 1.252724e-02 1.101923 1.260483  1  0 0.003380060</span></span>
+<span><span class="co">#&gt; 19         9 1.038836e-02 1.101923 1.214235  0  1 0.001863956</span></span>
+<span><span class="co">#&gt; 20        10 8.590837e-03 1.084167 1.214235  1  0 0.006909132</span></span>
+<span><span class="co">#&gt; 21        10 7.084101e-03 1.084167 1.175418  0  1 0.001886129</span></span>
+<span><span class="co">#&gt; 22        11 5.827377e-03 1.069149 1.175418  1  0 0.006983995</span></span>
+<span><span class="co">#&gt; 23        11 4.781578e-03 1.069149 1.143079  0  1 0.001940012</span></span>
+<span><span class="co">#&gt; 24        12 3.915156e-03 1.056558 1.143079  1  0 0.006923914</span></span>
+<span><span class="co">#&gt; 25        12 3.198754e-03 1.056558 1.116314  0  1 0.003469944</span></span>
+<span><span class="co">#&gt; 26        13 2.608707e-03 1.046082 1.116314  1  0 0.018738031</span></span>
+<span><span class="co">#&gt; 27        13 2.123531e-03 1.046082 1.094287  0  1 0.001847029</span></span>
+<span><span class="co">#&gt; 28        14 1.725945e-03 1.037424 1.094287  1  0 0.002201080</span></span>
+<span><span class="co">#&gt; 29        14 1.400576e-03 1.037424 1.076249  0  1 0.001825809</span></span>
+<span><span class="co">#&gt; 30        15 1.135093e-03 1.030310 1.076249  1  0 0.002213955</span></span>
+<span><span class="co">#&gt; 31        15 9.187038e-04 1.030310 1.061539  0  1 0.001797915</span></span>
+<span><span class="co">#&gt; 32        16 7.427825e-04 1.024492 1.061539  1  0 0.002194881</span></span>
+<span><span class="co">#&gt; 33        16 5.998755e-04 1.024492 1.049585  0  1 0.001878977</span></span>
+<span><span class="co">#&gt; 34        17 4.840462e-04 1.019754 1.049585  1  0 0.002230883</span></span>
+<span><span class="co">#&gt; 35        17 3.902161e-04 1.019754 1.039898  0  1 0.001816034</span></span>
+<span><span class="co">#&gt; 36        18 3.143566e-04 1.015907 1.039898  1  0 0.002327919</span></span>
+<span><span class="co">#&gt; 37        18 2.530454e-04 1.015907 1.032068  0  1 0.002080917</span></span>
+<span><span class="co">#&gt; 38        19 2.035803e-04 1.012794 1.032068  1  0 0.002326012</span></span>
+<span><span class="co">#&gt; 39        19 1.636760e-04 1.012794 1.025751  0  1 0.001852989</span></span>
+<span><span class="co">#&gt; 40        20 1.315375e-04 1.010279 1.025751  1  0 0.002521038</span></span>
+<span><span class="co">#&gt; 41        20 1.056496e-04 1.010279 1.020663  0  1 0.002076864</span></span>
+<span><span class="co">#&gt; 42        21 8.482978e-05 1.008251 1.020663  1  0 0.002562046</span></span>
+<span><span class="co">#&gt; 43        21 6.807922e-05 1.008251 1.016570  0  1 0.001961946</span></span>
+<span><span class="co">#&gt; 44        22 5.462405e-05 1.006619 1.016570  1  0 0.002355099</span></span>
+<span><span class="co">#&gt; 45        22 4.380882e-05 1.006619 1.013281  0  1 0.001914978</span></span>
+<span><span class="co">#&gt; 46        23 3.513011e-05 1.005307 1.013281  1  0 0.002474070</span></span>
+<span><span class="co">#&gt; 47        23 2.815916e-05 1.005307 1.010641  0  1 0.002257109</span></span>
+<span><span class="co">#&gt; 48        24 2.257018e-05 1.004252 1.010641  1  0 0.002510071</span></span>
+<span><span class="co">#&gt; 49        24 1.808332e-05 1.004252 1.008523  0  1 0.002375126</span></span>
+<span><span class="co">#&gt; 50        25 1.448872e-05 1.003406 1.008523  1  0 0.002344847</span></span>
+<span><span class="co">#&gt; 51        25 1.160399e-05 1.003406 1.006825  0  1 0.001878977</span></span>
+<span><span class="co">#&gt; 52        26 9.294548e-06 1.002728 1.006825  1  0 0.002475977</span></span>
+<span><span class="co">#&gt; 53        26 7.441548e-06 1.002728 1.005463  0  1 0.001852989</span></span>
+<span><span class="co">#&gt; 54        27 5.959072e-06 1.002184 1.005463  1  0 0.002201080</span></span>
+<span><span class="co">#&gt; 55        27 4.769667e-06 1.002184 1.004373  0  1 0.001419067</span></span>
+<span><span class="co">#&gt; 56        28 3.818729e-06 1.001748 1.004373  1  0 0.002189875</span></span>
+<span><span class="co">#&gt; 57        28 3.055717e-06 1.001748 1.003499  0  1 0.001791000</span></span>
+<span><span class="co">#&gt; 58        29 2.446111e-06 1.001399 1.003499  1  0 0.002210140</span></span>
+<span><span class="co">#&gt; 59        29 1.956863e-06 1.001399 1.002800  0  1 0.001793861</span></span>
+<span><span class="co">#&gt; 60        30 1.566279e-06 1.001119 1.002800  1  0 0.004199028</span></span>
+<span><span class="co">#&gt; 61        30 1.252688e-06 1.001119 1.002240  0  1 0.002015114</span></span>
+<span><span class="co">#&gt; 62        31 1.002554e-06 1.000895 1.002240  1  0 0.002316952</span></span>
+<span><span class="co">#&gt; 63        31 8.016137e-07 1.000895 1.001791  0  1 0.001415968</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $seconds</span></span>
-<span><span class="co">#&gt; [1] 0.08763027</span></span>
+<span><span class="co">#&gt; [1] 0.1820159</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $stopping_reason</span></span>
 <span><span class="co">#&gt; [1] "change in function value between 1 iteration is &lt; 1e-06"</span></span></code></pre></div>
@@ -162,7 +162,7 @@
 <div class="section level2">
 <h2 id="contact">Contact?<a class="anchor" aria-label="anchor" href="#contact"></a>
 </h2>
-<p>If you have a question, found a bug, want to request a feature, give feedback, or contribute, we would love to hear from you. <a href="https://github.com/loelschlaeger/ao/issues/new/choose" class="external-link">Please file an issue on GitHub</a>. 😊</p>
+<p>If you have any questions, found a bug, need a feature, <a href="https://github.com/loelschlaeger/ao/issues/new/choose" class="external-link">just file an issue on GitHub</a>.</p>
 </div>
 </div>
   </main><aside class="col-md-3"><div class="links">
@@ -202,7 +202,7 @@
 <h2 data-toc-skip>Dev status</h2>
 <ul class="list-unstyled">
 <li><a href="https://CRAN.R-project.org/package=ao" class="external-link"><img src="https://www.r-pkg.org/badges/version/ao" alt="CRAN status"></a></li>
-<li><a href="https://CRAN.R-project.org/package=ao" class="external-link"><img src="https://cranlogs.r-pkg.org/badges/last-month/ao" alt="CRAN downloads"></a></li>
+<li><a href="https://CRAN.R-project.org/package=ao" class="external-link"><img src="https://cranlogs.r-pkg.org/badges/grand-total/ao" alt="CRAN downloads"></a></li>
 <li><a href="https://github.com/loelschlaeger/ao/actions" class="external-link"><img src="https://github.com/loelschlaeger/ao/workflows/R-CMD-check/badge.svg" alt="R-CMD-check"></a></li>
 <li><a href="https://github.com/loelschlaeger/ao/actions" class="external-link"><img src="https://github.com/loelschlaeger/ao/workflows/future_tests/badge.svg" alt="future-tests"></a></li>
 <li><a href="https://app.codecov.io/gh/loelschlaeger/ao?branch=main" class="external-link"><img src="https://codecov.io/gh/loelschlaeger/ao/branch/main/graph/badge.svg" alt="Codecov test coverage"></a></li>
@@ -218,7 +218,7 @@
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
 </div>
 
     </footer>

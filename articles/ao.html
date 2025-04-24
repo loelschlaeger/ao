@@ -14,8 +14,8 @@
 <link rel="apple-touch-icon" type="image/png" sizes="60x60" href="../apple-touch-icon-60x60.png">
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
-<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.4.2/css/all.min.css" rel="stylesheet">
-<link href="../deps/font-awesome-6.4.2/css/v4-shims.min.css" rel="stylesheet">
+<script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
+<link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
 <script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Alternating optimization">
 <meta name="description" content="Learn how to get started with alternating optimization in R.
 ">
@@ -31,7 +31,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">ao</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.1.1</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -70,36 +70,28 @@
 
     
     
-<p>The <a href="https://loelschlaeger.de/ao/">ao</a> R package implements the alternating
-optimization (AO) approach. This vignette provides an overview of the
-package. For theoretical results on AO, refer to:</p>
-<ul>
-<li><p><span class="citation">Bezdek and Hathaway (<a href="#ref-bezdek:2002">2002</a>)</span>, who explain how AO can avoid
-getting stuck in local optima</p></li>
-<li><p><span class="citation">Hu and Hathaway (<a href="#ref-hu:2002">2002</a>)</span>, who show that AO can speed up
-optimization</p></li>
-<li><p><span class="citation">Bezdek and Hathaway (<a href="#ref-bezdek:2003">2003</a>)</span>, who provide more details on
-the convergence speed of AO</p></li>
-</ul>
+<p>The <a href="https://loelschlaeger.de/ao/">ao</a> package implements alternating optimization in
+R. This vignette demonstrates how to use the package and describes the
+available customization options.</p>
 <div class="section level2">
-<h2 id="what-actually-is-alternating-optimization">What actually is alternating optimization?<a class="anchor" aria-label="anchor" href="#what-actually-is-alternating-optimization"></a>
+<h2 id="what-is-alternating-optimization">What is alternating optimization?<a class="anchor" aria-label="anchor" href="#what-is-alternating-optimization"></a>
 </h2>
-<p>Alternating optimization (AO) is an iterative procedure used to
-optimize a multivariate function by breaking it down into simpler
-sub-problems. It involves optimizing over one block of function
-parameters while keeping the others fixed, and then alternating this
-process among the parameter blocks. AO is particularly useful when the
-sub-problems are easier to solve than the original joint optimization
-problem, or when there is a natural partition of the parameters.</p>
-<p>Mathematically, consider a real-valued <strong>objective</strong>
-function
+<p>Alternating optimization (AO) is an iterative process for optimizing
+a multivariate function by breaking it down into simpler sub-problems.
+It involves optimizing over one block of function parameters while
+keeping the others fixed, and then alternating this process among the
+parameter blocks. AO is particularly useful when the sub-problems are
+easier to solve than the original joint optimization problem, or when
+there is a natural partitioning of the parameters. See <span class="citation">Bezdek and Hathaway (<a href="#ref-bezdek:2002">2002</a>)</span>, <span class="citation">Hu and
+Hathaway (<a href="#ref-hu:2002">2002</a>)</span>, and <span class="citation">Bezdek and Hathaway (<a href="#ref-bezdek:2003">2003</a>)</span> for more details.</p>
+<p>Consider a real-valued <strong>objective</strong> function
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>f</mi><mrow><mo stretchy="true" form="prefix">(</mo><mi>𝐱</mi><mo>,</mo><mi>𝐲</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">f(\mathbf{x}, \mathbf{y})</annotation></semantics></math>
 where
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>𝐱</mi><annotation encoding="application/x-tex">\mathbf{x}</annotation></semantics></math>
 and
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>𝐲</mi><annotation encoding="application/x-tex">\mathbf{y}</annotation></semantics></math>
 are two <strong>blocks</strong> of function parameters, namely a
-<strong>partition</strong> of the parameters. The AO procedure can be
+<strong>partition</strong> of the parameters. The AO process can be
 described as follows:</p>
 <ol style="list-style-type: decimal">
 <li><p><strong>Initialization</strong>: Start with initial guesses
@@ -129,7 +121,7 @@ and solve the sub-problem
 in the objective function or the parameters falls below a specified
 threshold, or when a pre-defined iteration limit is reached.</p></li>
 </ol>
-<p>The AO procedure can be</p>
+<p>The AO process can be</p>
 <ul>
 <li><p>viewed as a generalization of joint optimization, where the
 parameter partition is trivial, consisting of the entire parameter
@@ -141,7 +133,7 @@ by
 above,</p></li>
 <li><p>generalized to more than two parameter blocks, i.e., for
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>f</mi><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>𝐱</mi><mn>1</mn></msub><mo>,</mo><msub><mi>𝐱</mi><mn>2</mn></msub><mo>,</mo><mi>…</mi><mo>,</mo><msub><mi>𝐱</mi><mi>n</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">f(\mathbf{x}_1, \mathbf{x}_2, \ldots, \mathbf{x}_n)</annotation></semantics></math>,
-the procedure involves cycling through each parameter block
+the process involves cycling through each parameter block
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>𝐱</mi><mn>1</mn></msub><mo>,</mo><msub><mi>𝐱</mi><mn>2</mn></msub><mo>,</mo><mi>…</mi><mo>,</mo><msub><mi>𝐱</mi><mi>n</mi></msub></mrow><annotation encoding="application/x-tex">\mathbf{x}_1, \mathbf{x}_2, \ldots, \mathbf{x}_n</annotation></semantics></math>
 and solving the corresponding sub-problems iteratively (the parameter
 blocks do not necessarily have to be disjoint),</p></li>
@@ -149,16 +141,16 @@ blocks do not necessarily have to be disjoint),</p></li>
 randomly after each iteration, which can further improve the convergence
 rate and help avoid getting trapped in local optima <span class="citation">(<a href="#ref-chib:2010">Chib and Ramamurthy
 2010</a>)</span>,</p></li>
-<li><p>run in <strong>multiple threads</strong> for different initial
+<li><p>run in <strong>multiple processes</strong> for different initial
 values, parameter partitions, and/or base optimizers.</p></li>
 </ul>
 </div>
 <div class="section level2">
-<h2 id="now-how-to-use-the-ao-package">Now how to use the <code>{ao}</code> package?<a class="anchor" aria-label="anchor" href="#now-how-to-use-the-ao-package"></a>
+<h2 id="how-to-use-the-package">How to use the package?<a class="anchor" aria-label="anchor" href="#how-to-use-the-package"></a>
 </h2>
-<p>The <a href="https://loelschlaeger.de/ao/">ao</a> package offers the function <code><a href="../reference/ao.html">ao()</a></code>,
-which can be used to perform different variants of alternating
-optimization.</p>
+<p>The <a href="https://loelschlaeger.de/ao/">ao</a> package provides a single user-level function,
+<code><a href="../reference/ao.html">ao()</a></code>, which serves as a general interface for performing
+various variants of AO.</p>
 <div class="section level3">
 <h3 id="the-function-call">The function call<a class="anchor" aria-label="anchor" href="#the-function-call"></a>
 </h3>
@@ -171,13 +163,14 @@ as follows:</p>
 <span>  target <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  npar <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  gradient <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  hessian <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  <span class="va">...</span>,</span>
 <span>  partition <span class="op">=</span> <span class="st">"sequential"</span>,</span>
-<span>  new_block_probability <span class="op">=</span> <span class="fl">0.5</span>,</span>
-<span>  minimum_block_number <span class="op">=</span> <span class="fl">2</span>,</span>
+<span>  new_block_probability <span class="op">=</span> <span class="fl">0.3</span>,</span>
+<span>  minimum_block_number <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  minimize <span class="op">=</span> <span class="cn">TRUE</span>,</span>
-<span>  lower <span class="op">=</span> <span class="op">-</span><span class="cn">Inf</span>,</span>
-<span>  upper <span class="op">=</span> <span class="cn">Inf</span>,</span>
+<span>  lower <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  upper <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  iteration_limit <span class="op">=</span> <span class="cn">Inf</span>,</span>
 <span>  seconds_limit <span class="op">=</span> <span class="cn">Inf</span>,</span>
 <span>  tolerance_value <span class="op">=</span> <span class="fl">1e-6</span>,</span>
@@ -186,7 +179,8 @@ as follows:</p>
 <span>  tolerance_history <span class="op">=</span> <span class="fl">1</span>,</span>
 <span>  base_optimizer <span class="op">=</span> <span class="va">Optimizer</span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="st">"stats::optim"</span>, method <span class="op">=</span> <span class="st">"L-BFGS-B"</span><span class="op">)</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
-<span>  hide_warnings <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>  hide_warnings <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  add_details <span class="op">=</span> <span class="cn">TRUE</span></span>
 <span><span class="op">)</span></span></code></pre></div>
 <p>The arguments have the following meaning:</p>
 <ul>
@@ -197,31 +191,34 @@ use <code>npar</code> and <code>target</code>, <a href="#generalized-objective-f
 arguments for <code>f</code> can be passed via the <code>...</code>
 argument as usual.</p></li>
 <li><p><code>initial</code>: Initial values for the parameters used in
-the AO procedure.</p></li>
-<li><p><code>gradient</code>: Optional argument to specify the
-analytical gradient of <code>f</code>. If not provided, a
-finite-difference approximation will be used.</p></li>
+the AO process.</p></li>
+<li><p><code>gradient</code> and <code>hessian</code>: Optional
+arguments to specify the analytical gradient and/or Hessian of
+<code>f</code>.</p></li>
 <li>
 <p><code>partition</code>: Specifies how parameters are partitioned
 for optimization. Can be one of the following:</p>
 <ul>
 <li><p><code>"sequential"</code>: Optimizes each parameter block
-sequentially.</p></li>
+sequentially. This is similar to <a href="https://en.wikipedia.org/wiki/Coordinate_descent" class="external-link">coordinate
+descent</a>.</p></li>
 <li><p><code>"random"</code>: Randomly partitions parameters in each
 iteration.</p></li>
 <li><p><code>"none"</code>: No partitioning; equivalent to joint
 optimization.</p></li>
 <li><p>Custom partition can be defined using a list of vectors of
-parameter indices.</p></li>
+parameter indices, <a href="#custom-parameter-partition">see
+below</a>.</p></li>
 </ul>
 </li>
 <li><p><code>new_block_probability</code> and
 <code>minimum_block_number</code> are only relevant if
 <code>partition = "random"</code>. In this case, the former controls the
-probability for creating a new block, and the latter defines the minimum
-number of parameter blocks.</p></li>
+probability for creating a new block when building a random parameter
+partition, and the latter defines the minimum number of parameter blocks
+in the partition.</p></li>
 <li><p><code>minimize</code>: Set to <code>TRUE</code> for minimization
-problems (default), or <code>FALSE</code> for maximization.</p></li>
+(default), or <code>FALSE</code> for maximization.</p></li>
 <li><p><code>lower</code> and <code>upper</code>: Lower and upper limits
 for constrained optimization.</p></li>
 <li><p><code>iteration_limit</code> is the maximum number of AO
@@ -234,10 +231,11 @@ or the current parameter vector and the one before
 <code>tolerance_history</code> iterations, respectively, becomes smaller
 than these thresholds.</p></li>
 <li><p><code>base_optimizer</code>: Numerical optimizer used for solving
-sub-problems.</p></li>
+sub-problems, <a href="#base-optimizer">see below</a>.</p></li>
 <li><p>Set <code>verbose</code> to <code>TRUE</code> to print status
 messages, and <code>hide_warnings</code> to <code>FALSE</code> to show
-warning messages during the AO process.</p></li>
+warning messages during the AO process. <code>add_details = TRUE</code>
+adds additional details about the AO process to the output.</p></li>
 </ul>
 </div>
 <div class="section level3">
@@ -256,7 +254,8 @@ and
 <code class="sourceCode R"><span><span class="fu">himmelblau</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">3</span>, <span class="fl">2</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 0</span></span></code></pre></div>
 <p><img src="ao-visualize_himmelblau-1.png" width="80%" style="display: block; margin: auto;"></p>
-<p>Minimizing Himmelblau’s function through alternating minimization for
+<p>Minimizing Himmelblau’s function through alternating minimization
+over
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>𝐱</mi><annotation encoding="application/x-tex">\mathbf{x}</annotation></semantics></math>
 and
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>𝐲</mi><annotation encoding="application/x-tex">\mathbf{y}</annotation></semantics></math>
@@ -274,30 +273,30 @@ can be accomplished as follows:</p>
 <span><span class="co">#&gt; $details</span></span>
 <span><span class="co">#&gt;    iteration        value       p1        p2 b1 b2     seconds</span></span>
 <span><span class="co">#&gt; 1          0 1.700000e+02 0.000000  0.000000  0  0 0.000000000</span></span>
-<span><span class="co">#&gt; 2          1 1.327270e+01 3.395691  0.000000  1  0 0.017858982</span></span>
-<span><span class="co">#&gt; 3          1 1.743664e+00 3.395691 -1.803183  0  1 0.003690958</span></span>
-<span><span class="co">#&gt; 4          2 2.847290e-02 3.581412 -1.803183  1  0 0.003906012</span></span>
-<span><span class="co">#&gt; 5          2 4.687468e-04 3.581412 -1.847412  0  1 0.003304958</span></span>
-<span><span class="co">#&gt; 6          3 7.368057e-06 3.584381 -1.847412  1  0 0.002804279</span></span>
-<span><span class="co">#&gt; 7          3 1.164202e-07 3.584381 -1.848115  0  1 0.022371292</span></span>
-<span><span class="co">#&gt; 8          4 1.893311e-09 3.584427 -1.848115  1  0 0.002305508</span></span>
-<span><span class="co">#&gt; 9          4 9.153860e-11 3.584427 -1.848124  0  1 0.001745701</span></span>
-<span><span class="co">#&gt; 10         5 6.347425e-11 3.584428 -1.848124  1  0 0.001754045</span></span>
-<span><span class="co">#&gt; 11         5 9.606386e-12 3.584428 -1.848126  0  1 0.001746655</span></span>
+<span><span class="co">#&gt; 2          1 1.327270e+01 3.395691  0.000000  1  0 0.034321785</span></span>
+<span><span class="co">#&gt; 3          1 1.743664e+00 3.395691 -1.803183  0  1 0.006773233</span></span>
+<span><span class="co">#&gt; 4          2 2.847290e-02 3.581412 -1.803183  1  0 0.012475729</span></span>
+<span><span class="co">#&gt; 5          2 4.687468e-04 3.581412 -1.847412  0  1 0.003435850</span></span>
+<span><span class="co">#&gt; 6          3 7.368057e-06 3.584381 -1.847412  1  0 0.002887249</span></span>
+<span><span class="co">#&gt; 7          3 1.164202e-07 3.584381 -1.848115  0  1 0.023343325</span></span>
+<span><span class="co">#&gt; 8          4 1.893311e-09 3.584427 -1.848115  1  0 0.002454519</span></span>
+<span><span class="co">#&gt; 9          4 9.153860e-11 3.584427 -1.848124  0  1 0.001858950</span></span>
+<span><span class="co">#&gt; 10         5 6.347425e-11 3.584428 -1.848124  1  0 0.002148867</span></span>
+<span><span class="co">#&gt; 11         5 9.606386e-12 3.584428 -1.848126  0  1 0.001789808</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $seconds</span></span>
-<span><span class="co">#&gt; [1] 0.06148839</span></span>
+<span><span class="co">#&gt; [1] 0.09148932</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $stopping_reason</span></span>
 <span><span class="co">#&gt; [1] "change in function value between 1 iteration is &lt; 1e-06"</span></span></code></pre></div>
-<p>Here, we see the output of the alternating optimization procedure,
-which is a <code>list</code> that contains the following elements:</p>
+<p>Here, we see the output of the AO process, which is a
+<code>list</code> that contains the following elements:</p>
 <ul>
 <li><p><code>estimate</code> is the parameter vector at
 termination.</p></li>
 <li><p><code>value</code> is the function value at termination.</p></li>
 <li><p><code>details</code> is a <code>data.frame</code> with full
-information about the procedure: For each iteration (column
+information about the process: For each iteration (column
 <code>iteration</code>) it contains the function value (column
 <code>value</code>), parameter values (columns starting with
 <code>p</code> followed by the parameter index), the active parameter
@@ -307,7 +306,7 @@ active parameter block and <code>0</code> if not), and computation times
 in seconds (column <code>seconds</code>).</p></li>
 <li><p><code>seconds</code> is the overall computation time in
 seconds.</p></li>
-<li><p><code>stopping_reason</code> is a message why the procedure has
+<li><p><code>stopping_reason</code> is a message why the process has
 terminated.</p></li>
 </ul>
 </div>
@@ -323,20 +322,29 @@ analytical gradient as follows:</p>
 <span>    <span class="fl">2</span> <span class="op">*</span> <span class="op">(</span><span class="va">x</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">^</span><span class="fl">2</span> <span class="op">+</span> <span class="va">x</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span> <span class="op">-</span> <span class="fl">11</span><span class="op">)</span> <span class="op">+</span> <span class="fl">4</span> <span class="op">*</span> <span class="va">x</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span> <span class="op">*</span> <span class="op">(</span><span class="va">x</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span> <span class="op">+</span> <span class="va">x</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">^</span><span class="fl">2</span> <span class="op">-</span> <span class="fl">7</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
-<p>The gradient function will be used by <code><a href="../reference/ao.html">ao()</a></code> if defined
-through the <code>gradient</code> argument as follows:</p>
+<p>The gradient function is used by <code><a href="../reference/ao.html">ao()</a></code> if provided via
+the <code>gradient</code> argument as follows:</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="../reference/ao.html">ao</a></span><span class="op">(</span>f <span class="op">=</span> <span class="va">himmelblau</span>, initial <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span>, gradient <span class="op">=</span> <span class="va">gradient</span><span class="op">)</span></span></code></pre></div>
-<p>The output is not shown here because it closely resembles the
-previous example, where the gradient was not specified and thus a
-finite-difference approximation was employed. However, in scenarios
-involving higher dimensions, utilizing the analytical gradient can
-notably improve both the speed and stability of the process.</p>
+<code class="sourceCode R"><span><span class="fu"><a href="../reference/ao.html">ao</a></span><span class="op">(</span>f <span class="op">=</span> <span class="va">himmelblau</span>, initial <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span>, gradient <span class="op">=</span> <span class="va">gradient</span>, add_details <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
+<span><span class="co">#&gt; $estimate</span></span>
+<span><span class="co">#&gt; [1]  3.584428 -1.848126</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $value</span></span>
+<span><span class="co">#&gt; [1] 2.659691e-12</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $seconds</span></span>
+<span><span class="co">#&gt; [1] 0.03353405</span></span>
+<span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; $stopping_reason</span></span>
+<span><span class="co">#&gt; [1] "change in function value between 1 iteration is &lt; 1e-06"</span></span></code></pre></div>
+<p>In scenarios involving higher dimensions, utilizing the analytical
+gradient can notably improve both the speed and stability of the
+process. The analytical Hessian can be utilized analogously.</p>
 </div>
 <div class="section level3">
 <h3 id="random-parameter-partitions">Random parameter partitions<a class="anchor" aria-label="anchor" href="#random-parameter-partitions"></a>
 </h3>
-<p>Another version of the AO procedure involves using a new, random
+<p>Another version of the AO process involves using a new, random
 partition of the parameters in every iteration. This approach can
 enhance the convergence rate and prevent being stuck in local optima. It
 is activated by setting <code>partition = "random"</code>. The
@@ -347,18 +355,19 @@ creating a new block when building a new partition. Its value ranges
 from <code>0</code> (no blocks are created) to <code>1</code> (each
 parameter is a single block).</p></li>
 <li><p><code>minimum_block_number</code> sets the minimum number of
-parameter blocks for random partitions. By default, it is configured to
+parameter blocks for random partitions. Here, it is configured as
 <code>2</code> to avoid generating trivial partitions.</p></li>
 </ul>
-<p>The random partitions are build as follows:<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content='&lt;p&gt;&lt;code&gt;Procedure&lt;/code&gt; is an internal R6 object &lt;span class="citation"&gt;(&lt;a href="#ref-chang:2022"&gt;Chang 2022&lt;/a&gt;)&lt;/span&gt;.&lt;/p&gt;'><sup>1</sup></a></p>
+<p>The random partitions are build as follows:<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content='&lt;p&gt;&lt;code&gt;Process&lt;/code&gt; is an internal R6 object &lt;span class="citation"&gt;(&lt;a href="#ref-chang:2022"&gt;Chang 2022&lt;/a&gt;)&lt;/span&gt;,
+which users typically do not need to interact with.&lt;/p&gt;'><sup>1</sup></a></p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">procedure</span> <span class="op">&lt;-</span> <span class="fu">ao</span><span class="fu">:::</span><span class="va"><a href="../reference/Procedure.html">Procedure</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span></span>
+<code class="sourceCode R"><span><span class="va">process</span> <span class="op">&lt;-</span> <span class="fu">ao</span><span class="fu">:::</span><span class="va"><a href="../reference/Process.html">Process</a></span><span class="op">$</span><span class="fu">new</span><span class="op">(</span></span>
 <span>  npar <span class="op">=</span> <span class="fl">10</span>,</span>
 <span>  partition <span class="op">=</span> <span class="st">"random"</span>,</span>
 <span>  new_block_probability <span class="op">=</span> <span class="fl">0.5</span>,</span>
 <span>  minimum_block_number <span class="op">=</span> <span class="fl">2</span></span>
 <span><span class="op">)</span></span>
-<span><span class="va">procedure</span><span class="op">$</span><span class="fu">get_partition</span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="va">process</span><span class="op">$</span><span class="fu">get_partition</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [[1]]</span></span>
 <span><span class="co">#&gt; [1] 5</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -376,7 +385,7 @@ parameter blocks for random partitions. By default, it is configured to
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; [[6]]</span></span>
 <span><span class="co">#&gt; [1] 2 3</span></span>
-<span><span class="va">procedure</span><span class="op">$</span><span class="fu">get_partition</span><span class="op">(</span><span class="op">)</span></span>
+<span><span class="va">process</span><span class="op">$</span><span class="fu">get_partition</span><span class="op">(</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [[1]]</span></span>
 <span><span class="co">#&gt; [1] 1 7 8</span></span>
 <span><span class="co">#&gt; </span></span>
@@ -399,20 +408,20 @@ two-class Gaussian mixture model via maximizing the model’s
 log-likelihood function</p>
 <p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mo>ℓ</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>𝛉</mi><mo stretchy="true" form="postfix">)</mo></mrow><mo>=</mo><munderover><mo>∑</mo><mrow><mi>i</mi><mo>=</mo><mn>1</mn></mrow><mi>n</mi></munderover><mo>log</mo><mo minsize="1.8" maxsize="1.8" stretchy="false" form="prefix">(</mo><mi>λ</mi><msub><mi>ϕ</mi><mrow><msub><mi>μ</mi><mn>1</mn></msub><mo>,</mo><msubsup><mi>σ</mi><mn>1</mn><mn>2</mn></msubsup></mrow></msub><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>x</mi><mi>i</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>+</mo><mrow><mo stretchy="true" form="prefix">(</mo><mn>1</mn><mo>−</mo><mi>λ</mi><mo stretchy="true" form="postfix">)</mo></mrow><msub><mi>ϕ</mi><mrow><msub><mi>μ</mi><mn>2</mn></msub><mo>,</mo><msubsup><mi>σ</mi><mn>2</mn><mn>2</mn></msubsup></mrow></msub><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>x</mi><mi>i</mi></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo minsize="1.8" maxsize="1.8" stretchy="false" form="postfix">)</mo><mo>,</mo></mrow><annotation encoding="application/x-tex">\ell(\boldsymbol{\theta}) = \sum_{i=1}^n \log\Big( \lambda \phi_{\mu_1, \sigma_1^2}(x_i) + (1-\lambda)\phi_{\mu_2,\sigma_2^2} (x_i) \Big),</annotation></semantics></math></p>
 <p>where the sum goes over all observations
-<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>1</mn><mo>,</mo><mi>…</mi><mo>,</mo><mi>n</mi></mrow><annotation encoding="application/x-tex">1, \dots, n</annotation></semantics></math>,
+<math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>x</mi><mn>1</mn></msub><mo>,</mo><mi>…</mi><mo>,</mo><msub><mi>x</mi><mi>n</mi></msub></mrow><annotation encoding="application/x-tex">x_1, \dots, x_n</annotation></semantics></math>,
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>ϕ</mi><mrow><msub><mi>μ</mi><mn>1</mn></msub><mo>,</mo><msubsup><mi>σ</mi><mn>1</mn><mn>2</mn></msubsup></mrow></msub><annotation encoding="application/x-tex">\phi_{\mu_1, \sigma_1^2}</annotation></semantics></math>
 and
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><msub><mi>ϕ</mi><mrow><msub><mi>μ</mi><mn>2</mn></msub><mo>,</mo><msubsup><mi>σ</mi><mn>2</mn><mn>2</mn></msubsup></mrow></msub><annotation encoding="application/x-tex">\phi_{\mu_2, \sigma_2^2}</annotation></semantics></math>
 denote the normal density for the first and second cluster,
 respectively, and
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mi>λ</mi><annotation encoding="application/x-tex">\lambda</annotation></semantics></math>
-is the mixing proportion. The parameter vector to be estimated is thus
+is the mixing proportion. The parameter vector to be estimated is
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>𝛉</mi><mo>=</mo><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>μ</mi><mn>1</mn></msub><mo>,</mo><msub><mi>μ</mi><mn>2</mn></msub><mo>,</mo><msub><mi>σ</mi><mn>1</mn></msub><mo>,</mo><msub><mi>σ</mi><mn>2</mn></msub><mo>,</mo><mi>λ</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\boldsymbol{\theta} = (\mu_1, \mu_2, \sigma_1, \sigma_2, \lambda)</annotation></semantics></math>.
 As there exists no closed-form solution for the maximum likelihood
 estimator
 <math display="inline" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mi>𝛉</mi><mo>*</mo></msup><mo>=</mo><mo>arg</mo><msub><mo>max</mo><mi>𝛉</mi></msub><mo>ℓ</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>𝛉</mi><mo stretchy="true" form="postfix">)</mo></mrow></mrow><annotation encoding="application/x-tex">\boldsymbol{\theta}^* = \arg\max_{\boldsymbol{\theta}} \ell(\boldsymbol{\theta})</annotation></semantics></math>,
-we need numerical optimization for finding the function optimum. The
-model is fitted to the following data:<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content="&lt;p&gt;The &lt;code&gt;faithful&lt;/code&gt; data set contains information
+we apply numerical optimization to find the function optimum. The model
+is fitted to the following data:<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content="&lt;p&gt;The &lt;code&gt;faithful&lt;/code&gt; data set contains information
 about eruption times (&lt;code&gt;eruptions&lt;/code&gt;) of the Old Faithful geyser
 in Yellowstone National Park, Wyoming, USA. The data histogram hints at
 two clusters with short and long eruption times, respectively. For both
@@ -446,26 +455,14 @@ simplified the output for brevity:</p>
 <span>  minimize <span class="op">=</span> <span class="cn">FALSE</span></span>
 <span><span class="op">)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="va">out</span><span class="op">$</span><span class="va">details</span>, <span class="fl">2</span><span class="op">)</span></span>
-<span><span class="co">#&gt;    iteration   value   p1   p2    p3    p4    p5 b1 b2 b3 b4 b5 seconds</span></span>
-<span><span class="co">#&gt; 1          0 -713.98 0.94 0.79  0.97  0.35  0.50  0  0  0  0  0    0.00</span></span>
-<span><span class="co">#&gt; 2          1 -541.18 0.94 3.81  0.97  0.35  0.50  0  1  0  0  0    0.00</span></span>
-<span><span class="co">#&gt; 3          1 -512.65 0.94 3.81  0.66 -0.30  0.50  0  0  1  1  0    0.01</span></span>
-<span><span class="co">#&gt; 4          1 -447.85 3.08 3.81  0.66 -0.30  0.50  1  0  0  0  0    0.00</span></span>
-<span><span class="co">#&gt; 5          1 -445.29 3.08 3.81  0.66 -0.30 -0.04  0  0  0  0  1    0.00</span></span>
-<span><span class="co">#&gt; 6          2 -432.41 3.08 4.23  0.66 -0.30 -0.04  0  1  0  0  0    0.00</span></span>
-<span><span class="co">#&gt; 7          2 -277.05 2.02 4.23 -1.46 -0.81 -0.63  1  0  1  1  1    0.03</span></span>
-<span><span class="co">#&gt; 8          3 -276.39 2.02 4.27 -1.46 -0.81 -0.63  0  1  0  0  1    0.01</span></span>
-<span><span class="co">#&gt; 9          3 -276.36 2.02 4.27 -1.45 -0.83 -0.63  1  0  1  1  0    0.01</span></span>
-<span><span class="co">#&gt; 10         4 -276.36 2.02 4.27 -1.45 -0.83 -0.63  0  0  1  0  0    0.01</span></span>
-<span><span class="co">#&gt; 11         4 -276.36 2.02 4.27 -1.45 -0.83 -0.63  1  1  0  1  1    0.01</span></span>
-<span><span class="co">#&gt; 12         5 -276.36 2.02 4.27 -1.45 -0.83 -0.63  1  0  0  0  0    0.00</span></span>
-<span><span class="co">#&gt; 13         5 -276.36 2.02 4.27 -1.45 -0.83 -0.63  0  1  1  1  1    0.01</span></span>
-<span><span class="co">#&gt; 14         6 -276.36 2.02 4.27 -1.45 -0.83 -0.63  0  0  0  0  1    0.00</span></span>
-<span><span class="co">#&gt; 15         6 -276.36 2.02 4.27 -1.45 -0.83 -0.63  1  1  1  1  0    0.01</span></span>
-<span><span class="co">#&gt; 16         7 -276.36 2.02 4.27 -1.45 -0.83 -0.63  1  1  0  1  1    0.01</span></span>
-<span><span class="co">#&gt; 17         7 -276.36 2.02 4.27 -1.45 -0.83 -0.63  0  0  1  0  0    0.01</span></span>
-<span><span class="co">#&gt; 18         8 -276.36 2.02 4.27 -1.45 -0.83 -0.63  1  1  0  1  1    0.00</span></span>
-<span><span class="co">#&gt; 19         8 -276.36 2.02 4.27 -1.45 -0.83 -0.63  0  0  1  0  0    0.00</span></span></code></pre></div>
+<span><span class="co">#&gt;   iteration   value   p1   p2    p3    p4    p5 b1 b2 b3 b4 b5 seconds</span></span>
+<span><span class="co">#&gt; 1         0 -713.98 0.94 0.79  0.97  0.35  0.50  0  0  0  0  0    0.00</span></span>
+<span><span class="co">#&gt; 2         1 -541.18 0.94 3.81  0.97  0.35  0.50  0  1  0  0  0    0.00</span></span>
+<span><span class="co">#&gt; 3         1 -512.65 0.94 3.81  0.66 -0.30  0.50  0  0  1  1  0    0.01</span></span>
+<span><span class="co">#&gt; 4         1 -447.85 3.08 3.81  0.66 -0.30  0.50  1  0  0  0  0    0.00</span></span>
+<span><span class="co">#&gt; 5         1 -445.29 3.08 3.81  0.66 -0.30 -0.04  0  0  0  0  1    0.00</span></span>
+<span><span class="co">#&gt; 6         2 -276.36 2.02 4.27 -1.45 -0.83 -0.63  1  1  1  1  1    0.05</span></span>
+<span><span class="co">#&gt; 7         3 -276.36 2.02 4.27 -1.45 -0.83 -0.63  1  1  1  1  1    0.01</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="more-flexibility">More flexibility<a class="anchor" aria-label="anchor" href="#more-flexibility"></a>
@@ -478,23 +475,23 @@ on GitHub&lt;/a&gt;.&lt;/p&gt;'><sup>4</sup></a></p>
 <h4 id="generalized-objective-functions">Generalized objective functions<a class="anchor" aria-label="anchor" href="#generalized-objective-functions"></a>
 </h4>
 <p>Optimizers in R generally require that the objective function has a
-single target argument which must be in the first position.
+single target argument which must be in the first position, but
 <a href="https://loelschlaeger.de/ao/">ao</a> allows for optimization over an argument other than
 the first, or more than one argument. For example, say, the
 <code>normal_mixture_llk</code> function above has the following form
 and is supposed to be optimized over the parameters <code>mu</code>,
-<code>sd</code>, and <code>lambda</code>:</p>
+<code>lsd</code>, and <code>llambda</code>:</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">normal_mixture_llk</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">data</span>, <span class="va">mu</span>, <span class="va">sd</span>, <span class="va">lambda</span><span class="op">)</span> <span class="op">{</span></span>
-<span>  <span class="va">sd</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="va">sd</span><span class="op">)</span></span>
-<span>  <span class="va">lambda</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Logistic.html" class="external-link">plogis</a></span><span class="op">(</span><span class="va">lambda</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="va">normal_mixture_llk</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">data</span>, <span class="va">mu</span>, <span class="va">lsd</span>, <span class="va">llambda</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">sd</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="va">lsd</span><span class="op">)</span></span>
+<span>  <span class="va">lambda</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Logistic.html" class="external-link">plogis</a></span><span class="op">(</span><span class="va">llambda</span><span class="op">)</span></span>
 <span>  <span class="va">c1</span> <span class="op">&lt;-</span> <span class="va">lambda</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">dnorm</a></span><span class="op">(</span><span class="va">data</span>, <span class="va">mu</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="va">sd</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span></span>
 <span>  <span class="va">c2</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">lambda</span><span class="op">)</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">dnorm</a></span><span class="op">(</span><span class="va">data</span>, <span class="va">mu</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>, <span class="va">sd</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span></span>
 <span>  <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">c1</span> <span class="op">+</span> <span class="va">c2</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="op">}</span></span></code></pre></div>
 <p>In <code><a href="../reference/ao.html">ao()</a></code>, this scenario can be specified by setting</p>
 <ul>
-<li><p><code>target = c("mu", "sd", "lambda")</code> (the names of the
+<li><p><code>target = c("mu", "lsd", "llambda")</code> (the names of the
 target arguments)</p></li>
 <li><p>and <code>npar = c(2, 2, 1)</code> (the lengths of the target
 arguments):</p></li>
@@ -503,7 +500,7 @@ arguments):</p></li>
 <code class="sourceCode R"><span><span class="fu"><a href="../reference/ao.html">ao</a></span><span class="op">(</span></span>
 <span>  f <span class="op">=</span> <span class="va">normal_mixture_llk</span>,</span>
 <span>  initial <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="fl">5</span><span class="op">)</span>,</span>
-<span>  target <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"mu"</span>, <span class="st">"sd"</span>, <span class="st">"lambda"</span><span class="op">)</span>,</span>
+<span>  target <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"mu"</span>, <span class="st">"lsd"</span>, <span class="st">"llambda"</span><span class="op">)</span>,</span>
 <span>  npar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">1</span><span class="op">)</span>,</span>
 <span>  data <span class="op">=</span> <span class="fu">datasets</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/r/datasets/faithful.html" class="external-link">faithful</a></span><span class="op">$</span><span class="va">eruptions</span>,</span>
 <span>  partition <span class="op">=</span> <span class="st">"random"</span>,</span>
@@ -515,11 +512,11 @@ arguments):</p></li>
 </h4>
 <p>Instead of using parameter transformations in the
 <code>normal_mixture_llk()</code> function above, parameter bounds can
-be directly specified in <code><a href="../reference/ao.html">ao()</a></code> via the arguments
-<code>lower</code> and <code>upper</code>, where both can either be a
-single number (a common bound for all parameters) or a vector of
-specific bounds per parameter. Therefore, an more straightforward
-implementation of the mixture example would be:</p>
+be specified via the arguments <code>lower</code> and
+<code>upper</code>, where both can either be a single number (a common
+bound for all parameters) or a vector of specific bounds per parameter.
+Therefore, an more straightforward implementation of the mixture example
+would be:</p>
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">normal_mixture_llk</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">mu</span>, <span class="va">sd</span>, <span class="va">lambda</span>, <span class="va">data</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">c1</span> <span class="op">&lt;-</span> <span class="va">lambda</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">dnorm</a></span><span class="op">(</span><span class="va">data</span>, <span class="va">mu</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="va">sd</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span></span>
@@ -541,9 +538,8 @@ implementation of the mixture example would be:</p>
 <div class="section level4">
 <h4 id="custom-parameter-partition">Custom parameter partition<a class="anchor" aria-label="anchor" href="#custom-parameter-partition"></a>
 </h4>
-<p><a href="https://loelschlaeger.de/ao/">ao</a> allows for the specification of custom parameter
-partitions. For example, say, the parameters of the Gaussian mixture
-model are supposed to be grouped by type:</p>
+<p>Say the parameters of the Gaussian mixture model are supposed to be
+grouped by type:</p>
 <p><math display="block" xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msub><mi>𝐱</mi><mn>1</mn></msub><mo>=</mo><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>μ</mi><mn>1</mn></msub><mo>,</mo><msub><mi>μ</mi><mn>2</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>,</mo><mspace width="0.222em"></mspace><msub><mi>𝐱</mi><mn>2</mn></msub><mo>=</mo><mrow><mo stretchy="true" form="prefix">(</mo><msub><mi>σ</mi><mn>1</mn></msub><mo>,</mo><msub><mi>σ</mi><mn>2</mn></msub><mo stretchy="true" form="postfix">)</mo></mrow><mo>,</mo><mspace width="0.222em"></mspace><msub><mi>𝐱</mi><mn>3</mn></msub><mo>=</mo><mrow><mo stretchy="true" form="prefix">(</mo><mi>λ</mi><mo stretchy="true" form="postfix">)</mo></mrow><mi>.</mi></mrow><annotation encoding="application/x-tex">\mathbf{x}_1 = (\mu_1, \mu_2),\ \mathbf{x}_2 = (\sigma_1, \sigma_2),\ \mathbf{x}_3 = (\lambda).</annotation></semantics></math></p>
 <p>In <code><a href="../reference/ao.html">ao()</a></code>, custom parameter partitions can be specified by
 setting <code>partition = list(1:2, 3:4, 5)</code>, i.e. by defining a
@@ -554,7 +550,7 @@ members of any number of blocks.</p>
 <div class="section level4">
 <h4 id="stopping-criteria">Stopping criteria<a class="anchor" aria-label="anchor" href="#stopping-criteria"></a>
 </h4>
-<p>Currently, four different stopping criteria for the AO procedure are
+<p>Currently, four different stopping criteria for the AO process are
 implemented:</p>
 <ol style="list-style-type: decimal">
 <li><p>a predefined iteration limit is exceeded (via the
@@ -570,31 +566,31 @@ falls below a predefined threshold (via the
 is computed via the norm specified as
 <code>tolerance_parameter_norm</code>)</p></li>
 </ol>
-<p>Any number of stopping criteria can be activated or deactivated<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content="&lt;p&gt;Stopping criteria of the AO procedure can be
-deactivated, e.g., by setting &lt;code&gt;iteration_limit = Inf&lt;/code&gt;,
+<p>Any number of stopping criteria can be activated or deactivated<a class="footnote-ref" tabindex="0" data-bs-toggle="popover" data-bs-content="&lt;p&gt;Stopping criteria of the AO process can be deactivated
+by setting &lt;code&gt;iteration_limit = Inf&lt;/code&gt;,
 &lt;code&gt;seconds_limit = Inf&lt;/code&gt;, &lt;code&gt;tolerance_value = 0&lt;/code&gt;, or
 &lt;code&gt;tolerance_parameter = 0&lt;/code&gt;.&lt;/p&gt;"><sup>5</sup></a>, and the
 final output contains information about the criterium that caused
 termination.</p>
 </div>
 <div class="section level4">
-<h4 id="optimizer-for-solving-the-sub-problems">Optimizer for solving the sub-problems<a class="anchor" aria-label="anchor" href="#optimizer-for-solving-the-sub-problems"></a>
+<h4 id="base-optimizer">Base optimizer<a class="anchor" aria-label="anchor" href="#base-optimizer"></a>
 </h4>
 <p>By default, the L-BFGS-B algorithm <span class="citation">(<a href="#ref-byrd:1995">Byrd et al. 1995</a>)</span> implemented in
-<code><a href="https://rdrr.io/r/stats/optim.html" class="external-link">stats::optim</a></code> is used. for solving the sub-problems
+<code><a href="https://rdrr.io/r/stats/optim.html" class="external-link">stats::optim</a></code> is used for solving the sub-problems
 numerically. However, any other optimizer can be selected by specifying
 the <code>base_optimizer</code> argument. Such an optimizer must be
 defined through the framework provided by the <a href="https://loelschlaeger.de/optimizeR/" class="external-link">optimizeR</a>
-package, please see <a href="https://loelschlaeger.de/optimizeR/" class="external-link">its
+package, see <a href="https://loelschlaeger.de/optimizeR/" class="external-link">its
 documentation</a> for details. For example, the <code><a href="https://rdrr.io/r/stats/nlm.html" class="external-link">stats::nlm</a></code>
 optimizer can be selected by setting
 <code>base_optimizer = Optimizer$new("stats::nlm")</code>.</p>
 </div>
 <div class="section level4">
-<h4 id="multiple-threads">Multiple threads<a class="anchor" aria-label="anchor" href="#multiple-threads"></a>
+<h4 id="multiple-processes">Multiple processes<a class="anchor" aria-label="anchor" href="#multiple-processes"></a>
 </h4>
-<p>Alternating optimization can suffer from local optima. To increase
-the likelihood of reaching the global optimum, users can specify</p>
+<p>AO can suffer from local optima. To increase the likelihood of
+reaching the global optimum, users can specify</p>
 <ul>
 <li><p>multiple starting parameters,</p></li>
 <li><p>multiple parameter partitions,</p></li>
@@ -603,8 +599,8 @@ the likelihood of reaching the global optimum, users can specify</p>
 <p>Use the <code>initial</code>, <code>partition</code>, and/or
 <code>base_optimizer</code> arguments to provide a <code>list</code> of
 possible values for each parameter. Each combination of initial values,
-parameter partitions, and base optimizers will create a separate
-alternating optimization thread:</p>
+parameter partitions, and base optimizers will create a separate AO
+process:</p>
 <div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">normal_mixture_llk</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">mu</span>, <span class="va">sd</span>, <span class="va">lambda</span>, <span class="va">data</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="va">c1</span> <span class="op">&lt;-</span> <span class="va">lambda</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">dnorm</a></span><span class="op">(</span><span class="va">data</span>, <span class="va">mu</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="va">sd</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span></span>
@@ -622,56 +618,41 @@ alternating optimization thread:</p>
 <span>  lower <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="cn">Inf</span>, <span class="op">-</span><span class="cn">Inf</span>, <span class="fl">0</span>, <span class="fl">0</span>, <span class="fl">0</span><span class="op">)</span>,</span>
 <span>  upper <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="cn">Inf</span>, <span class="cn">Inf</span>, <span class="cn">Inf</span>, <span class="cn">Inf</span>, <span class="fl">1</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/names.html" class="external-link">names</a></span><span class="op">(</span><span class="va">out</span><span class="op">)</span></span>
+<span><span class="co">#&gt;  [1] "estimate"         "estimates"        "value"            "values"          </span></span>
+<span><span class="co">#&gt;  [5] "details"          "seconds"          "seconds_each"     "stopping_reason" </span></span>
+<span><span class="co">#&gt;  [9] "stopping_reasons" "processes"</span></span>
 <span><span class="va">out</span><span class="op">$</span><span class="va">values</span></span>
 <span><span class="co">#&gt; [[1]]</span></span>
-<span><span class="co">#&gt; [1] -607.0916</span></span>
+<span><span class="co">#&gt; [1] -421.417</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; [[2]]</span></span>
 <span><span class="co">#&gt; [1] -421.417</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; [[3]]</span></span>
-<span><span class="co">#&gt; [1] -607.2776</span></span>
+<span><span class="co">#&gt; [1] -276.36</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; [[4]]</span></span>
-<span><span class="co">#&gt; [1] -3102.617</span></span>
+<span><span class="co">#&gt; [1] -597.2553</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; [[5]]</span></span>
-<span><span class="co">#&gt; [1] -276.36</span></span>
+<span><span class="co">#&gt; [1] -421.417</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; [[6]]</span></span>
 <span><span class="co">#&gt; [1] -421.417</span></span></code></pre></div>
-<p>In the case of multiple threads, the output changes slightly in
-comparison to the standard case. It is a <code>list</code> with the
-following elements:</p>
-<ul>
-<li><p><code>estimate</code> is the optimal parameter vector over all
-threads.</p></li>
-<li><p><code>estimates</code> is a <code>list</code> of optimal
-parameters in each thread.</p></li>
-<li><p><code>value</code> is the optimal function value over all
-threads.</p></li>
-<li><p><code>values</code> is a <code>list</code> of optimal function
-values in each thread.</p></li>
-<li><p><code>details</code> combines details of the single threads and
-has an additional column <code>thread</code> with an index for the
-different threads.</p></li>
-<li><p><code>seconds</code> gives the computation time in seconds for
-each thread.</p></li>
-<li><p><code>stopping_reason</code> gives the termination message for
-each thread.</p></li>
-<li><p><code>threads</code> give details how the different threads were
-specified.</p></li>
-</ul>
-<p>By default, threads run sequentially. However, since they are
-independent, they can be parallelized. To enable parallel computation,
-use the <a href="https://future.futureverse.org/" class="external-link"><code>{future}</code>
+<p>In the case of multiple processes, the output provides information
+for the best process (with respect to the function value) as well as
+information on every single process.</p>
+<p>By default, processes run sequentially. However, since they are
+independent of each other, they can be parallelized. For parallel
+computation, <a href="https://loelschlaeger.de/ao/">ao</a> supports the <a href="https://future.futureverse.org/" class="external-link"><code>{future}</code>
 framework</a>. For example, run the following <em>before</em> the
 <code><a href="../reference/ao.html">ao()</a></code> call:</p>
 <div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu">future</span><span class="fu">::</span><span class="fu"><a href="https://future.futureverse.org/reference/plan.html" class="external-link">plan</a></span><span class="op">(</span><span class="fu">future</span><span class="fu">::</span><span class="va"><a href="https://future.futureverse.org/reference/multisession.html" class="external-link">multisession</a></span>, workers <span class="op">=</span> <span class="fl">4</span><span class="op">)</span></span></code></pre></div>
-<p>When using multiple threads, setting <code>verbose = TRUE</code> to
-print tracing details during alternating optimization is not supported.
-However, progress of threads can still be tracked using the <a href="https://progressr.futureverse.org/" class="external-link"><code>{progressr}</code>
+<p>When using multiple processes, setting <code>verbose = TRUE</code> to
+print tracing details during AO is not supported. However, progress of
+processes can still be tracked using the <a href="https://progressr.futureverse.org/" class="external-link"><code>{progressr}</code>
 framework</a>. For example, run the following <em>before</em> the
 <code><a href="../reference/ao.html">ao()</a></code> call:</p>
 <div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
@@ -731,7 +712,7 @@ Computations</em> 10.
 </div>
 
 <div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.0.</p>
+  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.1.1.</p>
 </div>
 
     </footer>
