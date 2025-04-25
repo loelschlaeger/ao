@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">ao</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.0.9000</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -380,6 +380,7 @@ The function value at the initial parameters.</p></dd>
 <span>  <span class="va">parameter_block</span>,</span>
 <span>  <span class="va">seconds</span>,</span>
 <span>  <span class="va">error</span>,</span>
+<span>  <span class="va">error_message</span>,</span>
 <span>  block <span class="op">=</span> <span class="va">self</span><span class="op">$</span><span class="va">block</span></span>
 <span><span class="op">)</span></span></code></pre></div><p></p></div>
 </div>
@@ -404,6 +405,11 @@ The time in seconds for solving the sub-problem.</p></dd>
 <dt><code>error</code></dt>
 <dd><p>[<code>logical(1)</code>]<br>
 Did solving the sub-problem result in an error?</p></dd>
+
+
+<dt><code>error_message</code></dt>
+<dd><p>[<code>character(1)</code>]<br>
+An error message if <code>error = TRUE</code>.</p></dd>
 
 
 <dt><code>block</code></dt>
