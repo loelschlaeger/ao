@@ -243,10 +243,15 @@ Process <- R6::R6Class("Process",
    #' @param error \[`logical(1)`\]\cr
    #' Did solving the sub-problem result in an error?
    #'
+   #' @param error_message \[`character(1)`\]\cr
+   #' An error message if `error = TRUE`.
+   #'
    #' @param block \[`integer()`\]\cr
    #' The currently active parameter block, represented as parameter indices.
 
-   update_details = function(value, parameter_block, seconds, error, block = self$block) {
+   update_details = function(
+     value, parameter_block, seconds, error, error_message, block = self$block
+   ) {
 
      ### check inputs
      check_block <- checkmate::check_integerish(
@@ -267,9 +272,25 @@ Process <- R6::R6Class("Process",
      )
      check_error <- checkmate::check_flag(error)
      check_results <- all(sapply(
-       c(check_block, check_value, check_parameter_block, check_seconds, check_error),
+       c(
+         check_block, check_value, check_parameter_block, check_seconds,
+         check_error, isFALSE(error)
+       ),
        isTRUE
      ))
+
+     ### error occurred?
+     if (isTRUE(error)) {
+       private$.error <- TRUE
+       private$.error_message <- paste(
+         "solving for block [", paste(block, collapse = ","), "] failed:",
+         if (checkmate::test_string(error_message, min.chars = 1)) {
+           error_message
+         } else {
+           "unknown reason"
+         }
+       )
+     }
 
      ### update details
      rows <- nrow(private$.details)
@@ -562,9 +583,18 @@ Process <- R6::R6Class("Process",
    #' Checks if the AO process can be terminated.
 
    check_stopping = function() {
+
      ### check stopping criteria
      stopping <- FALSE
      while (TRUE) {
+
+       ### check error occurred
+       if (isTRUE(private$.error)) {
+         message <- private$.error_message
+         stopping <- TRUE
+         break
+       }
+
        ### check iteration limit
        if (self$iteration >= self$iteration_limit) {
          message <- paste("iteration limit of", self$iteration_limit, "reached")
@@ -629,6 +659,7 @@ Process <- R6::R6Class("Process",
      }
      return(stopping)
    }
+
  ),
 
  active = list(
@@ -1002,6 +1033,10 @@ Process <- R6::R6Class("Process",
    .details = data.frame(),
    .add_details = TRUE,
    .stopping_reason = "not terminated yet",
+
+   ### error status
+   .error = FALSE,
+   .error_message = character(),
 
    # Generated randomized blocks.
    # @param x The parameter indices.

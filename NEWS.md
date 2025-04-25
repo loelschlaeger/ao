@@ -1,3 +1,7 @@
+# ao development
+
+* Added information to `stopping_reason` when solving sub-problem fails.
+
 # ao 1.2.0
 
 * Parameter bounds, analytical gradient and Hessian are now supported more generally.

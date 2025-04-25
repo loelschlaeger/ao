@@ -76,7 +76,7 @@ ggplot(grid) +
 ... is obtained as follows:
 
 ```{r, ao rosenbrock}
-ao(f = rosenbrock, initial = c(2, 2), add_details = TRUE)
+ao(f = rosenbrock, initial = c(2, 2))
 ```
 
 ## Contact?

@@ -563,13 +563,15 @@ ao <- function(
         block = block
       )
 
-      ### check acceptance and update
+      ### update details
       process$update_details(
         value = sub_problem_out[["value"]],
         parameter_block = sub_problem_out[["parameter"]],
         seconds = sub_problem_out[["seconds"]],
-        error = sub_problem_out[["error"]]
+        error = sub_problem_out[["error"]],
+        error_message = sub_problem_out[["error_message"]]
       )
+
     }
   }
 

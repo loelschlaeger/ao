@@ -321,6 +321,7 @@ Updates the \code{details} part of the output.
   parameter_block,
   seconds,
   error,
+  error_message,
   block = self$block
 )}\if{html}{\out{</div>}}
 }
@@ -339,6 +340,9 @@ The time in seconds for solving the sub-problem.}
 
 \item{\code{error}}{[\code{logical(1)}]\cr
 Did solving the sub-problem result in an error?}
+
+\item{\code{error_message}}{[\code{character(1)}]\cr
+An error message if \code{error = TRUE}.}
 
 \item{\code{block}}{[\code{integer()}]\cr
 The currently active parameter block, represented as parameter indices.}
