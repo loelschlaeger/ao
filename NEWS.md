@@ -1,6 +1,8 @@
-# ao development
+# ao 1.2.1
 
 * Added information to `stopping_reason` when solving sub-problem fails.
+
+* Adapted to `{optimizeR}` version 1.2.1.
 
 # ao 1.2.0
 

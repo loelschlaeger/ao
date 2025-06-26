@@ -24,9 +24,23 @@ AO is an iterative process that optimizes a function by alternately
 performing restricted optimization over parameter subsets. Instead of
 joint optimization, it breaks the optimization problem down into simpler
 sub-problems. This approach can make optimization feasible when joint
-optimization is too difficult. See the [package
-vignette](https://loelschlaeger.de/ao/articles/ao.html) for more
-details.
+optimization is too difficult.
+
+The AO process implemented in `{ao}` can be
+
+- viewed as a generalization of joint optimization,
+
+- used for minimization and maximization problems and with custom
+  partitions of the parameters,
+
+- randomized by changing the parameter partition randomly after each
+  iteration,
+
+- run in multiple parallel processes for different initial values,
+  parameter partitions, and/or base optimizers.
+
+See the [package vignette](https://loelschlaeger.de/ao/articles/ao.html)
+for more details.
 
 ## How?
 
