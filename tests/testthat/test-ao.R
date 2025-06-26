@@ -44,7 +44,7 @@ test_that("ao with additional parameters works", {
   }
   expect_error(
     ao(f = himmelblau, initial = c(0, 0)),
-    "Function evaluation threw an error: argument \"a\" is missing, with no default"
+    "Function argument `a` is required but not specified yet."
   )
   ao_out <- ao(f = himmelblau, initial = c(0, 0), a = 2, b = 11, c = 7)
   checkmate::expect_list(ao_out, len = 5)
