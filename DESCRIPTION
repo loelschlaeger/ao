@@ -28,7 +28,7 @@ Imports:
     checkmate,
     cli,
     future.apply,
-    oeli (>= 0.7.2),
+    oeli (>= 0.7.3),
     progressr,
     R6,
     stats,
@@ -43,4 +43,4 @@ Config/testthat/edition: 3
 VignetteBuilder: knitr
 Depends:
     R (>= 4.0.0),
-    optimizeR (>= 1.2.0)
+    optimizeR (>= 1.2.1)
