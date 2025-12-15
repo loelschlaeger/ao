@@ -9,10 +9,14 @@
 status](https://www.r-pkg.org/badges/version/ao)](https://CRAN.R-project.org/package=ao)
 [![CRAN
 downloads](https://cranlogs.r-pkg.org/badges/grand-total/ao)](https://CRAN.R-project.org/package=ao)
+[![metacran
+downloads](https://cranlogs.r-pkg.org/badges/last-month/ao)](https://cran.r-project.org/package=ao)
 [![R-CMD-check](https://github.com/loelschlaeger/ao/workflows/R-CMD-check/badge.svg)](https://github.com/loelschlaeger/ao/actions)
 [![future-tests](https://github.com/loelschlaeger/ao/workflows/future_tests/badge.svg)](https://github.com/loelschlaeger/ao/actions)
 [![Codecov test
 coverage](https://codecov.io/gh/loelschlaeger/ao/branch/main/graph/badge.svg)](https://app.codecov.io/gh/loelschlaeger/ao?branch=main)
+[![Lifecycle:
+stable](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://lifecycle.r-lib.org/articles/stages.html#stable)
 <!-- badges: end -->
 
 The `{ao}` package implements alternating optimization (AO) in

@@ -370,16 +370,23 @@ Process <- R6::R6Class("Process",
 
      ### filter details
      details <- private$.details
+
+     # define block columns early (needed for filtering)
+     block_columns <- which(startsWith(colnames(details), "b"))
+
      if (!is.null(which_iteration)) {
-       details <- details[details$iteration %in% which_iteration, ]
+       details <- details[details$iteration %in% which_iteration, , drop = FALSE]
      }
+
      if (!is.null(which_block)) {
        if (is.character(which_block)) {
          rows <- oeli::vector_occurrence(details$iteration, which_block)
        } else {
-         rows <- as.integer(which(apply(
-           details[, block_columns], 1, function(x) all(as.numeric(x) %in% 1)
-         )))
+         target <- sort(as.integer(which_block))
+         rows <- which(apply(details[, block_columns, drop = FALSE], 1, function(x) {
+           active <- which(as.numeric(x) == 1)
+           identical(active, target)
+         }))
        }
      } else {
        rows <- seq_len(nrow(details))
@@ -1044,18 +1051,18 @@ Process <- R6::R6Class("Process",
    # @param min The minimum number of blocks.
    # @author Siddhartha Chib
    .generate_random_partition = function(
-      x = self$npar,
+      x = seq_len(self$npar),
       p = self$new_block_probability,
       min = self$minimum_block_number
-    ) {
-     if (min == x) {
-       return(as.list(seq_len(x)))
+   ) {
+     if (min == length(x)) {
+       return(as.list(x))
      }
-     x <- sample(x, replace = F)
+     x <- sample(x, replace = FALSE)
      n <- length(x)
-     y <- sample(0:1, n, replace = T, prob = c(1 - p, p))
+     y <- sample(0:1, n, replace = TRUE, prob = c(1 - p, p))
      y[1] <- 1
-     ind <- which(y %in% 1)
+     ind <- which(y == 1)
      if (length(ind) < min) {
        ind <- sort(c(ind, sample(which(y == 0), size = min - length(ind))))
      }
@@ -1063,11 +1070,7 @@ Process <- R6::R6Class("Process",
      blocks <- vector("list", B)
      for (j in seq_len(B)) {
        s <- ind[j]
-       if (j < B) {
-         e <- ind[(j + 1)] - 1
-       } else {
-         e <- n
-       }
+       e <- if (j < B) ind[j + 1] - 1 else n
        xj <- x[s:e]
        blocks[[j]] <- xj[order(xj)]
      }

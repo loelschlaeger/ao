@@ -102,3 +102,41 @@ test_that("ao fails graciously", {
   f <- function(x) x[1]^2 + x[2]^2
   expect_silent(ao(f = f, initial = 1)) # initial is mis-specified
 })
+
+
+test_that("random partition works with ucminf optimizer", {
+  skip_if_not_installed("ucminf")
+  set.seed(1)
+  # simple convex objective in 6D
+  f <- function(x) sum((x - 1)^2)
+
+  out <- ao(
+    f = f,
+    initial = rep(0, 6),
+    partition = "random",
+    new_block_probability = 0.35,
+    minimum_block_number = 2,
+    base_optimizer = optimizeR::Optimizer$new("ucminf::ucminf"),
+    iteration_limit = 3,     # keep it fast for CRAN
+    add_details = TRUE
+  )
+
+  checkmate::expect_list(out,len = 5)
+
+  d <- out$details
+  bcols <- grep("^b[0-9]+$", names(d), value = TRUE)
+  expect_length(bcols, 6)
+
+  # drop init row if present
+  d2 <- d[d$iteration > 0, , drop = FALSE]
+
+  # each step should activate at least one parameter and not exceed npar
+  active_counts <- rowSums(as.matrix(d2[, bcols, drop = FALSE]) == 1)
+  expect_true(all(active_counts >= 1))
+  expect_true(all(active_counts <= 6))
+
+  # block indicators must be binary (0/1)
+  expect_true(
+    all(unlist(d2[, bcols, drop = FALSE]) %in% c(0, 1))
+  )
+})

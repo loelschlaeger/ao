@@ -1,3 +1,7 @@
+# ao 1.2.2
+
+* Small bug fixes in non-user level functions `get_details()` and `.generate_random_partition()` 
+
 # ao 1.2.1
 
 * Added information to `stopping_reason` when solving sub-problem fails.
