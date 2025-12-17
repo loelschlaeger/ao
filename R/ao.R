@@ -230,12 +230,49 @@
 #'
 #' # Example 2: Maximization of 2-class Gaussian mixture log-likelihood --------
 #'
+#' normal_mixture_loglik_uc = function(mu, logsd, eta, data) {
+#'   sd <- exp(logsd)
+#'   e <- exp(eta[1])
+#'   den <- 1 + e
+#'   q1 <- e / den
+#'   q2 <- 1 / den
+#'   l1 <- log(q1) + dnorm(data, mu[1], sd[1], log = TRUE)
+#'   l2 <- log(q2) + dnorm(data, mu[2], sd[2], log = TRUE)
+#'   m <- pmax(l1, l2)
+#'   sum(m + log(exp(l1 - m) + exp(l2 - m)))
+#' }
+#'
+#' set.seed(123)
+#'
+#' data <- datasets::faithful$eruptions
+#'
+#' fit <- ao(
+#'   f = normal_mixture_loglik_uc,
+#'   initial = c(mean(data) + c(-1, 1), rep(log(sd(data)), 2), 0),
+#'   target = c("mu", "logsd", "eta"),
+#'   npar = c(2, 2, 1),
+#'   data = data,
+#'   partition = "random",
+#'   base_optimizer = Optimizer$new("ucminf::ucminf"),
+#'   minimize = FALSE,
+#'   add_details = FALSE,
+#'   verbose = TRUE
+#' )
+#'
+#' (muhat <- fit$par$mu)
+#' (sdhat <- exp(fit$par$logsd))
+#' e <- exp(fit$par$eta)
+#' den <- 1 + e
+#' (qhat <- c(e / den, 1 / den))
+#'
+#' # Example 3: Constrained Optimization in the Setting of Example 2 -----------
+#'
 #' # target arguments:
 #' # - class means mu (2, unrestricted)
 #' # - class standard deviations sd (2, must be non-negative)
 #' # - class proportion lambda (only 1 for identification, must be in [0, 1])
 #'
-#' normal_mixture_llk <- function(mu, sd, lambda, data) {
+#' normal_mixture_loglik <- function(mu, sd, lambda, data) {
 #'   c1 <- lambda * dnorm(data, mu[1], sd[1])
 #'   c2 <- (1 - lambda) * dnorm(data, mu[2], sd[2])
 #'   sum(log(c1 + c2))
@@ -244,7 +281,7 @@
 #' set.seed(123)
 #'
 #' ao(
-#'   f = normal_mixture_llk,
+#'   f = normal_mixture_loglik,
 #'   initial = runif(5),
 #'   target = c("mu", "sd", "lambda"),
 #'   npar = c(2, 2, 1),
@@ -259,29 +296,29 @@
 #' @export
 
 ao <- function(
-    f,
-    initial,
-    target = NULL,
-    npar = NULL,
-    gradient = NULL,
-    hessian = NULL,
-    ...,
-    partition = "sequential",
-    new_block_probability = 0.3,
-    minimum_block_number = 1,
-    minimize = TRUE,
-    lower = NULL,
-    upper = NULL,
-    iteration_limit = Inf,
-    seconds_limit = Inf,
-    tolerance_value = 1e-6,
-    tolerance_parameter = 1e-6,
-    tolerance_parameter_norm = function(x, y) sqrt(sum((x - y)^2)),
-    tolerance_history = 1,
-    base_optimizer = Optimizer$new("stats::optim", method = "L-BFGS-B"),
-    verbose = FALSE,
-    hide_warnings = TRUE,
-    add_details = TRUE
+  f,
+  initial,
+  target = NULL,
+  npar = NULL,
+  gradient = NULL,
+  hessian = NULL,
+  ...,
+  partition = "sequential",
+  new_block_probability = 0.3,
+  minimum_block_number = 1,
+  minimize = TRUE,
+  lower = NULL,
+  upper = NULL,
+  iteration_limit = Inf,
+  seconds_limit = Inf,
+  tolerance_value = 1e-6,
+  tolerance_parameter = 1e-6,
+  tolerance_parameter_norm = function(x, y) sqrt(sum((x - y)^2)),
+  tolerance_history = 1,
+  base_optimizer = Optimizer$new("stats::optim", method = "L-BFGS-B"),
+  verbose = FALSE,
+  hide_warnings = TRUE,
+  add_details = TRUE
 ) {
 
   ### check if required arguments are specified
@@ -367,7 +404,8 @@ ao <- function(
       future.seed = TRUE
     )
 
-    ### combine results
+    ### merge results
+    # TODO: separate function for merging
     values <- vapply(results, `[[`, numeric(1), "value")
     stopping_reasons <- vapply(results, `[[`, character(1), "stopping_reason")
     optimal_process <- ifelse(isTRUE(minimize), which.min(values), which.max(values))
@@ -404,6 +442,17 @@ ao <- function(
         )
       )
     }
+
+    # TODO: ensure structured parameters
+    # ---- ADD structured parameters ------------------------------------------
+    # if(!is.null(target)){
+    #   out$target=target
+    #   out$npar=npar
+    #   out$par=split_by_target(out$estimate,target,npar)
+    #   if(add_details){
+    #     out$pars=lapply(out$estimates,split_by_target,target=target,npar=npar)
+    #   }
+    # }
   }
 
   ### input checks and building of objects
@@ -576,5 +625,14 @@ ao <- function(
   }
 
   ### return results
+
+  # TODO: process obj needs target, then add pars to output
+  # ---- ADD structured parameters --------------------------------------------
+  # if(!is.null(target)){
+  #   out$target=objective$target
+  #   out$npar=objective$npar
+  #   out$par=split_by_target(out$estimate,out$target,out$npar)
+  # }
+
   process$output
 }
