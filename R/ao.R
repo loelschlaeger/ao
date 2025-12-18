@@ -194,6 +194,8 @@
 #'
 #' This can also be a `list` of multiple base optimizers, see details.
 #'
+#' TODO:  What is the default value for the number of iterations within each block? It should not be 1.  We should set it to be 5 or 10 or something like that for every algorithm.
+#'
 #' @param verbose \[`logical(1)`\]\cr
 #' Print tracing details during the AO process?
 #'
