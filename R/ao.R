@@ -1,3 +1,5 @@
+# TODO: func to solve subproblems manually
+
 #' Alternating Optimization
 #'
 #' @description
