@@ -1,30 +1,59 @@
-# TODO: add doc + tests
+#' Split estimate by target
+#'
+#' @description
+#' This helper function splits the solution by target parameters (if provided),
+#' which is used for the output.
+#'
+#' @author Siddhartha Chib
+#'
+#' @param estimate \[`numeric`\]\cr
+#' A parameter vector.
+#'
+#' @inheritParams ao
+#'
+#' @return
+#' A (named) \code{list}, a partition of `estimate` according to `npar`.
 
-split_by_target <- function(estimate, target, npar){
-  out = list()
-  idx = 1L
-  for(i in seq_along(target)){
-    k = as.integer(npar[i])
-    out[[target[i]]] = estimate[idx:(idx+k-1L)]
-    idx = idx+k
+split_by_target <- function(estimate, target = NULL, npar) {
+  if (is.null(target)) {
+    return(list(estimate))
+  }
+  stopifnot(
+    is.character(target), is.numeric(estimate),
+    length(target) <= length(estimate), is.numeric(npar),
+    sum(npar) == length(estimate)
+  )
+  out <- list()
+  idx <- 1L
+  for (i in seq_along(target)) {
+    k <- as.integer(npar[i])
+    out[[target[i]]] <- estimate[idx:(idx + k - 1L)]
+    idx <- idx + k
   }
   out
 }
 
-# TODO: improve doc + add tests
-
-#' Generated randomized blocks.
-#' @param x The parameter indices.
-#' @param p The probability to generate a new block.
-#' @param min The minimum number of blocks.
-#' @return TODO
+#' Generated random partition
+#'
+#' @description
+#' This helper function generates a random parameter partition, which is used
+#' for the randomized AO procedure.
+#'
 #' @author Siddhartha Chib
+#'
+#' @param x \[`integer`\]\cr
+#' The parameter indices.
+#'
+#' @param p \[`numeric(1)`\]\cr
+#' The probability to generate a new block.
+#'
+#' @param min \[`integer(1)`\]\cr
+#' The minimum number of blocks.
+#'
+#' @return
+#' A \code{list}, a random partition of `x`.
 
-generate_random_partition = function(
-    x = seq_len(self$npar),
-    p = self$new_block_probability,
-    min = self$minimum_block_number
-) {
+generate_random_partition <- function(x, p, min) {
   if (min == length(x)) {
     return(as.list(x))
   }
@@ -47,9 +76,79 @@ generate_random_partition = function(
   blocks
 }
 
-# TODO: add doc + tests
+#' Merge optimization results
+#'
+#' @description
+#' This helper function merges the results of multiple AO processes.
+#'
+#' @param results \[`list`\]\cr
+#' A `list` of outputs from \code{\link[ao]{ao}}.
+#'
+#' @inheritParams ao
+#'
+#' @return
+#' A \code{list}, see section "Output value" on the \code{\link[ao]{ao}} page.
 
-merge_results <- function() {
+merge_results <- function(results, minimize = TRUE, add_details = TRUE) {
+  values <- vapply(results, `[[`, numeric(1), "value")
+  stopping_reasons <- vapply(results, `[[`, character(1), "stopping_reason")
+  optimal_process <- ifelse(
+    isTRUE(minimize), which.min(values), which.max(values)
+  )
+  seconds_each <- vapply(results, `[[`, numeric(1), "seconds")
+  if (isTRUE(add_details)) {
+    details_list <- list()
+    for (process in seq_along(results)) {
+      details_list[[process]] <- cbind(
+        process = process,
+        results[[process]][["details"]]
+      )
+    }
+    return(
+      list(
+        "estimate" = lapply(results, `[[`, "estimate")[[optimal_process]],
+        "estimates" = lapply(results, `[[`, "estimate"),
+        "value" = values[optimal_process],
+        "values" = as.list(values),
+        "details" = do.call("rbind", details_list),
+        "seconds" = sum(seconds_each),
+        "seconds_each" = as.list(seconds_each),
+        "stopping_reason" = stopping_reasons[optimal_process],
+        "stopping_reasons" = as.list(stopping_reasons),
+        "processes" = processes
+      )
+    )
+  } else {
+    return(
+      list(
+        "estimate" = lapply(results, `[[`, "estimate")[[optimal_process]],
+        "value" = values[optimal_process],
+        "seconds" = sum(seconds_each),
+        "stopping_reason" = stopping_reasons[optimal_process]
+      )
+    )
+  }
+
+
+  # TODO: ensure structured parameters
+  # ---- ADD structured parameters ------------------------------------------
+  # if(!is.null(target)){
+  #   out$target=target
+  #   out$npar=npar
+  #   out$par=split_by_target(out$estimate,target,npar)
+  #   if(add_details){
+  #     out$pars=lapply(out$estimates,split_by_target,target=target,npar=npar)
+  #   }
+  # }
+
 
 }
 
+
+# TODO: process obj needs target, then add pars to output
+# ---- ADD structured parameters --------------------------------------------
+# if(!is.null(target)){
+#   out$target=objective$target
+#   out$npar=objective$npar
+#   out$par=split_by_target(out$estimate,out$target,out$npar)
+# }

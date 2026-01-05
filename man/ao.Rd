@@ -24,7 +24,8 @@ ao(
   tolerance_parameter = 1e-06,
   tolerance_parameter_norm = function(x, y) sqrt(sum((x - y)^2)),
   tolerance_history = 1,
-  base_optimizer = Optimizer$new("stats::optim", method = "L-BFGS-B"),
+  base_optimizer = Optimizer$new("stats::optim", method = "L-BFGS-B", control =
+    list(maxit = 10)),
   verbose = FALSE,
   hide_warnings = TRUE,
   add_details = TRUE
@@ -167,7 +168,8 @@ An \code{Optimizer} object, which can be created via
 \code{\link[optimizeR]{Optimizer}}. It numerically solves the sub-problems.
 
 By default, the \code{\link[stats]{optim}} optimizer with
-\code{method = "L-BFGS-B"} is used.
+\code{method = "L-BFGS-B"} is used. The default value for the number of
+iterations within each block is 10.
 
 This can also be a \code{list} of multiple base optimizers, see details.}
 

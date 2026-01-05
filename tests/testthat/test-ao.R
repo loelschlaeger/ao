@@ -14,7 +14,9 @@ test_that("ao with custom gradient works", {
   }
   ao_out <- ao(f = himmelblau, initial = c(0, 0), gradient = gradient)
   checkmate::expect_list(ao_out, len = 5)
-  ao_random_out <- ao(f = himmelblau, initial = c(0, 0), partition = "random", gradient = gradient)
+  ao_random_out <- ao(
+    f = himmelblau, initial = c(0, 0), partition = "random", gradient = gradient
+  )
   checkmate::expect_list(ao_random_out, len = 5)
 })
 
@@ -33,7 +35,8 @@ test_that("ao with custom Hessian works", {
   }
   ao_out <- ao(
     f = f, initial = 10, gradient = g, hessian = h,
-    base_optimizer = Optimizer$new("stats::nlm") # switch to nlm because stats::optim does not support Hessian
+    # switch to nlm because stats::optim does not support Hessian
+    base_optimizer = Optimizer$new("stats::nlm")
   )
   checkmate::expect_list(ao_out, len = 5)
 })
@@ -62,7 +65,10 @@ test_that("ao with NULL values for fixed arguments works", {
 
 test_that("ao with a different base optimizer works", {
   himmelblau <- function(x) (x[1]^2 + x[2] - 11)^2 + (x[1] + x[2]^2 - 7)^2
-  ao_out <- ao(f = himmelblau, initial = c(0, 0), base_optimizer = optimizeR::Optimizer$new("stats::nlm"))
+  ao_out <- ao(
+    f = himmelblau, initial = c(0, 0),
+    base_optimizer = optimizeR::Optimizer$new("stats::nlm")
+  )
   checkmate::expect_list(ao_out, len = 5)
 })
 
@@ -77,7 +83,9 @@ test_that("ao with parameter bounds works", {
   lower <- 1.5
   upper <- 2.5
   initial <- runif(2, min = lower, max = upper)
-  ao_bounds <- ao(f = rosenbrock, initial = initial, lower = lower, upper = upper)
+  ao_bounds <- ao(
+    f = rosenbrock, initial = initial, lower = lower, upper = upper
+  )
   checkmate::expect_list(ao_bounds, len = 5)
   expect_true(all(ao_bounds$estimate <= upper))
   expect_true(all(ao_bounds$estimate >= lower))
@@ -107,9 +115,9 @@ test_that("ao fails graciously", {
 test_that("random partition works with ucminf optimizer", {
   skip_if_not_installed("ucminf")
   set.seed(1)
+
   # simple convex objective in 6D
   f <- function(x) sum((x - 1)^2)
-
   out <- ao(
     f = f,
     initial = rep(0, 6),
@@ -117,12 +125,10 @@ test_that("random partition works with ucminf optimizer", {
     new_block_probability = 0.35,
     minimum_block_number = 2,
     base_optimizer = optimizeR::Optimizer$new("ucminf::ucminf"),
-    iteration_limit = 3,     # keep it fast for CRAN
+    iteration_limit = 3, # keep it fast for CRAN
     add_details = TRUE
   )
-
   checkmate::expect_list(out,len = 5)
-
   d <- out$details
   bcols <- grep("^b[0-9]+$", names(d), value = TRUE)
   expect_length(bcols, 6)
@@ -132,11 +138,9 @@ test_that("random partition works with ucminf optimizer", {
 
   # each step should activate at least one parameter and not exceed npar
   active_counts <- rowSums(as.matrix(d2[, bcols, drop = FALSE]) == 1)
-  expect_true(all(active_counts >= 1))
-  expect_true(all(active_counts <= 6))
+  expect_all_true(active_counts >= 1)
+  expect_all_true(active_counts <= 6)
 
   # block indicators must be binary (0/1)
-  expect_true(
-    all(unlist(d2[, bcols, drop = FALSE]) %in% c(0, 1))
-  )
+  expect_all_true(unlist(d2[, bcols, drop = FALSE]) %in% c(0, 1))
 })

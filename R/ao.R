@@ -192,11 +192,10 @@
 #' \code{\link[optimizeR]{Optimizer}}. It numerically solves the sub-problems.
 #'
 #' By default, the \code{\link[stats]{optim}} optimizer with
-#' \code{method = "L-BFGS-B"} is used.
+#' \code{method = "L-BFGS-B"} is used. The default value for the number of
+#' iterations within each block is 10.
 #'
 #' This can also be a `list` of multiple base optimizers, see details.
-#'
-#' TODO:  What is the default value for the number of iterations within each block? It should not be 1.  We should set it to be 5 or 10 or something like that for every algorithm.
 #'
 #' @param verbose \[`logical(1)`\]\cr
 #' Print tracing details during the AO process?
@@ -319,7 +318,9 @@ ao <- function(
   tolerance_parameter = 1e-6,
   tolerance_parameter_norm = function(x, y) sqrt(sum((x - y)^2)),
   tolerance_history = 1,
-  base_optimizer = Optimizer$new("stats::optim", method = "L-BFGS-B"),
+  base_optimizer = Optimizer$new(
+    "stats::optim", method = "L-BFGS-B", control = list("maxit" = 10)
+  ),
   verbose = FALSE,
   hide_warnings = TRUE,
   add_details = TRUE
@@ -409,54 +410,7 @@ ao <- function(
     )
 
     ### merge results
-    # TODO: separate function for merging
-    values <- vapply(results, `[[`, numeric(1), "value")
-    stopping_reasons <- vapply(results, `[[`, character(1), "stopping_reason")
-    optimal_process <- ifelse(isTRUE(minimize), which.min(values), which.max(values))
-    seconds_each <- vapply(results, `[[`, numeric(1), "seconds")
-    if (isTRUE(add_details)) {
-      details_list <- list()
-      for (process in seq_len(nprocesses)) {
-        details_list[[process]] <- cbind(
-          process = process,
-          results[[process]][["details"]]
-        )
-      }
-      return(
-        list(
-          "estimate" = lapply(results, `[[`, "estimate")[[optimal_process]],
-          "estimates" = lapply(results, `[[`, "estimate"),
-          "value" = values[optimal_process],
-          "values" = as.list(values),
-          "details" = do.call("rbind", details_list),
-          "seconds" = sum(seconds_each),
-          "seconds_each" = as.list(seconds_each),
-          "stopping_reason" = stopping_reasons[optimal_process],
-          "stopping_reasons" = as.list(stopping_reasons),
-          "processes" = processes
-        )
-      )
-    } else {
-      return(
-        list(
-          "estimate" = lapply(results, `[[`, "estimate")[[optimal_process]],
-          "value" = values[optimal_process],
-          "seconds" = sum(seconds_each),
-          "stopping_reason" = stopping_reasons[optimal_process]
-        )
-      )
-    }
-
-    # TODO: ensure structured parameters
-    # ---- ADD structured parameters ------------------------------------------
-    # if(!is.null(target)){
-    #   out$target=target
-    #   out$npar=npar
-    #   out$par=split_by_target(out$estimate,target,npar)
-    #   if(add_details){
-    #     out$pars=lapply(out$estimates,split_by_target,target=target,npar=npar)
-    #   }
-    # }
+    return(merge_results(results, minimize, add_details))
   }
 
   ### input checks and building of objects
@@ -488,7 +442,9 @@ ao <- function(
     var_name = "initial"
   )
   oeli::input_check_response(
-    check = oeli::check_numeric_vector(lower, any.missing = FALSE, null.ok = TRUE),
+    check = oeli::check_numeric_vector(
+      lower, any.missing = FALSE, null.ok = TRUE
+    ),
     var_name = "lower"
   )
   if (!is.null(lower)) {
@@ -505,7 +461,9 @@ ao <- function(
     )
   }
   oeli::input_check_response(
-    check = oeli::check_numeric_vector(upper, any.missing = FALSE, null.ok = TRUE),
+    check = oeli::check_numeric_vector(
+      upper, any.missing = FALSE, null.ok = TRUE
+    ),
     var_name = "upper"
   )
   if (!is.null(upper)) {
@@ -629,14 +587,5 @@ ao <- function(
   }
 
   ### return results
-
-  # TODO: process obj needs target, then add pars to output
-  # ---- ADD structured parameters --------------------------------------------
-  # if(!is.null(target)){
-  #   out$target=objective$target
-  #   out$npar=objective$npar
-  #   out$par=split_by_target(out$estimate,out$target,out$npar)
-  # }
-
   process$output
 }

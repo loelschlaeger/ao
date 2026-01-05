@@ -2,26 +2,26 @@
 % Please edit documentation in R/helpers.R
 \name{generate_random_partition}
 \alias{generate_random_partition}
-\title{Generated randomized blocks.}
+\title{Generated random partition}
 \usage{
-generate_random_partition(
-  x = seq_len(self$npar),
-  p = self$new_block_probability,
-  min = self$minimum_block_number
-)
+generate_random_partition(x, p, min)
 }
 \arguments{
-\item{x}{The parameter indices.}
+\item{x}{[\code{integer}]\cr
+The parameter indices.}
 
-\item{p}{The probability to generate a new block.}
+\item{p}{[\code{numeric(1)}]\cr
+The probability to generate a new block.}
 
-\item{min}{The minimum number of blocks.}
+\item{min}{[\code{integer(1)}]\cr
+The minimum number of blocks.}
 }
 \value{
-TODO
+A \code{list}, a random partition of \code{x}.
 }
 \description{
-Generated randomized blocks.
+This helper function generates a random parameter partition, which is used
+for the randomized AO procedure.
 }
 \author{
 Siddhartha Chib
