@@ -85,7 +85,7 @@
 #' the `target` argument.
 #'
 #' Can be `NULL` if there is only one target argument, in which case `npar` is
-#' set to be `length(initial)`.
+#' set to `length(initial)`.
 #'
 #' @param gradient \[`function` | `NULL`\]\cr
 #' Optionally a \code{function} that returns the gradient of \code{f}.
@@ -336,13 +336,14 @@ ao <- function(
     var_name = "initial"
   )
 
-  ### multiple processes?
+  ### multiple processes? then call ao() for each one
   if (
     is.list(initial) ||
     (is.list(partition) && !checkmate::test_list(partition, "numeric")) ||
     is.list(base_optimizer)
   ) {
-    ### build processes
+
+    ### build matrix of processes
     if (!is.list(initial)) {
       initial <- list(initial)
     }
@@ -357,7 +358,7 @@ ao <- function(
     )
     nprocesses <- nrow(processes)
 
-    ### run processes
+    ### run processes (determined by future)
     if (isTRUE(verbose)) {
       verbose <- FALSE
       if (!isTRUE(hide_warnings)) {
@@ -409,7 +410,7 @@ ao <- function(
       future.seed = TRUE
     )
 
-    ### merge results
+    ### merge and return results of multiple processes
     return(merge_results(results, minimize, add_details))
   }
 
@@ -419,6 +420,7 @@ ao <- function(
     var_name = "initial"
   )
   if (is.null(npar)) {
+    ### if npar is not defined, set it to length of initial vector
     npar <- length(initial)
   }
   objective <- Objective$new(f = f, target = target, npar = npar, ...)
@@ -427,18 +429,17 @@ ao <- function(
       check = checkmate::check_function(gradient),
       var_name = "gradient"
     )
-    objective$set_gradient(gradient = gradient, .verbose = FALSE)
+    objective$set_gradient(gradient = gradient, .verbose = isTRUE(verbose))
   }
   if (!is.null(hessian)) {
     oeli::input_check_response(
       check = checkmate::check_function(hessian),
       var_name = "hessian"
     )
-    objective$set_hessian(hessian = hessian, .verbose = FALSE)
+    objective$set_hessian(hessian = hessian, .verbose = isTRUE(verbose))
   }
-  npar <- sum(objective$npar)
   oeli::input_check_response(
-    check = oeli::check_numeric_vector(initial, len = npar),
+    check = oeli::check_numeric_vector(initial, len = sum(npar)),
     var_name = "initial"
   )
   oeli::input_check_response(
@@ -449,10 +450,10 @@ ao <- function(
   )
   if (!is.null(lower)) {
     if (length(lower) == 1) {
-      lower <- rep(lower, npar)
+      lower <- rep(lower, sum(npar))
     }
     oeli::input_check_response(
-      check = oeli::check_numeric_vector(lower, len = npar),
+      check = oeli::check_numeric_vector(lower, len = sum(npar)),
       var_name = "lower"
     )
     oeli::input_check_response(
@@ -468,10 +469,10 @@ ao <- function(
   )
   if (!is.null(upper)) {
     if (length(upper) == 1) {
-      upper <- rep(upper, npar)
+      upper <- rep(upper, sum(npar))
     }
     oeli::input_check_response(
-      check = oeli::check_numeric_vector(upper, len = npar),
+      check = oeli::check_numeric_vector(upper, len = sum(npar)),
       var_name = "upper"
     )
     oeli::input_check_response(
@@ -487,7 +488,8 @@ ao <- function(
 
   ### building AO process
   process <- Process$new(
-    npar = npar,
+    target = target,
+    npar = sum(npar),
     partition = partition,
     new_block_probability = new_block_probability,
     minimum_block_number = minimum_block_number,
@@ -507,7 +509,7 @@ ao <- function(
 
     block_objective <- Objective$new(
       f = function(p) {
-        theta <- numeric(npar)
+        theta <- numeric(sum(npar))
         theta[block] <- p
         theta[-block] <- parameter_fixed
         objective$evaluate(theta)
@@ -520,7 +522,7 @@ ao <- function(
     if (!is.null(gradient)) {
       block_objective$set_gradient(
         gradient = function(p) {
-          theta <- numeric(npar)
+          theta <- numeric(sum(npar))
           theta[block] <- p
           theta[-block] <- parameter_fixed
           objective$evaluate_gradient(theta)[block]
@@ -531,7 +533,7 @@ ao <- function(
     if (!is.null(hessian)) {
       block_objective$set_hessian(
         hessian = function(p) {
-          theta <- numeric(npar)
+          theta <- numeric(sum(npar))
           theta[block] <- p
           theta[-block] <- parameter_fixed
           objective$evaluate_hessian(theta)[block, block, drop = FALSE]

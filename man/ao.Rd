@@ -61,7 +61,7 @@ Must be specified if more than two target arguments are specified via
 the \code{target} argument.
 
 Can be \code{NULL} if there is only one target argument, in which case \code{npar} is
-set to be \code{length(initial)}.}
+set to \code{length(initial)}.}
 
 \item{gradient}{[\code{function} | \code{NULL}]\cr
 Optionally a \code{function} that returns the gradient of \code{f}.

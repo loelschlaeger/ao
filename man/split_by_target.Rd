@@ -24,7 +24,7 @@ Must be specified if more than two target arguments are specified via
 the \code{target} argument.
 
 Can be \code{NULL} if there is only one target argument, in which case \code{npar} is
-set to be \code{length(initial)}.}
+set to \code{length(initial)}.}
 }
 \value{
 A (named) \code{list}, a partition of \code{estimate} according to \code{npar}.
