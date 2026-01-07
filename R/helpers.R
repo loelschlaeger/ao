@@ -15,9 +15,7 @@
 #' A (named) \code{list}, a partition of `estimate` according to `npar`.
 
 split_by_target <- function(estimate, target = NULL, npar) {
-  if (is.null(target)) {
-    return(list(estimate))
-  }
+  if (is.null(target)) return(NULL)
   stopifnot(
     is.character(target), is.numeric(estimate),
     length(target) <= length(estimate), is.numeric(npar),
@@ -84,18 +82,24 @@ generate_random_partition <- function(x, p, min) {
 #' @param results \[`list`\]\cr
 #' A `list` of outputs from \code{\link[ao]{ao}}.
 #'
+#' @param processes \[`data.frame`\]\cr
+#' A `data.frame` characterizing how the different processes were specified.
+#'
 #' @inheritParams ao
 #'
 #' @return
 #' A \code{list}, see section "Output value" on the \code{\link[ao]{ao}} page.
 
-merge_results <- function(results, minimize = TRUE, add_details = TRUE) {
+merge_results <- function(
+    results, minimize = TRUE, add_details = TRUE, processes = data.frame()
+  ) {
   values <- vapply(results, `[[`, numeric(1), "value")
   stopping_reasons <- vapply(results, `[[`, character(1), "stopping_reason")
   optimal_process <- ifelse(
     isTRUE(minimize), which.min(values), which.max(values)
   )
   seconds_each <- vapply(results, `[[`, numeric(1), "seconds")
+  has_es <- sapply(results, function(x) "estimate_split" %in% names(x)) |> any()
   if (isTRUE(add_details)) {
     details_list <- list()
     for (process in seq_along(results)) {
@@ -105,50 +109,46 @@ merge_results <- function(results, minimize = TRUE, add_details = TRUE) {
       )
     }
     return(
-      list(
-        "estimate" = lapply(results, `[[`, "estimate")[[optimal_process]],
-        "estimates" = lapply(results, `[[`, "estimate"),
-        "value" = values[optimal_process],
-        "values" = as.list(values),
-        "details" = do.call("rbind", details_list),
-        "seconds" = sum(seconds_each),
-        "seconds_each" = as.list(seconds_each),
-        "stopping_reason" = stopping_reasons[optimal_process],
-        "stopping_reasons" = as.list(stopping_reasons),
-        "processes" = processes
+      c(
+        list(
+          "estimate" = lapply(results, `[[`, "estimate")[[optimal_process]],
+          "estimates" = lapply(results, `[[`, "estimate")
+        ),
+        if (isTRUE(has_es)) list(
+          "estimate_split" = lapply(
+            results, `[[`, "estimate_split"
+          )[[optimal_process]]
+        ),
+        list(
+          "value" = values[optimal_process],
+          "values" = as.list(values),
+          "details" = do.call("rbind", details_list),
+          "seconds" = sum(seconds_each),
+          "seconds_each" = as.list(seconds_each),
+          "stopping_reason" = stopping_reasons[optimal_process],
+          "stopping_reasons" = as.list(stopping_reasons),
+          "processes" = processes
+        )
       )
     )
   } else {
     return(
-      list(
-        "estimate" = lapply(results, `[[`, "estimate")[[optimal_process]],
-        "value" = values[optimal_process],
-        "seconds" = sum(seconds_each),
-        "stopping_reason" = stopping_reasons[optimal_process]
+      c(
+        list(
+          "estimate" = lapply(results, `[[`, "estimate")[[optimal_process]]
+        ),
+        if (isTRUE(has_es)) list(
+          "estimate_split" = lapply(
+            results, `[[`, "estimate_split"
+          )[[optimal_process]]
+        ),
+        list(
+          "value" = values[optimal_process],
+          "seconds" = sum(seconds_each),
+          "stopping_reason" = stopping_reasons[optimal_process]
+        )
       )
     )
   }
-
-
-  # TODO: ensure structured parameters
-  # ---- ADD structured parameters ------------------------------------------
-  # if(!is.null(target)){
-  #   out$target=target
-  #   out$npar=npar
-  #   out$par=split_by_target(out$estimate,target,npar)
-  #   if(add_details){
-  #     out$pars=lapply(out$estimates,split_by_target,target=target,npar=npar)
-  #   }
-  # }
-
-
 }
 
-
-# TODO: process obj needs target, then add pars to output
-# ---- ADD structured parameters --------------------------------------------
-# if(!is.null(target)){
-#   out$target=objective$target
-#   out$npar=objective$npar
-#   out$par=split_by_target(out$estimate,out$target,out$npar)
-# }

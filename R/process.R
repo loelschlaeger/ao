@@ -3,8 +3,12 @@
 #' @description
 #' This object specifies an AO process.
 #'
-#' @param target \[`character()`\]\cr
+#' @param target \[`character()` | `NULL`\]\cr
 #' The name(s) of the argument(s) over which \code{f} gets optimized.
+#'
+#' This can only be \code{numeric} arguments.
+#'
+#' Can be `NULL` (default), then it is the first argument of `f`.
 #'
 #' @param npar \[`integer()`\]\cr
 #' The length(s) of the target argument(s).
@@ -138,7 +142,7 @@ Process <- R6::R6Class("Process",
    #' Creates a new object of this [R6][R6::R6Class] class.
 
    initialize = function(
-     target = character(),
+     target = NULL,
      npar = integer(),
      partition = "sequential",
      new_block_probability = 0.3,
@@ -1017,11 +1021,15 @@ Process <- R6::R6Class("Process",
 
    output = function(value) {
      if (missing(value)) {
+       estimate <- self$get_parameter_best("full")
        c(
-         list(
-           "estimate" = self$get_parameter_best("full"),
-           "value" = self$get_value_best()
-         ),
+         list("estimate" = estimate),
+         if (!is.null(private$.target)) {
+           list("estimate_split" = split_by_target(
+             estimate, private$.target, self$npar
+           ))
+         },
+         list("value" = self$get_value_best()),
          if (self$add_details) list("details" = self$get_details()),
          list(
            "seconds" = self$get_seconds_total(),

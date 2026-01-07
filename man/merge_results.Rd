@@ -4,7 +4,12 @@
 \alias{merge_results}
 \title{Merge optimization results}
 \usage{
-merge_results(results, minimize = TRUE, add_details = TRUE)
+merge_results(
+  results,
+  minimize = TRUE,
+  add_details = TRUE,
+  processes = data.frame()
+)
 }
 \arguments{
 \item{results}{[\code{list}]\cr
@@ -17,6 +22,9 @@ If \code{FALSE}, maximization is performed.}
 
 \item{add_details}{[\code{logical(1)}]\cr
 Add details about the AO process to the output?}
+
+\item{processes}{[\code{data.frame}]\cr
+A \code{data.frame} characterizing how the different processes were specified.}
 }
 \value{
 A \code{list}, see section "Output value" on the \code{\link[ao]{ao}} page.

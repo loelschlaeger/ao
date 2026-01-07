@@ -1,6 +1,6 @@
 Package: ao
 Title: Alternating Optimization
-Version: 1.2.2.9000
+Version: 1.2.3
 Authors@R:
     c(
     person(given = "Lennart",
@@ -13,11 +13,11 @@ Authors@R:
            role = "ctb",
            email = "chib@wustl.edu")
     )
-Description: An iterative process that optimizes a function by alternately 
-    performing restricted optimization over parameter subsets. Instead of joint 
-    optimization, it breaks the optimization problem down into simpler 
-    sub-problems. This approach can make optimization feasible when joint 
-    optimization is too difficult.
+Description: Implementation of an iterative process that optimizes a function by 
+    alternately performing restricted optimization over parameter subsets. 
+    Instead of joint optimization, it breaks the optimization problem down into 
+    simpler sub-problems. This approach can make optimization feasible when 
+    joint optimization is too difficult.
 URL: https://loelschlaeger.de/ao/, https://github.com/loelschlaeger/ao/
 BugReports: https://github.com/loelschlaeger/ao/issues
 License: GPL-3
@@ -28,7 +28,7 @@ Imports:
     checkmate,
     cli,
     future.apply,
-    oeli (>= 0.7.3),
+    oeli (>= 0.7.5),
     progressr,
     R6,
     stats,

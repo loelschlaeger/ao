@@ -4,9 +4,7 @@ test_that("estimate can be split by target", {
   npar <- c(2, 2, 1)
   split <- split_by_target(estimate, target, npar)
   checkmate::expect_list(split, types = "integer", len = length(npar))
-  expect_equal(
-    split_by_target(estimate, NULL, length(estimates)), list(estimate)
-  )
+  expect_equal(split_by_target(estimate, NULL, length(estimates)), NULL)
 })
 
 test_that("random partition can be generated", {

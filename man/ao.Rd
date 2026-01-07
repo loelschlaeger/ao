@@ -188,6 +188,7 @@ Add details about the AO process to the output?}
 A \code{list} with the following elements:
 \itemize{
 \item \code{estimate} is the parameter vector at termination.
+\item \code{estimate_split} is \code{estimate} split by \code{target} (only when applicable).
 \item \code{value} is the function value at termination.
 \item \code{details} is a \code{data.frame} with information about the AO process:
 For each iteration (column \code{iteration}) it contains the function value
@@ -299,13 +300,12 @@ fit <- ao(
   partition = "random",
   base_optimizer = Optimizer$new("ucminf::ucminf"),
   minimize = FALSE,
-  add_details = FALSE,
-  verbose = TRUE
+  add_details = FALSE
 )
 
-(muhat <- fit$par$mu)
-(sdhat <- exp(fit$par$logsd))
-e <- exp(fit$par$eta)
+(muhat <- fit$estimate_split$mu)
+(sdhat <- exp(fit$estimate_split$logsd))
+e <- exp(fit$estimate_split$eta)
 den <- 1 + e
 (qhat <- c(e / den, 1 / den))
 

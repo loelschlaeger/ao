@@ -1,5 +1,3 @@
-# TODO: func to solve subproblems manually
-
 #' Alternating Optimization
 #'
 #' @description
@@ -209,19 +207,20 @@
 #' Add details about the AO process to the output?
 #'
 #' @return
-#' A \code{list} with the following elements:
+#' A `list` with the following elements:
 #'
-#' * \code{estimate} is the parameter vector at termination.
-#' * \code{value} is the function value at termination.
-#' * \code{details} is a `data.frame` with information about the AO process:
+#' * `estimate` is the parameter vector at termination.
+#' * `estimate_split` is `estimate` split by `target` (only when applicable).
+#' * `value` is the function value at termination.
+#' * `details` is a `data.frame` with information about the AO process:
 #'   For each iteration (column `iteration`) it contains the function value
 #'   (column `value`), parameter values (columns starting with `p` followed by
 #'   the parameter index), the active parameter block (columns starting with `b`
 #'   followed by the parameter index, where `1` stands for a parameter contained
 #'   in the active parameter block and `0` if not), and computation times in
 #'   seconds (column `seconds`). Only available if `add_details = TRUE`.
-#' * \code{seconds} is the overall computation time in seconds.
-#' * \code{stopping_reason} is a message why the AO process has terminated.
+#' * `seconds` is the overall computation time in seconds.
+#' * `stopping_reason` is a message why the AO process has terminated.
 #'
 #' In the case of multiple processes, the output changes slightly, see details.
 #'
@@ -258,13 +257,12 @@
 #'   partition = "random",
 #'   base_optimizer = Optimizer$new("ucminf::ucminf"),
 #'   minimize = FALSE,
-#'   add_details = FALSE,
-#'   verbose = TRUE
+#'   add_details = FALSE
 #' )
 #'
-#' (muhat <- fit$par$mu)
-#' (sdhat <- exp(fit$par$logsd))
-#' e <- exp(fit$par$eta)
+#' (muhat <- fit$estimate_split$mu)
+#' (sdhat <- exp(fit$estimate_split$logsd))
+#' e <- exp(fit$estimate_split$eta)
 #' den <- 1 + e
 #' (qhat <- c(e / den, 1 / den))
 #'
@@ -411,7 +409,7 @@ ao <- function(
     )
 
     ### merge and return results of multiple processes
-    return(merge_results(results, minimize, add_details))
+    return(merge_results(results, minimize, add_details, processes))
   }
 
   ### input checks and building of objects
@@ -489,7 +487,7 @@ ao <- function(
   ### building AO process
   process <- Process$new(
     target = target,
-    npar = sum(npar),
+    npar = npar,
     partition = partition,
     new_block_probability = new_block_probability,
     minimum_block_number = minimum_block_number,
@@ -569,7 +567,7 @@ ao <- function(
     for (block in process$get_partition()) {
       process$block <- block
 
-      ### optimize block objective function
+      ### solve sub-problem
       sub_problem_out <- solve_sub_problem(
         parameter_block = process$get_parameter_latest("block"),
         parameter_fixed = process$get_parameter_latest("fixed"),
