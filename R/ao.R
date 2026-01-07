@@ -83,7 +83,7 @@
 #' the `target` argument.
 #'
 #' Can be `NULL` if there is only one target argument, in which case `npar` is
-#' set to be `length(initial)`.
+#' set to `length(initial)`.
 #'
 #' @param gradient \[`function` | `NULL`\]\cr
 #' Optionally a \code{function} that returns the gradient of \code{f}.
@@ -190,7 +190,8 @@
 #' \code{\link[optimizeR]{Optimizer}}. It numerically solves the sub-problems.
 #'
 #' By default, the \code{\link[stats]{optim}} optimizer with
-#' \code{method = "L-BFGS-B"} is used.
+#' \code{method = "L-BFGS-B"} is used. The default value for the number of
+#' iterations within each block is 10.
 #'
 #' This can also be a `list` of multiple base optimizers, see details.
 #'
@@ -206,19 +207,20 @@
 #' Add details about the AO process to the output?
 #'
 #' @return
-#' A \code{list} with the following elements:
+#' A `list` with the following elements:
 #'
-#' * \code{estimate} is the parameter vector at termination.
-#' * \code{value} is the function value at termination.
-#' * \code{details} is a `data.frame` with information about the AO process:
+#' * `estimate` is the parameter vector at termination.
+#' * `estimate_split` is `estimate` split by `target` (only when applicable).
+#' * `value` is the function value at termination.
+#' * `details` is a `data.frame` with information about the AO process:
 #'   For each iteration (column `iteration`) it contains the function value
 #'   (column `value`), parameter values (columns starting with `p` followed by
 #'   the parameter index), the active parameter block (columns starting with `b`
 #'   followed by the parameter index, where `1` stands for a parameter contained
 #'   in the active parameter block and `0` if not), and computation times in
 #'   seconds (column `seconds`). Only available if `add_details = TRUE`.
-#' * \code{seconds} is the overall computation time in seconds.
-#' * \code{stopping_reason} is a message why the AO process has terminated.
+#' * `seconds` is the overall computation time in seconds.
+#' * `stopping_reason` is a message why the AO process has terminated.
 #'
 #' In the case of multiple processes, the output changes slightly, see details.
 #'
@@ -230,12 +232,48 @@
 #'
 #' # Example 2: Maximization of 2-class Gaussian mixture log-likelihood --------
 #'
+#' normal_mixture_loglik_uc = function(mu, logsd, eta, data) {
+#'   sd <- exp(logsd)
+#'   e <- exp(eta[1])
+#'   den <- 1 + e
+#'   q1 <- e / den
+#'   q2 <- 1 / den
+#'   l1 <- log(q1) + dnorm(data, mu[1], sd[1], log = TRUE)
+#'   l2 <- log(q2) + dnorm(data, mu[2], sd[2], log = TRUE)
+#'   m <- pmax(l1, l2)
+#'   sum(m + log(exp(l1 - m) + exp(l2 - m)))
+#' }
+#'
+#' set.seed(123)
+#'
+#' data <- datasets::faithful$eruptions
+#'
+#' fit <- ao(
+#'   f = normal_mixture_loglik_uc,
+#'   initial = c(mean(data) + c(-1, 1), rep(log(sd(data)), 2), 0),
+#'   target = c("mu", "logsd", "eta"),
+#'   npar = c(2, 2, 1),
+#'   data = data,
+#'   partition = "random",
+#'   base_optimizer = Optimizer$new("ucminf::ucminf"),
+#'   minimize = FALSE,
+#'   add_details = FALSE
+#' )
+#'
+#' (muhat <- fit$estimate_split$mu)
+#' (sdhat <- exp(fit$estimate_split$logsd))
+#' e <- exp(fit$estimate_split$eta)
+#' den <- 1 + e
+#' (qhat <- c(e / den, 1 / den))
+#'
+#' # Example 3: Constrained Optimization in the Setting of Example 2 -----------
+#'
 #' # target arguments:
 #' # - class means mu (2, unrestricted)
 #' # - class standard deviations sd (2, must be non-negative)
 #' # - class proportion lambda (only 1 for identification, must be in [0, 1])
 #'
-#' normal_mixture_llk <- function(mu, sd, lambda, data) {
+#' normal_mixture_loglik <- function(mu, sd, lambda, data) {
 #'   c1 <- lambda * dnorm(data, mu[1], sd[1])
 #'   c2 <- (1 - lambda) * dnorm(data, mu[2], sd[2])
 #'   sum(log(c1 + c2))
@@ -244,7 +282,7 @@
 #' set.seed(123)
 #'
 #' ao(
-#'   f = normal_mixture_llk,
+#'   f = normal_mixture_loglik,
 #'   initial = runif(5),
 #'   target = c("mu", "sd", "lambda"),
 #'   npar = c(2, 2, 1),
@@ -259,29 +297,31 @@
 #' @export
 
 ao <- function(
-    f,
-    initial,
-    target = NULL,
-    npar = NULL,
-    gradient = NULL,
-    hessian = NULL,
-    ...,
-    partition = "sequential",
-    new_block_probability = 0.3,
-    minimum_block_number = 1,
-    minimize = TRUE,
-    lower = NULL,
-    upper = NULL,
-    iteration_limit = Inf,
-    seconds_limit = Inf,
-    tolerance_value = 1e-6,
-    tolerance_parameter = 1e-6,
-    tolerance_parameter_norm = function(x, y) sqrt(sum((x - y)^2)),
-    tolerance_history = 1,
-    base_optimizer = Optimizer$new("stats::optim", method = "L-BFGS-B"),
-    verbose = FALSE,
-    hide_warnings = TRUE,
-    add_details = TRUE
+  f,
+  initial,
+  target = NULL,
+  npar = NULL,
+  gradient = NULL,
+  hessian = NULL,
+  ...,
+  partition = "sequential",
+  new_block_probability = 0.3,
+  minimum_block_number = 1,
+  minimize = TRUE,
+  lower = NULL,
+  upper = NULL,
+  iteration_limit = Inf,
+  seconds_limit = Inf,
+  tolerance_value = 1e-6,
+  tolerance_parameter = 1e-6,
+  tolerance_parameter_norm = function(x, y) sqrt(sum((x - y)^2)),
+  tolerance_history = 1,
+  base_optimizer = Optimizer$new(
+    "stats::optim", method = "L-BFGS-B", control = list("maxit" = 10)
+  ),
+  verbose = FALSE,
+  hide_warnings = TRUE,
+  add_details = TRUE
 ) {
 
   ### check if required arguments are specified
@@ -294,13 +334,14 @@ ao <- function(
     var_name = "initial"
   )
 
-  ### multiple processes?
+  ### multiple processes? then call ao() for each one
   if (
     is.list(initial) ||
     (is.list(partition) && !checkmate::test_list(partition, "numeric")) ||
     is.list(base_optimizer)
   ) {
-    ### build processes
+
+    ### build matrix of processes
     if (!is.list(initial)) {
       initial <- list(initial)
     }
@@ -315,7 +356,7 @@ ao <- function(
     )
     nprocesses <- nrow(processes)
 
-    ### run processes
+    ### run processes (determined by future)
     if (isTRUE(verbose)) {
       verbose <- FALSE
       if (!isTRUE(hide_warnings)) {
@@ -367,43 +408,8 @@ ao <- function(
       future.seed = TRUE
     )
 
-    ### combine results
-    values <- vapply(results, `[[`, numeric(1), "value")
-    stopping_reasons <- vapply(results, `[[`, character(1), "stopping_reason")
-    optimal_process <- ifelse(isTRUE(minimize), which.min(values), which.max(values))
-    seconds_each <- vapply(results, `[[`, numeric(1), "seconds")
-    if (isTRUE(add_details)) {
-      details_list <- list()
-      for (process in seq_len(nprocesses)) {
-        details_list[[process]] <- cbind(
-          process = process,
-          results[[process]][["details"]]
-        )
-      }
-      return(
-        list(
-          "estimate" = lapply(results, `[[`, "estimate")[[optimal_process]],
-          "estimates" = lapply(results, `[[`, "estimate"),
-          "value" = values[optimal_process],
-          "values" = as.list(values),
-          "details" = do.call("rbind", details_list),
-          "seconds" = sum(seconds_each),
-          "seconds_each" = as.list(seconds_each),
-          "stopping_reason" = stopping_reasons[optimal_process],
-          "stopping_reasons" = as.list(stopping_reasons),
-          "processes" = processes
-        )
-      )
-    } else {
-      return(
-        list(
-          "estimate" = lapply(results, `[[`, "estimate")[[optimal_process]],
-          "value" = values[optimal_process],
-          "seconds" = sum(seconds_each),
-          "stopping_reason" = stopping_reasons[optimal_process]
-        )
-      )
-    }
+    ### merge and return results of multiple processes
+    return(merge_results(results, minimize, add_details, processes))
   }
 
   ### input checks and building of objects
@@ -412,6 +418,7 @@ ao <- function(
     var_name = "initial"
   )
   if (is.null(npar)) {
+    ### if npar is not defined, set it to length of initial vector
     npar <- length(initial)
   }
   objective <- Objective$new(f = f, target = target, npar = npar, ...)
@@ -420,30 +427,31 @@ ao <- function(
       check = checkmate::check_function(gradient),
       var_name = "gradient"
     )
-    objective$set_gradient(gradient = gradient, .verbose = FALSE)
+    objective$set_gradient(gradient = gradient, .verbose = isTRUE(verbose))
   }
   if (!is.null(hessian)) {
     oeli::input_check_response(
       check = checkmate::check_function(hessian),
       var_name = "hessian"
     )
-    objective$set_hessian(hessian = hessian, .verbose = FALSE)
+    objective$set_hessian(hessian = hessian, .verbose = isTRUE(verbose))
   }
-  npar <- sum(objective$npar)
   oeli::input_check_response(
-    check = oeli::check_numeric_vector(initial, len = npar),
+    check = oeli::check_numeric_vector(initial, len = sum(npar)),
     var_name = "initial"
   )
   oeli::input_check_response(
-    check = oeli::check_numeric_vector(lower, any.missing = FALSE, null.ok = TRUE),
+    check = oeli::check_numeric_vector(
+      lower, any.missing = FALSE, null.ok = TRUE
+    ),
     var_name = "lower"
   )
   if (!is.null(lower)) {
     if (length(lower) == 1) {
-      lower <- rep(lower, npar)
+      lower <- rep(lower, sum(npar))
     }
     oeli::input_check_response(
-      check = oeli::check_numeric_vector(lower, len = npar),
+      check = oeli::check_numeric_vector(lower, len = sum(npar)),
       var_name = "lower"
     )
     oeli::input_check_response(
@@ -452,15 +460,17 @@ ao <- function(
     )
   }
   oeli::input_check_response(
-    check = oeli::check_numeric_vector(upper, any.missing = FALSE, null.ok = TRUE),
+    check = oeli::check_numeric_vector(
+      upper, any.missing = FALSE, null.ok = TRUE
+    ),
     var_name = "upper"
   )
   if (!is.null(upper)) {
     if (length(upper) == 1) {
-      upper <- rep(upper, npar)
+      upper <- rep(upper, sum(npar))
     }
     oeli::input_check_response(
-      check = oeli::check_numeric_vector(upper, len = npar),
+      check = oeli::check_numeric_vector(upper, len = sum(npar)),
       var_name = "upper"
     )
     oeli::input_check_response(
@@ -476,6 +486,7 @@ ao <- function(
 
   ### building AO process
   process <- Process$new(
+    target = target,
     npar = npar,
     partition = partition,
     new_block_probability = new_block_probability,
@@ -496,7 +507,7 @@ ao <- function(
 
     block_objective <- Objective$new(
       f = function(p) {
-        theta <- numeric(npar)
+        theta <- numeric(sum(npar))
         theta[block] <- p
         theta[-block] <- parameter_fixed
         objective$evaluate(theta)
@@ -509,7 +520,7 @@ ao <- function(
     if (!is.null(gradient)) {
       block_objective$set_gradient(
         gradient = function(p) {
-          theta <- numeric(npar)
+          theta <- numeric(sum(npar))
           theta[block] <- p
           theta[-block] <- parameter_fixed
           objective$evaluate_gradient(theta)[block]
@@ -520,7 +531,7 @@ ao <- function(
     if (!is.null(hessian)) {
       block_objective$set_hessian(
         hessian = function(p) {
-          theta <- numeric(npar)
+          theta <- numeric(sum(npar))
           theta[block] <- p
           theta[-block] <- parameter_fixed
           objective$evaluate_hessian(theta)[block, block, drop = FALSE]
@@ -556,7 +567,7 @@ ao <- function(
     for (block in process$get_partition()) {
       process$block <- block
 
-      ### optimize block objective function
+      ### solve sub-problem
       sub_problem_out <- solve_sub_problem(
         parameter_block = process$get_parameter_latest("block"),
         parameter_fixed = process$get_parameter_latest("fixed"),

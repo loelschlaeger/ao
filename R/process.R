@@ -3,8 +3,15 @@
 #' @description
 #' This object specifies an AO process.
 #'
-#' @param npar \[`integer(1)`\]\cr
-#' The (total) length of the target argument(s).
+#' @param target \[`character()` | `NULL`\]\cr
+#' The name(s) of the argument(s) over which \code{f} gets optimized.
+#'
+#' This can only be \code{numeric} arguments.
+#'
+#' Can be `NULL` (default), then it is the first argument of `f`.
+#'
+#' @param npar \[`integer()`\]\cr
+#' The length(s) of the target argument(s).
 #'
 #' @param partition \[`character(1)` | `list()`\]\cr
 #' Defines the parameter partition, and can be either
@@ -135,6 +142,7 @@ Process <- R6::R6Class("Process",
    #' Creates a new object of this [R6][R6::R6Class] class.
 
    initialize = function(
+     target = NULL,
      npar = integer(),
      partition = "sequential",
      new_block_probability = 0.3,
@@ -150,10 +158,17 @@ Process <- R6::R6Class("Process",
      add_details = TRUE
     ) {
      oeli::input_check_response(
-       check = checkmate::check_int(npar, lower = 0),
+       check = checkmate::check_integerish(npar, lower = 0),
        var_name = "npar"
      )
+     oeli::input_check_response(
+       check = checkmate::check_character(
+         target, len = length(npar), unique = TRUE, null.ok = TRUE
+        ),
+       var_name = "target"
+     )
      private$.npar <- npar
+     private$.target <- target
      self$partition <- partition
      self$new_block_probability <- new_block_probability
      self$minimum_block_number <- minimum_block_number
@@ -218,11 +233,11 @@ Process <- R6::R6Class("Process",
    initialize_details = function(initial_parameter, initial_value) {
      private$.details <- structure(
        data.frame(
-         t(c(0L, initial_value, initial_parameter, rep(0, self$npar), 0))
+         t(c(0L, initial_value, initial_parameter, rep(0, sum(self$npar)), 0))
        ),
        names = c(
-         "iteration", "value", paste0("p", seq_len(self$npar)),
-         paste0("b", seq_len(self$npar)), "seconds"
+         "iteration", "value", paste0("p", seq_len(sum(self$npar))),
+         paste0("b", seq_len(sum(self$npar))), "seconds"
        )
      )
      invisible(self)
@@ -256,7 +271,7 @@ Process <- R6::R6Class("Process",
      ### check inputs
      check_block <- checkmate::check_integerish(
        block,
-       unique = TRUE, lower = 1, upper = self$npar
+       unique = TRUE, lower = 1, upper = sum(self$npar)
      )
      check_value <- checkmate::check_number(
        value,
@@ -322,10 +337,15 @@ Process <- R6::R6Class("Process",
 
    get_partition = function() {
      if (checkmate::test_string(self$partition)) {
-       switch(self$partition,
-              "sequential" = as.list(seq_len(self$npar)),
-              "random"     = private$.generate_random_partition(),
-              "none"       = list(seq_len(self$npar))
+       switch(
+         self$partition,
+         "sequential" = as.list(seq_len(sum(self$npar))),
+         "random"     = generate_random_partition(
+            x = seq_len(sum(self$npar)),
+            p = self$new_block_probability,
+            min = self$minimum_block_number
+          ),
+          "none"       = list(seq_len(sum(self$npar)))
        )
      } else {
        self$partition
@@ -351,11 +371,13 @@ Process <- R6::R6Class("Process",
      )
      oeli::input_check_response(
        check = list(
-         checkmate::test_choice(which_block, c("first", "last"), null.ok = TRUE),
+         checkmate::test_choice(
+           which_block, c("first", "last"), null.ok = TRUE
+         ),
          checkmate::test_integerish(
            which_block,
-           lower = 1, upper = self$npar, unique = TRUE,
-           min.len = 1, max.len = self$npar, any.missing = FALSE
+           lower = 1, upper = sum(self$npar), unique = TRUE,
+           min.len = 1, max.len = sum(self$npar), any.missing = FALSE
          )
        ),
        var_name = "which_block"
@@ -375,7 +397,8 @@ Process <- R6::R6Class("Process",
      block_columns <- which(startsWith(colnames(details), "b"))
 
      if (!is.null(which_iteration)) {
-       details <- details[details$iteration %in% which_iteration, , drop = FALSE]
+       ids <- details$iteration %in% which_iteration
+       details <- details[ids, , drop = FALSE]
      }
 
      if (!is.null(which_block)) {
@@ -671,8 +694,8 @@ Process <- R6::R6Class("Process",
 
  active = list(
 
-   #' @field npar \[`integer(1)`\]\cr
-   #' The (total) length of the target argument(s).
+   #' @field npar \[`integer()`\]\cr
+   #' The length(s) of the target argument(s).
 
    npar = function(value) {
      if (missing(value)) {
@@ -709,11 +732,11 @@ Process <- R6::R6Class("Process",
            var_name = "partition"
          )
 
-         ### only parameter indices 1,...,'self$npar' allowed
+         ### only parameter indices 1,...,'sum(self$npar)' allowed
          oeli::input_check_response(
            check = checkmate::check_integerish(
              unlist(value),
-             lower = 1, upper = self$npar, any.missing = FALSE
+             lower = 1, upper = sum(self$npar), any.missing = FALSE
            ),
            var_name = "partition",
            prefix = "Elements in {.cls list} {.var partition} are bad:"
@@ -759,7 +782,9 @@ Process <- R6::R6Class("Process",
        private$.minimum_block_number
      } else {
        oeli::input_check_response(
-         check = checkmate::check_int(value, lower = 1, upper = self$npar),
+         check = checkmate::check_int(
+           value, lower = 1, upper = sum(self$npar)
+         ),
          var_name = "minimum_block_number"
        )
        private$.minimum_block_number <- value
@@ -967,7 +992,7 @@ Process <- R6::R6Class("Process",
        oeli::input_check_response(
          check = checkmate::check_integerish(
            value,
-           unique = TRUE, lower = 1, upper = self$npar
+           unique = TRUE, lower = 1, upper = sum(self$npar)
          ),
          var_name = "block"
        )
@@ -996,11 +1021,15 @@ Process <- R6::R6Class("Process",
 
    output = function(value) {
      if (missing(value)) {
+       estimate <- self$get_parameter_best("full")
        c(
-         list(
-           "estimate" = self$get_parameter_best("full"),
-           "value" = self$get_value_best()
-         ),
+         list("estimate" = estimate),
+         if (!is.null(private$.target)) {
+           list("estimate_split" = split_by_target(
+             estimate, private$.target, self$npar
+           ))
+         },
+         list("value" = self$get_value_best()),
          if (self$add_details) list("details" = self$get_details()),
          list(
            "seconds" = self$get_seconds_total(),
@@ -1019,6 +1048,7 @@ Process <- R6::R6Class("Process",
  private = list(
 
    ### inputs
+   .target = character(),
    .npar = integer(),
    .partition = NULL,
    .new_block_probability = numeric(),
@@ -1043,38 +1073,6 @@ Process <- R6::R6Class("Process",
 
    ### error status
    .error = FALSE,
-   .error_message = character(),
-
-   # Generated randomized blocks.
-   # @param x The parameter indices.
-   # @param p The probability to generate a new block.
-   # @param min The minimum number of blocks.
-   # @author Siddhartha Chib
-   .generate_random_partition = function(
-      x = seq_len(self$npar),
-      p = self$new_block_probability,
-      min = self$minimum_block_number
-   ) {
-     if (min == length(x)) {
-       return(as.list(x))
-     }
-     x <- sample(x, replace = FALSE)
-     n <- length(x)
-     y <- sample(0:1, n, replace = TRUE, prob = c(1 - p, p))
-     y[1] <- 1
-     ind <- which(y == 1)
-     if (length(ind) < min) {
-       ind <- sort(c(ind, sample(which(y == 0), size = min - length(ind))))
-     }
-     B <- length(ind)
-     blocks <- vector("list", B)
-     for (j in seq_len(B)) {
-       s <- ind[j]
-       e <- if (j < B) ind[j + 1] - 1 else n
-       xj <- x[s:e]
-       blocks[[j]] <- xj[order(xj)]
-     }
-     blocks
-   }
+   .error_message = character()
  )
 )

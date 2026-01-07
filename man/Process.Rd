@@ -9,8 +9,8 @@ This object specifies an AO process.
 \section{Active bindings}{
 \if{html}{\out{<div class="r6-active-bindings">}}
 \describe{
-\item{\code{npar}}{[\code{integer(1)}]\cr
-The (total) length of the target argument(s).}
+\item{\code{npar}}{[\code{integer()}]\cr
+The length(s) of the target argument(s).}
 
 \item{\code{partition}}{[\code{character(1)} | \code{list()}]\cr
 Defines the parameter partition, and can be either
@@ -147,6 +147,7 @@ in the active parameter block and \code{0} if not), and computation times in sec
 Creates a new object of this \link[R6:R6Class]{R6} class.
 \subsection{Usage}{
 \if{html}{\out{<div class="r">}}\preformatted{Process$new(
+  target = NULL,
   npar = integer(),
   partition = "sequential",
   new_block_probability = 0.3,
@@ -166,8 +167,15 @@ Creates a new object of this \link[R6:R6Class]{R6} class.
 \subsection{Arguments}{
 \if{html}{\out{<div class="arguments">}}
 \describe{
-\item{\code{npar}}{[\code{integer(1)}]\cr
-The (total) length of the target argument(s).}
+\item{\code{target}}{[\code{character()} | \code{NULL}]\cr
+The name(s) of the argument(s) over which \code{f} gets optimized.
+
+This can only be \code{numeric} arguments.
+
+Can be \code{NULL} (default), then it is the first argument of \code{f}.}
+
+\item{\code{npar}}{[\code{integer()}]\cr
+The length(s) of the target argument(s).}
 
 \item{\code{partition}}{[\code{character(1)} | \code{list()}]\cr
 Defines the parameter partition, and can be either

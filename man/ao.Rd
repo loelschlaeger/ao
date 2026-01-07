@@ -24,7 +24,8 @@ ao(
   tolerance_parameter = 1e-06,
   tolerance_parameter_norm = function(x, y) sqrt(sum((x - y)^2)),
   tolerance_history = 1,
-  base_optimizer = Optimizer$new("stats::optim", method = "L-BFGS-B"),
+  base_optimizer = Optimizer$new("stats::optim", method = "L-BFGS-B", control =
+    list(maxit = 10)),
   verbose = FALSE,
   hide_warnings = TRUE,
   add_details = TRUE
@@ -60,7 +61,7 @@ Must be specified if more than two target arguments are specified via
 the \code{target} argument.
 
 Can be \code{NULL} if there is only one target argument, in which case \code{npar} is
-set to be \code{length(initial)}.}
+set to \code{length(initial)}.}
 
 \item{gradient}{[\code{function} | \code{NULL}]\cr
 Optionally a \code{function} that returns the gradient of \code{f}.
@@ -167,7 +168,8 @@ An \code{Optimizer} object, which can be created via
 \code{\link[optimizeR]{Optimizer}}. It numerically solves the sub-problems.
 
 By default, the \code{\link[stats]{optim}} optimizer with
-\code{method = "L-BFGS-B"} is used.
+\code{method = "L-BFGS-B"} is used. The default value for the number of
+iterations within each block is 10.
 
 This can also be a \code{list} of multiple base optimizers, see details.}
 
@@ -186,6 +188,7 @@ Add details about the AO process to the output?}
 A \code{list} with the following elements:
 \itemize{
 \item \code{estimate} is the parameter vector at termination.
+\item \code{estimate_split} is \code{estimate} split by \code{target} (only when applicable).
 \item \code{value} is the function value at termination.
 \item \code{details} is a \code{data.frame} with information about the AO process:
 For each iteration (column \code{iteration}) it contains the function value
@@ -272,12 +275,48 @@ ao(f = himmelblau, initial = c(0, 0))
 
 # Example 2: Maximization of 2-class Gaussian mixture log-likelihood --------
 
+normal_mixture_loglik_uc = function(mu, logsd, eta, data) {
+  sd <- exp(logsd)
+  e <- exp(eta[1])
+  den <- 1 + e
+  q1 <- e / den
+  q2 <- 1 / den
+  l1 <- log(q1) + dnorm(data, mu[1], sd[1], log = TRUE)
+  l2 <- log(q2) + dnorm(data, mu[2], sd[2], log = TRUE)
+  m <- pmax(l1, l2)
+  sum(m + log(exp(l1 - m) + exp(l2 - m)))
+}
+
+set.seed(123)
+
+data <- datasets::faithful$eruptions
+
+fit <- ao(
+  f = normal_mixture_loglik_uc,
+  initial = c(mean(data) + c(-1, 1), rep(log(sd(data)), 2), 0),
+  target = c("mu", "logsd", "eta"),
+  npar = c(2, 2, 1),
+  data = data,
+  partition = "random",
+  base_optimizer = Optimizer$new("ucminf::ucminf"),
+  minimize = FALSE,
+  add_details = FALSE
+)
+
+(muhat <- fit$estimate_split$mu)
+(sdhat <- exp(fit$estimate_split$logsd))
+e <- exp(fit$estimate_split$eta)
+den <- 1 + e
+(qhat <- c(e / den, 1 / den))
+
+# Example 3: Constrained Optimization in the Setting of Example 2 -----------
+
 # target arguments:
 # - class means mu (2, unrestricted)
 # - class standard deviations sd (2, must be non-negative)
 # - class proportion lambda (only 1 for identification, must be in [0, 1])
 
-normal_mixture_llk <- function(mu, sd, lambda, data) {
+normal_mixture_loglik <- function(mu, sd, lambda, data) {
   c1 <- lambda * dnorm(data, mu[1], sd[1])
   c2 <- (1 - lambda) * dnorm(data, mu[2], sd[2])
   sum(log(c1 + c2))
@@ -286,7 +325,7 @@ normal_mixture_llk <- function(mu, sd, lambda, data) {
 set.seed(123)
 
 ao(
-  f = normal_mixture_llk,
+  f = normal_mixture_loglik,
   initial = runif(5),
   target = c("mu", "sd", "lambda"),
   npar = c(2, 2, 1),
