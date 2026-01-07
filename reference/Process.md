@@ -6,8 +6,8 @@ This object specifies an AO process.
 
 - `npar`:
 
-  \[`integer(1)`\]  
-  The (total) length of the target argument(s).
+  \[[`integer()`](https://rdrr.io/r/base/integer.html)\]  
+  The length(s) of the target argument(s).
 
 - `partition`:
 
@@ -196,6 +196,7 @@ Creates a new object of this
 #### Usage
 
     Process$new(
+      target = NULL,
       npar = integer(),
       partition = "sequential",
       new_block_probability = 0.3,
@@ -213,10 +214,19 @@ Creates a new object of this
 
 #### Arguments
 
+- `target`:
+
+  \[[`character()`](https://rdrr.io/r/base/character.html) \| `NULL`\]  
+  The name(s) of the argument(s) over which `f` gets optimized.
+
+  This can only be `numeric` arguments.
+
+  Can be `NULL` (default), then it is the first argument of `f`.
+
 - `npar`:
 
-  \[`integer(1)`\]  
-  The (total) length of the target argument(s).
+  \[[`integer()`](https://rdrr.io/r/base/integer.html)\]  
+  The length(s) of the target argument(s).
 
 - `partition`:
 

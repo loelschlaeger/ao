@@ -11,7 +11,7 @@ restricted optimization over parameter partitions."><meta property="og:image" co
 
     <a class="navbar-brand me-2" href="../index.html">ao</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.2</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">1.2.3</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -65,7 +65,8 @@ restricted optimization over parameter partitions.</p>
 <span>  tolerance_parameter <span class="op">=</span> <span class="fl">1e-06</span>,</span>
 <span>  tolerance_parameter_norm <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">x</span>, <span class="va">y</span><span class="op">)</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">sqrt</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="op">(</span><span class="va">x</span> <span class="op">-</span> <span class="va">y</span><span class="op">)</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>  tolerance_history <span class="op">=</span> <span class="fl">1</span>,</span>
-<span>  base_optimizer <span class="op">=</span> <span class="va">Optimizer</span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="st">"stats::optim"</span>, method <span class="op">=</span> <span class="st">"L-BFGS-B"</span><span class="op">)</span>,</span>
+<span>  base_optimizer <span class="op">=</span> <span class="va">Optimizer</span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="st">"stats::optim"</span>, method <span class="op">=</span> <span class="st">"L-BFGS-B"</span>, control <span class="op">=</span></span>
+<span>    <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span>maxit <span class="op">=</span> <span class="fl">10</span><span class="op">)</span><span class="op">)</span>,</span>
 <span>  verbose <span class="op">=</span> <span class="cn">FALSE</span>,</span>
 <span>  hide_warnings <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  add_details <span class="op">=</span> <span class="cn">TRUE</span></span>
@@ -105,7 +106,7 @@ The length(s) of the target argument(s).</p>
 <p>Must be specified if more than two target arguments are specified via
 the <code>target</code> argument.</p>
 <p>Can be <code>NULL</code> if there is only one target argument, in which case <code>npar</code> is
-set to be <code>length(initial)</code>.</p></dd>
+set to <code>length(initial)</code>.</p></dd>
 
 
 <dt id="arg-gradient">gradient<a class="anchor" aria-label="anchor" href="#arg-gradient"></a></dt>
@@ -221,7 +222,8 @@ The number of iterations to look back to determine whether
 An <code>Optimizer</code> object, which can be created via
 <code><a href="https://loelschlaeger.de/optimizeR/reference/Optimizer.html" class="external-link">Optimizer</a></code>. It numerically solves the sub-problems.</p>
 <p>By default, the <code><a href="https://rdrr.io/r/stats/optim.html" class="external-link">optim</a></code> optimizer with
-<code>method = "L-BFGS-B"</code> is used.</p>
+<code>method = "L-BFGS-B"</code> is used. The default value for the number of
+iterations within each block is 10.</p>
 <p>This can also be a <code>list</code> of multiple base optimizers, see details.</p></dd>
 
 
@@ -244,6 +246,7 @@ Add details about the AO process to the output?</p></dd>
     <div class="section level2">
     <h2 id="value">Value<a class="anchor" aria-label="anchor" href="#value"></a></h2>
     <p>A <code>list</code> with the following elements:</p><ul><li><p><code>estimate</code> is the parameter vector at termination.</p></li>
+<li><p><code>estimate_split</code> is <code>estimate</code> split by <code>target</code> (only when applicable).</p></li>
 <li><p><code>value</code> is the function value at termination.</p></li>
 <li><p><code>details</code> is a <code>data.frame</code> with information about the AO process:
 For each iteration (column <code>iteration</code>) it contains the function value
@@ -332,19 +335,19 @@ For example, run the following <em>before</em> the <code>ao()</code> call:</p><d
 <span class="r-out co"><span class="r-pr">#&gt;</span> $details</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span>    iteration        value       p1        p2 b1 b2     seconds</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> 1          0 1.700000e+02 0.000000  0.000000  0  0 0.000000000</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 2          1 1.327270e+01 3.395691  0.000000  1  0 0.040927172</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 3          1 1.743664e+00 3.395691 -1.803183  0  1 0.008650780</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 4          2 2.847290e-02 3.581412 -1.803183  1  0 0.006746769</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 5          2 4.687468e-04 3.581412 -1.847412  0  1 0.005674601</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 6          3 7.368057e-06 3.584381 -1.847412  1  0 0.004816294</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 7          3 1.164202e-07 3.584381 -1.848115  0  1 0.039479256</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 8          4 1.893311e-09 3.584427 -1.848115  1  0 0.003966808</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 9          4 9.153860e-11 3.584427 -1.848124  0  1 0.008035898</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 10         5 6.347425e-11 3.584428 -1.848124  1  0 0.003077269</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> 11         5 9.606386e-12 3.584428 -1.848126  0  1 0.003006697</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 2          1 1.327270e+01 3.395691  0.000000  1  0 0.040276766</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 3          1 1.743664e+00 3.395691 -1.803183  0  1 0.008544683</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 4          2 2.847290e-02 3.581412 -1.803183  1  0 0.006787777</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 5          2 4.687468e-04 3.581412 -1.847412  0  1 0.005788326</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 6          3 7.368057e-06 3.584381 -1.847412  1  0 0.004863262</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 7          3 1.164202e-07 3.584381 -1.848115  0  1 0.046102285</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 8          4 1.893311e-09 3.584427 -1.848115  1  0 0.004002333</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 9          4 9.153860e-11 3.584427 -1.848124  0  1 0.003015280</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 10         5 6.347425e-11 3.584428 -1.848124  1  0 0.003073215</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> 11         5 9.606386e-12 3.584428 -1.848126  0  1 0.002990961</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $seconds</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.1243815</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.1254449</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $stopping_reason</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "change in function value between 1 iteration is &lt; 1e-06"</span>
@@ -352,12 +355,51 @@ For example, run the following <em>before</em> the <code>ao()</code> call:</p><d
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># Example 2: Maximization of 2-class Gaussian mixture log-likelihood --------</span></span></span>
 <span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">normal_mixture_loglik_uc</span> <span class="op">=</span> <span class="kw">function</span><span class="op">(</span><span class="va">mu</span>, <span class="va">logsd</span>, <span class="va">eta</span>, <span class="va">data</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span>  <span class="va">sd</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="va">logsd</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="va">e</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="va">eta</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="va">den</span> <span class="op">&lt;-</span> <span class="fl">1</span> <span class="op">+</span> <span class="va">e</span></span></span>
+<span class="r-in"><span>  <span class="va">q1</span> <span class="op">&lt;-</span> <span class="va">e</span> <span class="op">/</span> <span class="va">den</span></span></span>
+<span class="r-in"><span>  <span class="va">q2</span> <span class="op">&lt;-</span> <span class="fl">1</span> <span class="op">/</span> <span class="va">den</span></span></span>
+<span class="r-in"><span>  <span class="va">l1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">q1</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">dnorm</a></span><span class="op">(</span><span class="va">data</span>, <span class="va">mu</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="va">sd</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, log <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="va">l2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">q2</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">dnorm</a></span><span class="op">(</span><span class="va">data</span>, <span class="va">mu</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>, <span class="va">sd</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>, log <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="va">m</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Extremes.html" class="external-link">pmax</a></span><span class="op">(</span><span class="va">l1</span>, <span class="va">l2</span><span class="op">)</span></span></span>
+<span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">m</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="va">l1</span> <span class="op">-</span> <span class="va">m</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="va">l2</span> <span class="op">-</span> <span class="va">m</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="op">}</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">123</span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">data</span> <span class="op">&lt;-</span> <span class="fu">datasets</span><span class="fu">::</span><span class="va"><a href="https://rdrr.io/r/datasets/faithful.html" class="external-link">faithful</a></span><span class="op">$</span><span class="va">eruptions</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="va">fit</span> <span class="op">&lt;-</span> <span class="fu">ao</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  f <span class="op">=</span> <span class="va">normal_mixture_loglik_uc</span>,</span></span>
+<span class="r-in"><span>  initial <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/mean.html" class="external-link">mean</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="op">-</span><span class="fl">1</span>, <span class="fl">1</span><span class="op">)</span>, <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/sd.html" class="external-link">sd</a></span><span class="op">(</span><span class="va">data</span><span class="op">)</span><span class="op">)</span>, <span class="fl">2</span><span class="op">)</span>, <span class="fl">0</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  target <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"mu"</span>, <span class="st">"logsd"</span>, <span class="st">"eta"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  npar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">1</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  data <span class="op">=</span> <span class="va">data</span>,</span></span>
+<span class="r-in"><span>  partition <span class="op">=</span> <span class="st">"random"</span>,</span></span>
+<span class="r-in"><span>  base_optimizer <span class="op">=</span> <span class="va">Optimizer</span><span class="op">$</span><span class="fu">new</span><span class="op">(</span><span class="st">"ucminf::ucminf"</span><span class="op">)</span>,</span></span>
+<span class="r-in"><span>  minimize <span class="op">=</span> <span class="cn">FALSE</span>,</span></span>
+<span class="r-in"><span>  add_details <span class="op">=</span> <span class="cn">FALSE</span></span></span>
+<span class="r-in"><span><span class="op">)</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="op">(</span><span class="va">muhat</span> <span class="op">&lt;-</span> <span class="va">fit</span><span class="op">$</span><span class="va">estimate_split</span><span class="op">$</span><span class="va">mu</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 2.018607 4.273341</span>
+<span class="r-in"><span><span class="op">(</span><span class="va">sdhat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="va">fit</span><span class="op">$</span><span class="va">estimate_split</span><span class="op">$</span><span class="va">logsd</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.2356211 0.4370635</span>
+<span class="r-in"><span><span class="va">e</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">exp</a></span><span class="op">(</span><span class="va">fit</span><span class="op">$</span><span class="va">estimate_split</span><span class="op">$</span><span class="va">eta</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="va">den</span> <span class="op">&lt;-</span> <span class="fl">1</span> <span class="op">+</span> <span class="va">e</span></span></span>
+<span class="r-in"><span><span class="op">(</span><span class="va">qhat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="va">e</span> <span class="op">/</span> <span class="va">den</span>, <span class="fl">1</span> <span class="op">/</span> <span class="va">den</span><span class="op">)</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.3484044 0.6515956</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Example 3: Constrained Optimization in the Setting of Example 2 -----------</span></span></span>
+<span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="co"># target arguments:</span></span></span>
 <span class="r-in"><span><span class="co"># - class means mu (2, unrestricted)</span></span></span>
 <span class="r-in"><span><span class="co"># - class standard deviations sd (2, must be non-negative)</span></span></span>
 <span class="r-in"><span><span class="co"># - class proportion lambda (only 1 for identification, must be in [0, 1])</span></span></span>
 <span class="r-in"><span></span></span>
-<span class="r-in"><span><span class="va">normal_mixture_llk</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">mu</span>, <span class="va">sd</span>, <span class="va">lambda</span>, <span class="va">data</span><span class="op">)</span> <span class="op">{</span></span></span>
+<span class="r-in"><span><span class="va">normal_mixture_loglik</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">mu</span>, <span class="va">sd</span>, <span class="va">lambda</span>, <span class="va">data</span><span class="op">)</span> <span class="op">{</span></span></span>
 <span class="r-in"><span>  <span class="va">c1</span> <span class="op">&lt;-</span> <span class="va">lambda</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">dnorm</a></span><span class="op">(</span><span class="va">data</span>, <span class="va">mu</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span>, <span class="va">sd</span><span class="op">[</span><span class="fl">1</span><span class="op">]</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="va">c2</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">lambda</span><span class="op">)</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">dnorm</a></span><span class="op">(</span><span class="va">data</span>, <span class="va">mu</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span>, <span class="va">sd</span><span class="op">[</span><span class="fl">2</span><span class="op">]</span><span class="op">)</span></span></span>
 <span class="r-in"><span>  <span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/Log.html" class="external-link">log</a></span><span class="op">(</span><span class="va">c1</span> <span class="op">+</span> <span class="va">c2</span><span class="op">)</span><span class="op">)</span></span></span>
@@ -366,7 +408,7 @@ For example, run the following <em>before</em> the <code>ao()</code> call:</p><d
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">123</span><span class="op">)</span></span></span>
 <span class="r-in"><span></span></span>
 <span class="r-in"><span><span class="fu">ao</span><span class="op">(</span></span></span>
-<span class="r-in"><span>  f <span class="op">=</span> <span class="va">normal_mixture_llk</span>,</span></span>
+<span class="r-in"><span>  f <span class="op">=</span> <span class="va">normal_mixture_loglik</span>,</span></span>
 <span class="r-in"><span>  initial <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="fl">5</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  target <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"mu"</span>, <span class="st">"sd"</span>, <span class="st">"lambda"</span><span class="op">)</span>,</span></span>
 <span class="r-in"><span>  npar <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">2</span>, <span class="fl">2</span>, <span class="fl">1</span><span class="op">)</span>,</span></span>
@@ -380,11 +422,22 @@ For example, run the following <em>before</em> the <code>ao()</code> call:</p><d
 <span class="r-out co"><span class="r-pr">#&gt;</span> $estimate</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] 2.0186087 4.2733443 0.2356257 0.4370632 0.3484053</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $estimate_split</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $estimate_split$mu</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 2.018609 4.273344</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $estimate_split$sd</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.2356257 0.4370632</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $estimate_split$lambda</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.3484053</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $value</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] -276.36</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $seconds</span>
-<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.5744791</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] 0.6060529</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> </span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> $stopping_reason</span>
 <span class="r-out co"><span class="r-pr">#&gt;</span> [1] "change in function value between 1 iteration is &lt; 1e-06"</span>
