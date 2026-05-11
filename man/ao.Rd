@@ -24,8 +24,8 @@ ao(
   tolerance_parameter = 1e-06,
   tolerance_parameter_norm = function(x, y) sqrt(sum((x - y)^2)),
   tolerance_history = 1,
-  base_optimizer = Optimizer$new("stats::optim", method = "L-BFGS-B", control =
-    list(maxit = 10)),
+  base_optimizer = optimizeR::Optimizer$new("stats::optim", method = "L-BFGS-B", control
+    = list(maxit = 10)),
   verbose = FALSE,
   hide_warnings = TRUE,
   add_details = TRUE
@@ -298,7 +298,7 @@ fit <- ao(
   npar = c(2, 2, 1),
   data = data,
   partition = "random",
-  base_optimizer = Optimizer$new("ucminf::ucminf"),
+  base_optimizer = optimizeR::Optimizer$new("ucminf::ucminf"),
   minimize = FALSE,
   add_details = FALSE
 )

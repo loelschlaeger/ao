@@ -1,6 +1,6 @@
 Package: ao
 Title: Alternating Optimization
-Version: 1.2.4
+Version: 1.2.3
 Authors@R:
     c(
     person(given = "Lennart",
@@ -22,6 +22,7 @@ URL: https://loelschlaeger.de/ao/, https://github.com/loelschlaeger/ao/
 BugReports: https://github.com/loelschlaeger/ao/issues
 License: GPL-3
 Encoding: UTF-8
+Language: en-US
 Roxygen: list(markdown = TRUE)
 RoxygenNote: 7.3.3
 Imports:
@@ -29,6 +30,7 @@ Imports:
     cli,
     future.apply,
     oeli (>= 0.7.5),
+    optimizeR (>= 1.2.1),
     progressr,
     R6,
     stats,
@@ -42,5 +44,4 @@ Suggests:
 Config/testthat/edition: 3
 VignetteBuilder: knitr
 Depends:
-    R (>= 4.0.0),
-    optimizeR (>= 1.2.1)
+    R (>= 4.1.0)

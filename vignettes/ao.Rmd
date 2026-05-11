@@ -81,7 +81,9 @@ ao(
   tolerance_parameter = 1e-6,
   tolerance_parameter_norm = function(x, y) sqrt(sum((x - y)^2)),
   tolerance_history = 1,
-  base_optimizer = Optimizer$new("stats::optim", method = "L-BFGS-B"),
+  base_optimizer = optimizeR::Optimizer$new(
+    "stats::optim", method = "L-BFGS-B"
+  ),
   verbose = FALSE,
   hide_warnings = TRUE,
   add_details = TRUE
@@ -340,7 +342,7 @@ Any number of stopping criteria can be activated or deactivated^[Stopping criter
 
 #### Base optimizer
 
-By default, the L-BFGS-B algorithm [@byrd:1995] implemented in `stats::optim` is used to solve the sub-problems numerically. Any other optimizer can be selected with the `base_optimizer` argument. Such an optimizer must be defined through the framework provided by the `{optimizeR}` package; see [its documentation](https://loelschlaeger.de/optimizeR/) for details. For example, the `stats::nlm` optimizer can be selected by setting `base_optimizer = Optimizer$new("stats::nlm")`.
+By default, the L-BFGS-B algorithm [@byrd:1995] implemented in `stats::optim` is used to solve the sub-problems numerically. Any other optimizer can be selected with the `base_optimizer` argument. Such an optimizer must be defined through the framework provided by the `{optimizeR}` package; see [its documentation](https://loelschlaeger.de/optimizeR/) for details. For example, the `stats::nlm` optimizer can be selected by setting `base_optimizer = optimizeR::Optimizer$new("stats::nlm")`.
 
 #### Multiple processes
 AO can suffer from local optima. To increase the likelihood of finding a better optimum, users can specify

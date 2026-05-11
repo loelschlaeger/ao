@@ -1,4 +1,5 @@
 #' @aliases ao-package
+#' @inherit ao examples
 #' @keywords internal
 "_PACKAGE"
 
@@ -17,7 +18,6 @@
 #' @importFrom oeli match_arg
 #' @importFrom oeli test_numeric_vector
 #' @importFrom optimizeR Objective
-#' @importFrom optimizeR Optimizer
 #' @importFrom progressr progressor
 #' @importFrom R6 R6Class
 #' @importFrom stats rnorm

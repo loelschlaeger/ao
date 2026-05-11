@@ -1,18 +1,18 @@
-# ao 1.2.4
-
-* Removed renv.
-
-* Improved documentation.
-
 # ao 1.2.3
 
 * Added value `estimate_split` to the output, which is `estimate` split by `target` (only when applicable).
 
 * Set the default value for the number of iterations within each block to 10.
 
+* Removed renv.
+
+* Improved documentation.
+
+* Added tests for invalid inputs and random partition determinism.
+
 # ao 1.2.2
 
-* Small bug fixes in non-user level functions `get_details()` and `.generate_random_partition()` 
+* Small bug fixes in non-user level functions `get_details()` and `.generate_random_partition()`
 
 # ao 1.2.1
 

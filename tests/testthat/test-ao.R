@@ -55,7 +55,7 @@ test_that("ao with custom Hessian works", {
   ao_out <- ao(
     f = f, initial = 10, gradient = g, hessian = h,
     # switch to nlm because stats::optim does not support Hessian
-    base_optimizer = Optimizer$new("stats::nlm")
+    base_optimizer = optimizeR::Optimizer$new("stats::nlm")
   )
   check_ao_output(ao_out)
 })
@@ -104,7 +104,9 @@ test_that("ao with a different base optimizer works", {
 
 test_that("ao with custom partition works", {
   f <- function(x) (x[1]^2 + x[2])^2 + (x[1] + x[2]^2)^2 + (x[3] + x[4]^2)^2
-  ao_custom <- ao(f = f, initial = c(1, 1, 1, 1), partition = list(1, 2, 3:4))
+  ao_custom <- ao(
+    f = f, initial = c(1, 1, 1, 1), partition = list(1, 2, 3:4)
+  )
   check_ao_output(ao_custom)
 })
 
@@ -121,6 +123,23 @@ test_that("ao with parameter bounds works", {
   expect_true(all(ao_bounds$estimate >= lower))
 })
 
+test_that("ao rejects inconsistent target and npar inputs", {
+  f <- function(x, y) sum(x^2) + sum(y^2)
+  expect_error(ao(f = f, initial = 1:2, target = c("x", "y")))
+})
+
+test_that("ao rejects invalid custom partitions", {
+  f <- function(x) sum(x^2)
+  expect_error(ao(f = f, initial = 1:2, partition = list(1, 3)))
+  expect_error(ao(f = f, initial = 1:2, partition = list(1, NA_integer_)))
+})
+
+test_that("ao rejects starting values outside bounds", {
+  f <- function(x) sum(x^2)
+  expect_error(ao(f = f, initial = 0, lower = 1))
+  expect_error(ao(f = f, initial = 2, upper = 1))
+})
+
 test_that("multiple ao processes work", {
   himmelblau <- function(x) (x[1]^2 + x[2] - 11)^2 + (x[1] + x[2]^2 - 7)^2
   out_multi <- ao(
@@ -134,6 +153,24 @@ test_that("multiple ao processes work", {
     add_details = FALSE
   )
   check_ao_output(out_multi, add_details = FALSE)
+})
+
+test_that("multiple ao processes can omit process details", {
+  f <- function(x) sum((x - 1)^2)
+  out_multi <- ao(
+    f = f,
+    initial = list(c(0, 0), c(2, 2)),
+    partition = "none",
+    iteration_limit = 1,
+    add_details = FALSE
+  )
+  check_ao_output(out_multi, add_details = FALSE)
+  expect_false(
+    any(
+      c("details", "estimates", "values", "seconds_each") %in%
+        names(out_multi)
+    )
+  )
 })
 
 test_that("ao fails graciously", {
