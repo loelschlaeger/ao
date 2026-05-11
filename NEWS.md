@@ -1,3 +1,9 @@
+# ao 1.2.4
+
+* Removed renv.
+
+* Improved documentation.
+
 # ao 1.2.3
 
 * Added value `estimate_split` to the output, which is `estimate` split by `target` (only when applicable).

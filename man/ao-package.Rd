@@ -7,7 +7,7 @@
 \description{
 \if{html}{\figure{logo.png}{options: style='float: right' alt='logo' width='120'}}
 
-Implementation of an iterative process that optimizes a function by alternately performing restricted optimization over parameter subsets. Instead of joint optimization, it breaks the optimization problem down into simpler sub-problems. This approach can make optimization feasible when joint optimization is too difficult.
+Implementation of an iterative process that optimizes a function by alternately performing restricted optimization over parameter subsets. Instead of solving one joint optimization problem, alternating optimization breaks it into smaller sub-problems. This approach can make optimization feasible when joint optimization is too difficult.
 }
 \seealso{
 Useful links:

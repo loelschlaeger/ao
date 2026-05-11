@@ -69,7 +69,13 @@ jobs:
         run: |
           remotes::install_cran("future.tests")
           remotes::install_github("HenrikBengtsson/future.tests", ref="develop")
-          if (grepl("::", plan <- "${{ matrix.future.plan }}") && nzchar(pkg <- sub("::.*", "", plan))) install.packages(pkg)
+          plan <- "${{ matrix.future.plan }}"
+          if (grepl("::", plan)) {
+            pkg <- sub("::.*", "", plan)
+            if (nzchar(pkg)) {
+              install.packages(pkg)
+            }
+          }
         shell: Rscript {0}
 
       - name: Session info
@@ -83,7 +89,8 @@ jobs:
         run: |
           R CMD build --no-build-vignettes --no-manual .
           R CMD INSTALL *.tar.gz
-          Rscript -e future.tests::check --args --test-plan=${{ matrix.future.plan }}
+          Rscript -e future.tests::check --args \
+            --test-plan=${{ matrix.future.plan }}
 
       - name: Upload check results
         if: failure()

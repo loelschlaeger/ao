@@ -24,7 +24,7 @@ If \code{FALSE}, maximization is performed.}
 Add details about the AO process to the output?}
 
 \item{processes}{[\code{data.frame}]\cr
-A \code{data.frame} characterizing how the different processes were specified.}
+A \code{data.frame} describing how the different processes were specified.}
 }
 \value{
 A \code{list}, see section "Output value" on the \code{\link[ao]{ao}} page.

@@ -2,7 +2,7 @@
 % Please edit documentation in R/helpers.R
 \name{generate_random_partition}
 \alias{generate_random_partition}
-\title{Generated random partition}
+\title{Generate random partition}
 \usage{
 generate_random_partition(x, p, min)
 }
@@ -11,7 +11,7 @@ generate_random_partition(x, p, min)
 The parameter indices.}
 
 \item{p}{[\code{numeric(1)}]\cr
-The probability to generate a new block.}
+The probability of generating a new block.}
 
 \item{min}{[\code{integer(1)}]\cr
 The minimum number of blocks.}

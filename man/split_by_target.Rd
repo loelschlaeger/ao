@@ -11,16 +11,16 @@ split_by_target(estimate, target = NULL, npar)
 A parameter vector.}
 
 \item{target}{[\code{character()} | \code{NULL}]\cr
-The name(s) of the argument(s) over which \code{f} gets optimized.
+The name(s) of the argument(s) over which \code{f} is optimized.
 
 This can only be \code{numeric} arguments.
 
-Can be \code{NULL} (default), then it is the first argument of \code{f}.}
+If \code{NULL} (default), the first argument of \code{f} is optimized.}
 
 \item{npar}{[\code{integer()}]\cr
 The length(s) of the target argument(s).
 
-Must be specified if more than two target arguments are specified via
+Must be specified if more than one target argument is specified via
 the \code{target} argument.
 
 Can be \code{NULL} if there is only one target argument, in which case \code{npar} is

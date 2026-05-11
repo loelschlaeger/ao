@@ -4,17 +4,17 @@
 #' This object specifies an AO process.
 #'
 #' @param target \[`character()` | `NULL`\]\cr
-#' The name(s) of the argument(s) over which \code{f} gets optimized.
+#' The name(s) of the argument(s) over which \code{f} is optimized.
 #'
 #' This can only be \code{numeric} arguments.
 #'
-#' Can be `NULL` (default), then it is the first argument of `f`.
+#' If `NULL` (default), the first argument of `f` is optimized.
 #'
 #' @param npar \[`integer()`\]\cr
 #' The length(s) of the target argument(s).
 #'
 #' @param partition \[`character(1)` | `list()`\]\cr
-#' Defines the parameter partition, and can be either
+#' Defines the parameter partition. It can be
 #'
 #' * `"sequential"` for treating each parameter separately,
 #' * `"random"` for a random partition in each iteration,
@@ -25,7 +25,7 @@
 #' @param new_block_probability \[`numeric(1)`\]\cr
 #' Only relevant if `partition = "random"`.
 #'
-#' The probability for a new parameter block when creating a random
+#' The probability of creating a new parameter block when creating a random
 #' partition.
 #'
 #' Values close to 0 result in larger parameter blocks, values close to 1
@@ -55,37 +55,37 @@
 #'
 #' Can also be `Inf` for no time limit.
 #'
-#' Note that this stopping criteria is only checked *after* a sub-problem is
-#' solved and not *within* solving a sub-problem, so the actual process time can
-#' exceed this limit.
+#' Note that this stopping criterion is only checked *after* a sub-problem is
+#' solved and not *within* solving a sub-problem, so the actual process
+#' time can exceed this limit.
 #'
 #' @param tolerance_value \[`numeric(1)`\]\cr
 #' A non-negative tolerance value. The AO process terminates
-#' if the absolute difference between the current function value and the one
-#' before \code{tolerance_history} iterations is smaller than
+#' if the absolute difference between the current function value and the value
+#' from \code{tolerance_history} iterations earlier is smaller than
 #' \code{tolerance_value}.
 #'
 #' Can be `0` for no value threshold.
 #'
 #' @param tolerance_parameter \[`numeric(1)`\]\cr
 #' A non-negative tolerance value. The AO process terminates if
-#' the distance between the current estimate and the before
-#' \code{tolerance_history} iterations is smaller than
+#' the distance between the current estimate and the estimate from
+#' \code{tolerance_history} iterations earlier is smaller than
 #' \code{tolerance_parameter}.
 #'
 #' Can be `0` for no parameter threshold.
 #'
-#' By default, the distance is measured using the euclidean norm, but another
+#' By default, the distance is measured using the Euclidean norm, but another
 #' norm can be specified via the \code{tolerance_parameter_norm} field.
 #'
 #' @param tolerance_parameter_norm \[`function`\]\cr
-#' The norm that measures the distance between the current estimate and the
-#' one from the last iteration. If the distance is smaller than
+#' The norm that measures the distance between two estimates. If the distance
+#' is smaller than
 #' \code{tolerance_parameter}, the AO process is terminated.
 #'
 #' It must be of the form \code{function(x, y)} for two vector inputs
 #' \code{x} and \code{y}, and return a single \code{numeric} value.
-#' By default, the euclidean norm \code{function(x, y) sqrt(sum((x - y)^2))}
+#' By default, the Euclidean norm \code{function(x, y) sqrt(sum((x - y)^2))}
 #' is used.
 #'
 #' @param tolerance_history \[`integer(1)`\]\cr
@@ -406,7 +406,8 @@ Process <- R6::R6Class("Process",
          rows <- oeli::vector_occurrence(details$iteration, which_block)
        } else {
          target <- sort(as.integer(which_block))
-         rows <- which(apply(details[, block_columns, drop = FALSE], 1, function(x) {
+         block_details <- details[, block_columns, drop = FALSE]
+         rows <- which(apply(block_details, 1, function(x) {
            active <- which(as.numeric(x) == 1)
            identical(active, target)
          }))
@@ -516,7 +517,10 @@ Process <- R6::R6Class("Process",
 
      ### input checks
      oeli::input_check_response(
-       check = checkmate::check_choice(parameter_type, c("full", "block", "fixed")),
+       check = checkmate::check_choice(
+         parameter_type,
+         c("full", "block", "fixed")
+       ),
        var_name = "parameter_type"
      )
 
@@ -544,7 +548,10 @@ Process <- R6::R6Class("Process",
 
      ### input checks
      oeli::input_check_response(
-       check = checkmate::check_choice(parameter_type, c("full", "block", "fixed")),
+       check = checkmate::check_choice(
+         parameter_type,
+         c("full", "block", "fixed")
+       ),
        var_name = "parameter_type"
      )
 
@@ -634,7 +641,9 @@ Process <- R6::R6Class("Process",
 
        ### check time limit
        if (self$get_seconds_total() >= self$seconds_limit) {
-         message <- paste("time limit of", self$seconds_limit, "seconds reached")
+         message <- paste(
+           "time limit of", self$seconds_limit, "seconds reached"
+         )
          stopping <- TRUE
          break
        }
@@ -709,7 +718,7 @@ Process <- R6::R6Class("Process",
    },
 
    #' @field partition \[`character(1)` | `list()`\]\cr
-   #' Defines the parameter partition, and can be either
+   #' Defines the parameter partition. It can be
    #'
    #' * `"sequential"` for treating each parameter separately,
    #' * `"random"` for a random partition in each iteration,
@@ -723,7 +732,10 @@ Process <- R6::R6Class("Process",
      } else {
        if (checkmate::test_string(value)) {
          oeli::input_check_response(
-           check = checkmate::check_choice(value, c("sequential", "random", "none")),
+           check = checkmate::check_choice(
+             value,
+             c("sequential", "random", "none")
+           ),
            var_name = "partition"
          )
        } else if (checkmate::test_list(value)) {
@@ -754,7 +766,7 @@ Process <- R6::R6Class("Process",
    #' @field new_block_probability \[`numeric(1)`\]\cr
    #' Only relevant if `partition = "random"`.
    #'
-   #' The probability for a new parameter block when creating a random
+   #' The probability of creating a new parameter block when creating a random
    #' partition.
    #'
    #' Values close to 0 result in larger parameter blocks, values close to 1
@@ -849,9 +861,9 @@ Process <- R6::R6Class("Process",
    #'
    #' Can also be `Inf` for no time limit.
    #'
-   #' Note that this stopping criteria is only checked *after* a sub-problem is
-   #' solved and not *within* solving a sub-problem, so the actual process time can
-   #' exceed this limit.
+   #' Note that this stopping criterion is only checked *after* a sub-problem is
+   #' solved and not *within* solving a sub-problem, so the actual process
+   #' time can exceed this limit.
 
    seconds_limit = function(value) {
      if (missing(value)) {
@@ -870,8 +882,8 @@ Process <- R6::R6Class("Process",
 
    #' @field tolerance_value \[`numeric(1)`\]\cr
    #' A non-negative tolerance value. The AO process terminates
-   #' if the absolute difference between the current function value and the one
-   #' before \code{tolerance_history} iterations is smaller than
+   #' if the absolute difference between the current function value and the
+   #' value from \code{tolerance_history} iterations earlier is smaller than
    #' \code{tolerance_value}.
    #'
    #' Can be `0` for no value threshold.
@@ -890,13 +902,13 @@ Process <- R6::R6Class("Process",
 
    #' @field tolerance_parameter \[`numeric(1)`\]\cr
    #' A non-negative tolerance value. The AO process terminates if
-   #' the distance between the current estimate and the before
-   #' \code{tolerance_history} iterations is smaller than
+   #' the distance between the current estimate and the estimate from
+   #' \code{tolerance_history} iterations earlier is smaller than
    #' \code{tolerance_parameter}.
    #'
    #' Can be `0` for no parameter threshold.
    #'
-   #' By default, the distance is measured using the euclidean norm, but another
+   #' By default, the distance is measured using the Euclidean norm, but another
    #' norm can be specified via the \code{tolerance_parameter_norm} field.
 
    tolerance_parameter = function(value) {
@@ -912,13 +924,13 @@ Process <- R6::R6Class("Process",
    },
 
    #' @field tolerance_parameter_norm \[`function`\]\cr
-   #' The norm that measures the distance between the current estimate and the
-   #' one from the last iteration. If the distance is smaller than
+   #' The norm that measures the distance between two estimates. If the distance
+   #' is smaller than
    #' \code{tolerance_parameter}, the AO process is terminated.
    #'
    #' It must be of the form \code{function(x, y)} for two vector inputs
    #' \code{x} and \code{y}, and return a single \code{numeric} value.
-   #' By default, the euclidean norm \code{function(x, y) sqrt(sum((x - y)^2))}
+   #' By default, the Euclidean norm \code{function(x, y) sqrt(sum((x - y)^2))}
    #' is used.
 
    tolerance_parameter_norm = function(value) {
@@ -926,7 +938,11 @@ Process <- R6::R6Class("Process",
        private$.tolerance_parameter_norm[[1]]
      } else {
        oeli::input_check_response(
-         check = checkmate::check_function(value, args = c("x", "y"), nargs = 2),
+         check = checkmate::check_function(
+           value,
+           args = c("x", "y"),
+           nargs = 2
+         ),
          var_name = "tolerance_parameter_norm"
        )
        private$.tolerance_parameter_norm <- list(value)
@@ -1009,15 +1025,18 @@ Process <- R6::R6Class("Process",
    #'
    #' * \code{estimate} is the parameter vector at termination.
    #' * \code{value} is the function value at termination.
-   #' * \code{details} is a `data.frame` with full information about the AO process.
+   #' * \code{details} is a `data.frame` with full information about the
+   #'   AO process.
    #'   For each iteration (column `iteration`) it contains the function value
-   #'   (column `value`), parameter values (columns starting with `p` followed by
-   #'   the parameter index), the active parameter block (columns starting with `b`
-   #'   followed by the parameter index, where `1` stands for a parameter contained
-   #'   in the active parameter block and `0` if not), and computation times in seconds
-   #'   (column `seconds`). Only available if `add_details = TRUE`.
+   #'   (column `value`), parameter values (columns starting with `p`
+   #'   followed by the parameter index), the active parameter block
+   #'   (columns starting with `b` followed by the parameter index, where
+   #'   `1` stands for a parameter contained in the active parameter block
+   #'   and `0` if not), and computation times in seconds (column `seconds`).
+   #'   Only available if `add_details = TRUE`.
    #' * \code{seconds} is the overall computation time in seconds.
-   #' * \code{stopping_reason} is a message why the AO process has terminated.
+   #' * \code{stopping_reason} is a message explaining why the AO process
+   #'   terminated.
 
    output = function(value) {
      if (missing(value)) {

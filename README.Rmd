@@ -29,13 +29,13 @@ The `{ao}` package implements alternating optimization (AO) in [R](https://cran.
 
 ## Why?
 
-AO is an iterative process that optimizes a function by alternately performing restricted optimization over parameter subsets. Instead of joint optimization, it breaks the optimization problem down into simpler sub-problems. This approach can make optimization feasible when joint optimization is too difficult. 
+AO is an iterative process that optimizes a function by alternately performing restricted optimization over parameter subsets. Instead of solving one joint optimization problem, AO breaks it into smaller sub-problems. This can make optimization feasible when joint optimization is too difficult.
 
 The AO process implemented in `{ao}` can be
 
 - viewed as a generalization of joint optimization, 
 
-- used for minimization and maximization problems and with custom partitions of the parameters,
+- used for minimization and maximization problems with custom parameter partitions,
 
 - randomized by changing the parameter partition randomly after each iteration, 
 
@@ -51,13 +51,13 @@ You can install the released package version from [CRAN](https://CRAN.R-project.
 install.packages("ao")
 ```
 
-Then load the package via `library("ao")` and you should be ready to go. Here is a simple example of alternating minimization of the [Rosenbrock function](https://en.wikipedia.org/wiki/Rosenbrock_function):
+Then load the package with `library("ao")`. Here is a simple example of alternating minimization of the [Rosenbrock function](https://en.wikipedia.org/wiki/Rosenbrock_function):
 
 ```{r, rosenbrock}
 rosenbrock <- function(x) (1 - x[1])^2 + (x[2] - x[1]^2)^2
 ```
 
-The resulting optimization path ...
+The resulting optimization path is shown below.
 
 ```{r, rosenbrock_ao_path, echo = FALSE, warning = FALSE}
 out <- ao(f = rosenbrock, initial = c(2, 2))
@@ -87,7 +87,7 @@ ggplot(grid) +
   )
 ```
 
-... is obtained as follows:
+It is obtained with:
 
 ```{r, ao rosenbrock}
 ao(f = rosenbrock, initial = c(2, 2))
@@ -95,4 +95,4 @@ ao(f = rosenbrock, initial = c(2, 2))
 
 ## Contact?
 
-If you have any questions, found a bug, need a feature, [just file an issue on GitHub](https://github.com/loelschlaeger/ao/issues/new/choose). 
+If you have questions, find a bug, or need a feature, [file an issue on GitHub](https://github.com/loelschlaeger/ao/issues/new/choose).

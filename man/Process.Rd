@@ -13,7 +13,7 @@ This object specifies an AO process.
 The length(s) of the target argument(s).}
 
 \item{\code{partition}}{[\code{character(1)} | \code{list()}]\cr
-Defines the parameter partition, and can be either
+Defines the parameter partition. It can be
 \itemize{
 \item \code{"sequential"} for treating each parameter separately,
 \item \code{"random"} for a random partition in each iteration,
@@ -25,7 +25,7 @@ partition for the AO process.
 \item{\code{new_block_probability}}{[\code{numeric(1)}]\cr
 Only relevant if \code{partition = "random"}.
 
-The probability for a new parameter block when creating a random
+The probability of creating a new parameter block when creating a random
 partition.
 
 Values close to 0 result in larger parameter blocks, values close to 1
@@ -55,37 +55,37 @@ The time limit in seconds before the AO process is terminated.
 
 Can also be \code{Inf} for no time limit.
 
-Note that this stopping criteria is only checked \emph{after} a sub-problem is
-solved and not \emph{within} solving a sub-problem, so the actual process time can
-exceed this limit.}
+Note that this stopping criterion is only checked \emph{after} a sub-problem is
+solved and not \emph{within} solving a sub-problem, so the actual process
+time can exceed this limit.}
 
 \item{\code{tolerance_value}}{[\code{numeric(1)}]\cr
 A non-negative tolerance value. The AO process terminates
-if the absolute difference between the current function value and the one
-before \code{tolerance_history} iterations is smaller than
+if the absolute difference between the current function value and the
+value from \code{tolerance_history} iterations earlier is smaller than
 \code{tolerance_value}.
 
 Can be \code{0} for no value threshold.}
 
 \item{\code{tolerance_parameter}}{[\code{numeric(1)}]\cr
 A non-negative tolerance value. The AO process terminates if
-the distance between the current estimate and the before
-\code{tolerance_history} iterations is smaller than
+the distance between the current estimate and the estimate from
+\code{tolerance_history} iterations earlier is smaller than
 \code{tolerance_parameter}.
 
 Can be \code{0} for no parameter threshold.
 
-By default, the distance is measured using the euclidean norm, but another
+By default, the distance is measured using the Euclidean norm, but another
 norm can be specified via the \code{tolerance_parameter_norm} field.}
 
 \item{\code{tolerance_parameter_norm}}{[\code{function}]\cr
-The norm that measures the distance between the current estimate and the
-one from the last iteration. If the distance is smaller than
+The norm that measures the distance between two estimates. If the distance
+is smaller than
 \code{tolerance_parameter}, the AO process is terminated.
 
 It must be of the form \code{function(x, y)} for two vector inputs
 \code{x} and \code{y}, and return a single \code{numeric} value.
-By default, the euclidean norm \code{function(x, y) sqrt(sum((x - y)^2))}
+By default, the Euclidean norm \code{function(x, y) sqrt(sum((x - y)^2))}
 is used.}
 
 \item{\code{tolerance_history}}{[\code{integer(1)}]\cr
@@ -107,15 +107,18 @@ elements:
 \itemize{
 \item \code{estimate} is the parameter vector at termination.
 \item \code{value} is the function value at termination.
-\item \code{details} is a \code{data.frame} with full information about the AO process.
+\item \code{details} is a \code{data.frame} with full information about the
+AO process.
 For each iteration (column \code{iteration}) it contains the function value
-(column \code{value}), parameter values (columns starting with \code{p} followed by
-the parameter index), the active parameter block (columns starting with \code{b}
-followed by the parameter index, where \code{1} stands for a parameter contained
-in the active parameter block and \code{0} if not), and computation times in seconds
-(column \code{seconds}). Only available if \code{add_details = TRUE}.
+(column \code{value}), parameter values (columns starting with \code{p}
+followed by the parameter index), the active parameter block
+(columns starting with \code{b} followed by the parameter index, where
+\code{1} stands for a parameter contained in the active parameter block
+and \code{0} if not), and computation times in seconds (column \code{seconds}).
+Only available if \code{add_details = TRUE}.
 \item \code{seconds} is the overall computation time in seconds.
-\item \code{stopping_reason} is a message why the AO process has terminated.
+\item \code{stopping_reason} is a message explaining why the AO process
+terminated.
 }}
 }
 \if{html}{\out{</div>}}
@@ -168,17 +171,17 @@ Creates a new object of this \link[R6:R6Class]{R6} class.
 \if{html}{\out{<div class="arguments">}}
 \describe{
 \item{\code{target}}{[\code{character()} | \code{NULL}]\cr
-The name(s) of the argument(s) over which \code{f} gets optimized.
+The name(s) of the argument(s) over which \code{f} is optimized.
 
 This can only be \code{numeric} arguments.
 
-Can be \code{NULL} (default), then it is the first argument of \code{f}.}
+If \code{NULL} (default), the first argument of \code{f} is optimized.}
 
 \item{\code{npar}}{[\code{integer()}]\cr
 The length(s) of the target argument(s).}
 
 \item{\code{partition}}{[\code{character(1)} | \code{list()}]\cr
-Defines the parameter partition, and can be either
+Defines the parameter partition. It can be
 \itemize{
 \item \code{"sequential"} for treating each parameter separately,
 \item \code{"random"} for a random partition in each iteration,
@@ -190,7 +193,7 @@ partition for the AO process.
 \item{\code{new_block_probability}}{[\code{numeric(1)}]\cr
 Only relevant if \code{partition = "random"}.
 
-The probability for a new parameter block when creating a random
+The probability of creating a new parameter block when creating a random
 partition.
 
 Values close to 0 result in larger parameter blocks, values close to 1
@@ -220,37 +223,37 @@ The time limit in seconds before the AO process is terminated.
 
 Can also be \code{Inf} for no time limit.
 
-Note that this stopping criteria is only checked \emph{after} a sub-problem is
-solved and not \emph{within} solving a sub-problem, so the actual process time can
-exceed this limit.}
+Note that this stopping criterion is only checked \emph{after} a sub-problem is
+solved and not \emph{within} solving a sub-problem, so the actual process
+time can exceed this limit.}
 
 \item{\code{tolerance_value}}{[\code{numeric(1)}]\cr
 A non-negative tolerance value. The AO process terminates
-if the absolute difference between the current function value and the one
-before \code{tolerance_history} iterations is smaller than
+if the absolute difference between the current function value and the value
+from \code{tolerance_history} iterations earlier is smaller than
 \code{tolerance_value}.
 
 Can be \code{0} for no value threshold.}
 
 \item{\code{tolerance_parameter}}{[\code{numeric(1)}]\cr
 A non-negative tolerance value. The AO process terminates if
-the distance between the current estimate and the before
-\code{tolerance_history} iterations is smaller than
+the distance between the current estimate and the estimate from
+\code{tolerance_history} iterations earlier is smaller than
 \code{tolerance_parameter}.
 
 Can be \code{0} for no parameter threshold.
 
-By default, the distance is measured using the euclidean norm, but another
+By default, the distance is measured using the Euclidean norm, but another
 norm can be specified via the \code{tolerance_parameter_norm} field.}
 
 \item{\code{tolerance_parameter_norm}}{[\code{function}]\cr
-The norm that measures the distance between the current estimate and the
-one from the last iteration. If the distance is smaller than
+The norm that measures the distance between two estimates. If the distance
+is smaller than
 \code{tolerance_parameter}, the AO process is terminated.
 
 It must be of the form \code{function(x, y)} for two vector inputs
 \code{x} and \code{y}, and return a single \code{numeric} value.
-By default, the euclidean norm \code{function(x, y) sqrt(sum((x - y)^2))}
+By default, the Euclidean norm \code{function(x, y) sqrt(sum((x - y)^2))}
 is used.}
 
 \item{\code{tolerance_history}}{[\code{integer(1)}]\cr

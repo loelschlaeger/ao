@@ -7,8 +7,8 @@
 #'
 #' @details
 #' ## Multiple processes
-#' AO can suffer from local optima. To increase the likelihood of reaching the
-#' global optimum, you can specify:
+#' AO can suffer from local optima. To increase the likelihood of finding a
+#' better optimum, you can specify:
 #'
 #' * multiple starting parameters
 #' * multiple parameter partitions
@@ -20,8 +20,8 @@
 #' process.
 #'
 #' ### Output value
-#' In the case of multiple processes, the output values refer to the optimal
-#' (with respect to function value) AO processes.
+#' In the case of multiple processes, the output values refer to the best
+#' AO process with respect to function value.
 #'
 #' If `add_details = TRUE`, the following elements are added:
 #'
@@ -31,7 +31,7 @@
 #'   additional column `process` with an index for the different processes.
 #' * \code{seconds_each} gives the computation time in seconds for each process.
 #' * \code{stopping_reasons} gives the termination message for each process.
-#' * \code{processes} give details how the different processes were specified.
+#' * \code{processes} gives details on how the processes were specified.
 #'
 #' ### Parallel computation
 #' By default, processes run sequentially. However, since they are independent,
@@ -61,8 +61,8 @@
 #' as \code{initial}, optionally followed by any other arguments specified by
 #' the \code{...} argument.
 #'
-#' If \code{f} is to be optimized over an argument other than the first, or more
-#' than one argument, this has to be specified via the \code{target} argument.
+#' If \code{f} is optimized over an argument other than the first, or over more
+#' than one argument, specify this with the \code{target} argument.
 #'
 #' @param initial \[`numeric()` | `list()`\]\cr
 #' The starting parameter values for the target argument(s).
@@ -70,32 +70,32 @@
 #' This can also be a `list` of multiple starting parameter values, see details.
 #'
 #' @param target \[`character()` | `NULL`\]\cr
-#' The name(s) of the argument(s) over which \code{f} gets optimized.
+#' The name(s) of the argument(s) over which \code{f} is optimized.
 #'
 #' This can only be \code{numeric} arguments.
 #'
-#' Can be `NULL` (default), then it is the first argument of `f`.
+#' If `NULL` (default), the first argument of `f` is optimized.
 #'
 #' @param npar \[`integer()`\]\cr
 #' The length(s) of the target argument(s).
 #'
-#' Must be specified if more than two target arguments are specified via
+#' Must be specified if more than one target argument is specified via
 #' the `target` argument.
 #'
 #' Can be `NULL` if there is only one target argument, in which case `npar` is
 #' set to `length(initial)`.
 #'
 #' @param gradient \[`function` | `NULL`\]\cr
-#' Optionally a \code{function} that returns the gradient of \code{f}.
+#' An optional \code{function} that returns the gradient of \code{f}.
 #'
-#' The function call of \code{gradient} must be identical to \code{f}.
+#' The function signature of \code{gradient} must be identical to \code{f}.
 #'
 #' Ignored if `base_optimizer` does not support custom gradient.
 #'
 #' @param hessian \[`function` | `NULL`\]\cr
-#' Optionally a \code{function} that returns the Hessian of \code{f}.
+#' An optional \code{function} that returns the Hessian of \code{f}.
 #'
-#' The function call of \code{hessian} must be identical to \code{f}.
+#' The function signature of \code{hessian} must be identical to \code{f}.
 #'
 #' Ignored if `base_optimizer` does not support custom Hessian.
 #'
@@ -103,7 +103,7 @@
 #' Additional arguments to be passed to \code{f} (and \code{gradient}).
 #'
 #' @param partition \[`character(1)` | `list()`\]\cr
-#' Defines the parameter partition, and can be either
+#' Defines the parameter partition. It can be
 #'
 #' * `"sequential"` for treating each parameter separately,
 #' * `"random"` for a random partition in each iteration,
@@ -116,7 +116,7 @@
 #' @param new_block_probability \[`numeric(1)`\]\cr
 #' Only relevant if `partition = "random"`.
 #'
-#' The probability for a new parameter block when creating a random
+#' The probability of creating a new parameter block when creating a random
 #' partition.
 #'
 #' Values close to 0 result in larger parameter blocks, values close to 1
@@ -133,7 +133,7 @@
 #' If \code{FALSE}, maximization is performed.
 #'
 #' @param lower,upper \[`numeric()` | `NULL`\]\cr
-#' Optionally lower and upper parameter bounds.
+#' Optional lower and upper parameter bounds.
 #'
 #' Ignored if `base_optimizer` does not support parameter bounds.
 #'
@@ -148,37 +148,37 @@
 #'
 #' Can also be `Inf` for no time limit.
 #'
-#' Note that this stopping criteria is only checked *after* a sub-problem is
-#' solved and not *within* solving a sub-problem, so the actual process time can
-#' exceed this limit.
+#' Note that this stopping criterion is only checked *after* a sub-problem is
+#' solved and not *within* solving a sub-problem, so the actual process
+#' time can exceed this limit.
 #'
 #' @param tolerance_value \[`numeric(1)`\]\cr
 #' A non-negative tolerance value. The AO process terminates
-#' if the absolute difference between the current function value and the one
-#' before \code{tolerance_history} iterations is smaller than
+#' if the absolute difference between the current function value and the value
+#' from \code{tolerance_history} iterations earlier is smaller than
 #' \code{tolerance_value}.
 #'
 #' Can be `0` for no value threshold.
 #'
 #' @param tolerance_parameter \[`numeric(1)`\]\cr
 #' A non-negative tolerance value. The AO process terminates if
-#' the distance between the current estimate and the before
-#' \code{tolerance_history} iterations is smaller than
+#' the distance between the current estimate and the estimate from
+#' \code{tolerance_history} iterations earlier is smaller than
 #' \code{tolerance_parameter}.
 #'
 #' Can be `0` for no parameter threshold.
 #'
-#' By default, the distance is measured using the euclidean norm, but another
+#' By default, the distance is measured using the Euclidean norm, but another
 #' norm can be specified via the \code{tolerance_parameter_norm} argument.
 #'
 #' @param tolerance_parameter_norm \[`function`\]\cr
-#' The norm that measures the distance between the current estimate and the
-#' one from the last iteration. If the distance is smaller than
+#' The norm that measures the distance between two estimates. If the distance
+#' is smaller than
 #' \code{tolerance_parameter}, the AO process is terminated.
 #'
 #' It must be of the form \code{function(x, y)} for two vector inputs
 #' \code{x} and \code{y}, and return a single \code{numeric} value.
-#' By default, the euclidean norm \code{function(x, y) sqrt(sum((x - y)^2))}
+#' By default, the Euclidean norm \code{function(x, y) sqrt(sum((x - y)^2))}
 #' is used.
 #'
 #' @param tolerance_history \[`integer(1)`\]\cr
@@ -220,7 +220,7 @@
 #'   in the active parameter block and `0` if not), and computation times in
 #'   seconds (column `seconds`). Only available if `add_details = TRUE`.
 #' * `seconds` is the overall computation time in seconds.
-#' * `stopping_reason` is a message why the AO process has terminated.
+#' * `stopping_reason` is a message explaining why the AO process terminated.
 #'
 #' In the case of multiple processes, the output changes slightly, see details.
 #'

@@ -15,7 +15,10 @@ out <- ao(
   tolerance = 0.1
 )
 library("ggplot2")
-df <- expand.grid(x = seq(1.57, 1.8, length.out = 200), y = seq(1.17, 1.4, length.out = 200))
+df <- expand.grid(
+  x = seq(1.57, 1.8, length.out = 200),
+  y = seq(1.17, 1.4, length.out = 200)
+)
 df$z <- apply(df, 1, himmelblau)
 p <- ggplot() +
   geom_contour(

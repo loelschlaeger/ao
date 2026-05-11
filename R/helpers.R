@@ -31,7 +31,7 @@ split_by_target <- function(estimate, target = NULL, npar) {
   out
 }
 
-#' Generated random partition
+#' Generate random partition
 #'
 #' @description
 #' This helper function generates a random parameter partition, which is used
@@ -43,7 +43,7 @@ split_by_target <- function(estimate, target = NULL, npar) {
 #' The parameter indices.
 #'
 #' @param p \[`numeric(1)`\]\cr
-#' The probability to generate a new block.
+#' The probability of generating a new block.
 #'
 #' @param min \[`integer(1)`\]\cr
 #' The minimum number of blocks.
@@ -83,7 +83,7 @@ generate_random_partition <- function(x, p, min) {
 #' A `list` of outputs from \code{\link[ao]{ao}}.
 #'
 #' @param processes \[`data.frame`\]\cr
-#' A `data.frame` characterizing how the different processes were specified.
+#' A `data.frame` describing how the different processes were specified.
 #'
 #' @inheritParams ao
 #'

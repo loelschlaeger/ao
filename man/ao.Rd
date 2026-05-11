@@ -39,8 +39,8 @@ The first argument of \code{f} should be a \code{numeric} of the same length
 as \code{initial}, optionally followed by any other arguments specified by
 the \code{...} argument.
 
-If \code{f} is to be optimized over an argument other than the first, or more
-than one argument, this has to be specified via the \code{target} argument.}
+If \code{f} is optimized over an argument other than the first, or over more
+than one argument, specify this with the \code{target} argument.}
 
 \item{initial}{[\code{numeric()} | \code{list()}]\cr
 The starting parameter values for the target argument(s).
@@ -48,39 +48,39 @@ The starting parameter values for the target argument(s).
 This can also be a \code{list} of multiple starting parameter values, see details.}
 
 \item{target}{[\code{character()} | \code{NULL}]\cr
-The name(s) of the argument(s) over which \code{f} gets optimized.
+The name(s) of the argument(s) over which \code{f} is optimized.
 
 This can only be \code{numeric} arguments.
 
-Can be \code{NULL} (default), then it is the first argument of \code{f}.}
+If \code{NULL} (default), the first argument of \code{f} is optimized.}
 
 \item{npar}{[\code{integer()}]\cr
 The length(s) of the target argument(s).
 
-Must be specified if more than two target arguments are specified via
+Must be specified if more than one target argument is specified via
 the \code{target} argument.
 
 Can be \code{NULL} if there is only one target argument, in which case \code{npar} is
 set to \code{length(initial)}.}
 
 \item{gradient}{[\code{function} | \code{NULL}]\cr
-Optionally a \code{function} that returns the gradient of \code{f}.
+An optional \code{function} that returns the gradient of \code{f}.
 
-The function call of \code{gradient} must be identical to \code{f}.
+The function signature of \code{gradient} must be identical to \code{f}.
 
 Ignored if \code{base_optimizer} does not support custom gradient.}
 
 \item{hessian}{[\code{function} | \code{NULL}]\cr
-Optionally a \code{function} that returns the Hessian of \code{f}.
+An optional \code{function} that returns the Hessian of \code{f}.
 
-The function call of \code{hessian} must be identical to \code{f}.
+The function signature of \code{hessian} must be identical to \code{f}.
 
 Ignored if \code{base_optimizer} does not support custom Hessian.}
 
 \item{...}{Additional arguments to be passed to \code{f} (and \code{gradient}).}
 
 \item{partition}{[\code{character(1)} | \code{list()}]\cr
-Defines the parameter partition, and can be either
+Defines the parameter partition. It can be
 \itemize{
 \item \code{"sequential"} for treating each parameter separately,
 \item \code{"random"} for a random partition in each iteration,
@@ -94,7 +94,7 @@ This can also be a \code{list} of multiple partition definitions, see details.}
 \item{new_block_probability}{[\code{numeric(1)}]\cr
 Only relevant if \code{partition = "random"}.
 
-The probability for a new parameter block when creating a random
+The probability of creating a new parameter block when creating a random
 partition.
 
 Values close to 0 result in larger parameter blocks, values close to 1
@@ -111,7 +111,7 @@ Minimize during the AO process?
 If \code{FALSE}, maximization is performed.}
 
 \item{lower, upper}{[\code{numeric()} | \code{NULL}]\cr
-Optionally lower and upper parameter bounds.
+Optional lower and upper parameter bounds.
 
 Ignored if \code{base_optimizer} does not support parameter bounds.}
 
@@ -126,37 +126,37 @@ The time limit in seconds before the AO process is terminated.
 
 Can also be \code{Inf} for no time limit.
 
-Note that this stopping criteria is only checked \emph{after} a sub-problem is
-solved and not \emph{within} solving a sub-problem, so the actual process time can
-exceed this limit.}
+Note that this stopping criterion is only checked \emph{after} a sub-problem is
+solved and not \emph{within} solving a sub-problem, so the actual process
+time can exceed this limit.}
 
 \item{tolerance_value}{[\code{numeric(1)}]\cr
 A non-negative tolerance value. The AO process terminates
-if the absolute difference between the current function value and the one
-before \code{tolerance_history} iterations is smaller than
+if the absolute difference between the current function value and the value
+from \code{tolerance_history} iterations earlier is smaller than
 \code{tolerance_value}.
 
 Can be \code{0} for no value threshold.}
 
 \item{tolerance_parameter}{[\code{numeric(1)}]\cr
 A non-negative tolerance value. The AO process terminates if
-the distance between the current estimate and the before
-\code{tolerance_history} iterations is smaller than
+the distance between the current estimate and the estimate from
+\code{tolerance_history} iterations earlier is smaller than
 \code{tolerance_parameter}.
 
 Can be \code{0} for no parameter threshold.
 
-By default, the distance is measured using the euclidean norm, but another
+By default, the distance is measured using the Euclidean norm, but another
 norm can be specified via the \code{tolerance_parameter_norm} argument.}
 
 \item{tolerance_parameter_norm}{[\code{function}]\cr
-The norm that measures the distance between the current estimate and the
-one from the last iteration. If the distance is smaller than
+The norm that measures the distance between two estimates. If the distance
+is smaller than
 \code{tolerance_parameter}, the AO process is terminated.
 
 It must be of the form \code{function(x, y)} for two vector inputs
 \code{x} and \code{y}, and return a single \code{numeric} value.
-By default, the euclidean norm \code{function(x, y) sqrt(sum((x - y)^2))}
+By default, the Euclidean norm \code{function(x, y) sqrt(sum((x - y)^2))}
 is used.}
 
 \item{tolerance_history}{[\code{integer(1)}]\cr
@@ -198,7 +198,7 @@ followed by the parameter index, where \code{1} stands for a parameter contained
 in the active parameter block and \code{0} if not), and computation times in
 seconds (column \code{seconds}). Only available if \code{add_details = TRUE}.
 \item \code{seconds} is the overall computation time in seconds.
-\item \code{stopping_reason} is a message why the AO process has terminated.
+\item \code{stopping_reason} is a message explaining why the AO process terminated.
 }
 
 In the case of multiple processes, the output changes slightly, see details.
@@ -211,8 +211,8 @@ restricted optimization over parameter partitions.
 \details{
 \subsection{Multiple processes}{
 
-AO can suffer from local optima. To increase the likelihood of reaching the
-global optimum, you can specify:
+AO can suffer from local optima. To increase the likelihood of finding a
+better optimum, you can specify:
 \itemize{
 \item multiple starting parameters
 \item multiple parameter partitions
@@ -225,8 +225,8 @@ values, parameter partitions, and base optimizers will create a separate AO
 process.
 \subsection{Output value}{
 
-In the case of multiple processes, the output values refer to the optimal
-(with respect to function value) AO processes.
+In the case of multiple processes, the output values refer to the best
+AO process with respect to function value.
 
 If \code{add_details = TRUE}, the following elements are added:
 \itemize{
@@ -236,7 +236,7 @@ If \code{add_details = TRUE}, the following elements are added:
 additional column \code{process} with an index for the different processes.
 \item \code{seconds_each} gives the computation time in seconds for each process.
 \item \code{stopping_reasons} gives the termination message for each process.
-\item \code{processes} give details how the different processes were specified.
+\item \code{processes} gives details on how the processes were specified.
 }
 }
 
