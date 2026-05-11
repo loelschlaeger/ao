@@ -12,7 +12,7 @@ This object specifies an AO process.
 - `partition`:
 
   \[`character(1)` \| [`list()`](https://rdrr.io/r/base/list.html)\]  
-  Defines the parameter partition, and can be either
+  Defines the parameter partition. It can be
 
   - `"sequential"` for treating each parameter separately,
 
@@ -29,8 +29,8 @@ This object specifies an AO process.
   \[`numeric(1)`\]  
   Only relevant if `partition = "random"`.
 
-  The probability for a new parameter block when creating a random
-  partition.
+  The probability of creating a new parameter block when creating a
+  random partition.
 
   Values close to 0 result in larger parameter blocks, values close to 1
   result in smaller parameter blocks.
@@ -69,16 +69,16 @@ This object specifies an AO process.
 
   Can also be `Inf` for no time limit.
 
-  Note that this stopping criteria is only checked *after* a sub-problem
-  is solved and not *within* solving a sub-problem, so the actual
-  process time can exceed this limit.
+  Note that this stopping criterion is only checked *after* a
+  sub-problem is solved and not *within* solving a sub-problem, so the
+  actual process time can exceed this limit.
 
 - `tolerance_value`:
 
   \[`numeric(1)`\]  
   A non-negative tolerance value. The AO process terminates if the
-  absolute difference between the current function value and the one
-  before `tolerance_history` iterations is smaller than
+  absolute difference between the current function value and the value
+  from `tolerance_history` iterations earlier is smaller than
   `tolerance_value`.
 
   Can be `0` for no value threshold.
@@ -87,24 +87,25 @@ This object specifies an AO process.
 
   \[`numeric(1)`\]  
   A non-negative tolerance value. The AO process terminates if the
-  distance between the current estimate and the before
-  `tolerance_history` iterations is smaller than `tolerance_parameter`.
+  distance between the current estimate and the estimate from
+  `tolerance_history` iterations earlier is smaller than
+  `tolerance_parameter`.
 
   Can be `0` for no parameter threshold.
 
-  By default, the distance is measured using the euclidean norm, but
+  By default, the distance is measured using the Euclidean norm, but
   another norm can be specified via the `tolerance_parameter_norm`
   field.
 
 - `tolerance_parameter_norm`:
 
   \[`function`\]  
-  The norm that measures the distance between the current estimate and
-  the one from the last iteration. If the distance is smaller than
-  `tolerance_parameter`, the AO process is terminated.
+  The norm that measures the distance between two estimates. If the
+  distance is smaller than `tolerance_parameter`, the AO process is
+  terminated.
 
   It must be of the form `function(x, y)` for two vector inputs `x` and
-  `y`, and return a single `numeric` value. By default, the euclidean
+  `y`, and return a single `numeric` value. By default, the Euclidean
   norm `function(x, y) sqrt(sum((x - y)^2))` is used.
 
 - `tolerance_history`:
@@ -150,7 +151,8 @@ This object specifies an AO process.
 
   - `seconds` is the overall computation time in seconds.
 
-  - `stopping_reason` is a message why the AO process has terminated.
+  - `stopping_reason` is a message explaining why the AO process
+    terminated.
 
 ## Methods
 
@@ -217,11 +219,11 @@ Creates a new object of this
 - `target`:
 
   \[[`character()`](https://rdrr.io/r/base/character.html) \| `NULL`\]  
-  The name(s) of the argument(s) over which `f` gets optimized.
+  The name(s) of the argument(s) over which `f` is optimized.
 
   This can only be `numeric` arguments.
 
-  Can be `NULL` (default), then it is the first argument of `f`.
+  If `NULL` (default), the first argument of `f` is optimized.
 
 - `npar`:
 
@@ -231,7 +233,7 @@ Creates a new object of this
 - `partition`:
 
   \[`character(1)` \| [`list()`](https://rdrr.io/r/base/list.html)\]  
-  Defines the parameter partition, and can be either
+  Defines the parameter partition. It can be
 
   - `"sequential"` for treating each parameter separately,
 
@@ -248,8 +250,8 @@ Creates a new object of this
   \[`numeric(1)`\]  
   Only relevant if `partition = "random"`.
 
-  The probability for a new parameter block when creating a random
-  partition.
+  The probability of creating a new parameter block when creating a
+  random partition.
 
   Values close to 0 result in larger parameter blocks, values close to 1
   result in smaller parameter blocks.
@@ -288,16 +290,16 @@ Creates a new object of this
 
   Can also be `Inf` for no time limit.
 
-  Note that this stopping criteria is only checked *after* a sub-problem
-  is solved and not *within* solving a sub-problem, so the actual
-  process time can exceed this limit.
+  Note that this stopping criterion is only checked *after* a
+  sub-problem is solved and not *within* solving a sub-problem, so the
+  actual process time can exceed this limit.
 
 - `tolerance_value`:
 
   \[`numeric(1)`\]  
   A non-negative tolerance value. The AO process terminates if the
-  absolute difference between the current function value and the one
-  before `tolerance_history` iterations is smaller than
+  absolute difference between the current function value and the value
+  from `tolerance_history` iterations earlier is smaller than
   `tolerance_value`.
 
   Can be `0` for no value threshold.
@@ -306,24 +308,25 @@ Creates a new object of this
 
   \[`numeric(1)`\]  
   A non-negative tolerance value. The AO process terminates if the
-  distance between the current estimate and the before
-  `tolerance_history` iterations is smaller than `tolerance_parameter`.
+  distance between the current estimate and the estimate from
+  `tolerance_history` iterations earlier is smaller than
+  `tolerance_parameter`.
 
   Can be `0` for no parameter threshold.
 
-  By default, the distance is measured using the euclidean norm, but
+  By default, the distance is measured using the Euclidean norm, but
   another norm can be specified via the `tolerance_parameter_norm`
   field.
 
 - `tolerance_parameter_norm`:
 
   \[`function`\]  
-  The norm that measures the distance between the current estimate and
-  the one from the last iteration. If the distance is smaller than
-  `tolerance_parameter`, the AO process is terminated.
+  The norm that measures the distance between two estimates. If the
+  distance is smaller than `tolerance_parameter`, the AO process is
+  terminated.
 
   It must be of the form `function(x, y)` for two vector inputs `x` and
-  `y`, and return a single `numeric` value. By default, the euclidean
+  `y`, and return a single `numeric` value. By default, the Euclidean
   norm `function(x, y) sqrt(sum((x - y)^2))` is used.
 
 - `tolerance_history`:

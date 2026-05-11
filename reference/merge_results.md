@@ -36,8 +36,7 @@ merge_results(
 - processes:
 
   \[`data.frame`\]  
-  A `data.frame` characterizing how the different processes were
-  specified.
+  A `data.frame` describing how the different processes were specified.
 
 ## Value
 

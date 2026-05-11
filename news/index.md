@@ -8,6 +8,12 @@
 - Set the default value for the number of iterations within each block
   to 10.
 
+- Removed renv.
+
+- Improved documentation.
+
+- Added tests for invalid inputs and random partition determinism.
+
 ## ao 1.2.2
 
 CRAN release: 2025-12-15

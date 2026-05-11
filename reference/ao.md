@@ -27,8 +27,8 @@ ao(
   tolerance_parameter = 1e-06,
   tolerance_parameter_norm = function(x, y) sqrt(sum((x - y)^2)),
   tolerance_history = 1,
-  base_optimizer = Optimizer$new("stats::optim", method = "L-BFGS-B", control =
-    list(maxit = 10)),
+  base_optimizer = optimizeR::Optimizer$new("stats::optim", method = "L-BFGS-B", control
+    = list(maxit = 10)),
   verbose = FALSE,
   hide_warnings = TRUE,
   add_details = TRUE
@@ -46,9 +46,8 @@ ao(
   `initial`, optionally followed by any other arguments specified by the
   `...` argument.
 
-  If `f` is to be optimized over an argument other than the first, or
-  more than one argument, this has to be specified via the `target`
-  argument.
+  If `f` is optimized over an argument other than the first, or over
+  more than one argument, specify this with the `target` argument.
 
 - initial:
 
@@ -62,18 +61,18 @@ ao(
 - target:
 
   \[[`character()`](https://rdrr.io/r/base/character.html) \| `NULL`\]  
-  The name(s) of the argument(s) over which `f` gets optimized.
+  The name(s) of the argument(s) over which `f` is optimized.
 
   This can only be `numeric` arguments.
 
-  Can be `NULL` (default), then it is the first argument of `f`.
+  If `NULL` (default), the first argument of `f` is optimized.
 
 - npar:
 
   \[[`integer()`](https://rdrr.io/r/base/integer.html)\]  
   The length(s) of the target argument(s).
 
-  Must be specified if more than two target arguments are specified via
+  Must be specified if more than one target argument is specified via
   the `target` argument.
 
   Can be `NULL` if there is only one target argument, in which case
@@ -82,18 +81,18 @@ ao(
 - gradient:
 
   \[`function` \| `NULL`\]  
-  Optionally a `function` that returns the gradient of `f`.
+  An optional `function` that returns the gradient of `f`.
 
-  The function call of `gradient` must be identical to `f`.
+  The function signature of `gradient` must be identical to `f`.
 
   Ignored if `base_optimizer` does not support custom gradient.
 
 - hessian:
 
   \[`function` \| `NULL`\]  
-  Optionally a `function` that returns the Hessian of `f`.
+  An optional `function` that returns the Hessian of `f`.
 
-  The function call of `hessian` must be identical to `f`.
+  The function signature of `hessian` must be identical to `f`.
 
   Ignored if `base_optimizer` does not support custom Hessian.
 
@@ -104,7 +103,7 @@ ao(
 - partition:
 
   \[`character(1)` \| [`list()`](https://rdrr.io/r/base/list.html)\]  
-  Defines the parameter partition, and can be either
+  Defines the parameter partition. It can be
 
   - `"sequential"` for treating each parameter separately,
 
@@ -124,8 +123,8 @@ ao(
   \[`numeric(1)`\]  
   Only relevant if `partition = "random"`.
 
-  The probability for a new parameter block when creating a random
-  partition.
+  The probability of creating a new parameter block when creating a
+  random partition.
 
   Values close to 0 result in larger parameter blocks, values close to 1
   result in smaller parameter blocks.
@@ -147,7 +146,7 @@ ao(
 - lower, upper:
 
   \[[`numeric()`](https://rdrr.io/r/base/numeric.html) \| `NULL`\]  
-  Optionally lower and upper parameter bounds.
+  Optional lower and upper parameter bounds.
 
   Ignored if `base_optimizer` does not support parameter bounds.
 
@@ -166,16 +165,16 @@ ao(
 
   Can also be `Inf` for no time limit.
 
-  Note that this stopping criteria is only checked *after* a sub-problem
-  is solved and not *within* solving a sub-problem, so the actual
-  process time can exceed this limit.
+  Note that this stopping criterion is only checked *after* a
+  sub-problem is solved and not *within* solving a sub-problem, so the
+  actual process time can exceed this limit.
 
 - tolerance_value:
 
   \[`numeric(1)`\]  
   A non-negative tolerance value. The AO process terminates if the
-  absolute difference between the current function value and the one
-  before `tolerance_history` iterations is smaller than
+  absolute difference between the current function value and the value
+  from `tolerance_history` iterations earlier is smaller than
   `tolerance_value`.
 
   Can be `0` for no value threshold.
@@ -184,24 +183,25 @@ ao(
 
   \[`numeric(1)`\]  
   A non-negative tolerance value. The AO process terminates if the
-  distance between the current estimate and the before
-  `tolerance_history` iterations is smaller than `tolerance_parameter`.
+  distance between the current estimate and the estimate from
+  `tolerance_history` iterations earlier is smaller than
+  `tolerance_parameter`.
 
   Can be `0` for no parameter threshold.
 
-  By default, the distance is measured using the euclidean norm, but
+  By default, the distance is measured using the Euclidean norm, but
   another norm can be specified via the `tolerance_parameter_norm`
   argument.
 
 - tolerance_parameter_norm:
 
   \[`function`\]  
-  The norm that measures the distance between the current estimate and
-  the one from the last iteration. If the distance is smaller than
-  `tolerance_parameter`, the AO process is terminated.
+  The norm that measures the distance between two estimates. If the
+  distance is smaller than `tolerance_parameter`, the AO process is
+  terminated.
 
   It must be of the form `function(x, y)` for two vector inputs `x` and
-  `y`, and return a single `numeric` value. By default, the euclidean
+  `y`, and return a single `numeric` value. By default, the Euclidean
   norm `function(x, y) sqrt(sum((x - y)^2))` is used.
 
 - tolerance_history:
@@ -262,7 +262,8 @@ A `list` with the following elements:
 
 - `seconds` is the overall computation time in seconds.
 
-- `stopping_reason` is a message why the AO process has terminated.
+- `stopping_reason` is a message explaining why the AO process
+  terminated.
 
 In the case of multiple processes, the output changes slightly, see
 details.
@@ -271,8 +272,8 @@ details.
 
 ### Multiple processes
 
-AO can suffer from local optima. To increase the likelihood of reaching
-the global optimum, you can specify:
+AO can suffer from local optima. To increase the likelihood of finding a
+better optimum, you can specify:
 
 - multiple starting parameters
 
@@ -287,8 +288,8 @@ a separate AO process.
 
 #### Output value
 
-In the case of multiple processes, the output values refer to the
-optimal (with respect to function value) AO processes.
+In the case of multiple processes, the output values refer to the best
+AO process with respect to function value.
 
 If `add_details = TRUE`, the following elements are added:
 
@@ -303,7 +304,7 @@ If `add_details = TRUE`, the following elements are added:
 
 - `stopping_reasons` gives the termination message for each process.
 
-- `processes` give details how the different processes were specified.
+- `processes` gives details on how the processes were specified.
 
 #### Parallel computation
 
@@ -311,6 +312,7 @@ By default, processes run sequentially. However, since they are
 independent, they can be parallelized. To enable parallel computation,
 use the [`{future}` framework](https://future.futureverse.org/). For
 example, run the following *before* the `ao()` call:
+
 
     future::plan(future::multisession, workers = 4)
 
@@ -321,6 +323,7 @@ details during AO is not supported. However, you can still track the
 progress using the [`{progressr}`
 framework](https://progressr.futureverse.org/). For example, run the
 following *before* the `ao()` call:
+
 
     progressr::handlers(global = TRUE)
     progressr::handlers(
@@ -343,19 +346,19 @@ ao(f = himmelblau, initial = c(0, 0))
 #> $details
 #>    iteration        value       p1        p2 b1 b2     seconds
 #> 1          0 1.700000e+02 0.000000  0.000000  0  0 0.000000000
-#> 2          1 1.327270e+01 3.395691  0.000000  1  0 0.045405388
-#> 3          1 1.743664e+00 3.395691 -1.803183  0  1 0.010298729
-#> 4          2 2.847290e-02 3.581412 -1.803183  1  0 0.007973671
-#> 5          2 4.687468e-04 3.581412 -1.847412  0  1 0.006774902
-#> 6          3 7.368057e-06 3.584381 -1.847412  1  0 0.005864859
-#> 7          3 1.164202e-07 3.584381 -1.848115  0  1 0.053840876
-#> 8          4 1.893311e-09 3.584427 -1.848115  1  0 0.004810810
-#> 9          4 9.153860e-11 3.584427 -1.848124  0  1 0.003666162
-#> 10         5 6.347425e-11 3.584428 -1.848124  1  0 0.003619194
-#> 11         5 9.606386e-12 3.584428 -1.848126  0  1 0.003550529
+#> 2          1 1.327270e+01 3.395691  0.000000  1  0 0.019710541
+#> 3          1 1.743664e+00 3.395691 -1.803183  0  1 0.010594606
+#> 4          2 2.847290e-02 3.581412 -1.803183  1  0 0.008216381
+#> 5          2 4.687468e-04 3.581412 -1.847412  0  1 0.007056952
+#> 6          3 7.368057e-06 3.584381 -1.847412  1  0 0.005913019
+#> 7          3 1.164202e-07 3.584381 -1.848115  0  1 0.056157827
+#> 8          4 1.893311e-09 3.584427 -1.848115  1  0 0.005691767
+#> 9          4 9.153860e-11 3.584427 -1.848124  0  1 0.003943205
+#> 10         5 6.347425e-11 3.584428 -1.848124  1  0 0.004230738
+#> 11         5 9.606386e-12 3.584428 -1.848126  0  1 0.003818035
 #> 
 #> $seconds
-#> [1] 0.1458051
+#> [1] 0.1253331
 #> 
 #> $stopping_reason
 #> [1] "change in function value between 1 iteration is < 1e-06"
@@ -386,7 +389,7 @@ fit <- ao(
   npar = c(2, 2, 1),
   data = data,
   partition = "random",
-  base_optimizer = Optimizer$new("ucminf::ucminf"),
+  base_optimizer = optimizeR::Optimizer$new("ucminf::ucminf"),
   minimize = FALSE,
   add_details = FALSE
 )
@@ -445,7 +448,7 @@ ao(
 #> [1] -276.36
 #> 
 #> $seconds
-#> [1] 0.6969392
+#> [1] 0.7273598
 #> 
 #> $stopping_reason
 #> [1] "change in function value between 1 iteration is < 1e-06"

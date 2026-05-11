@@ -19,18 +19,18 @@ split_by_target(estimate, target = NULL, npar)
 - target:
 
   \[[`character()`](https://rdrr.io/r/base/character.html) \| `NULL`\]  
-  The name(s) of the argument(s) over which `f` gets optimized.
+  The name(s) of the argument(s) over which `f` is optimized.
 
   This can only be `numeric` arguments.
 
-  Can be `NULL` (default), then it is the first argument of `f`.
+  If `NULL` (default), the first argument of `f` is optimized.
 
 - npar:
 
   \[[`integer()`](https://rdrr.io/r/base/integer.html)\]  
   The length(s) of the target argument(s).
 
-  Must be specified if more than two target arguments are specified via
+  Must be specified if more than one target argument is specified via
   the `target` argument.
 
   Can be `NULL` if there is only one target argument, in which case

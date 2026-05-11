@@ -1,4 +1,4 @@
-# Generated random partition
+# Generate random partition
 
 This helper function generates a random parameter partition, which is
 used for the randomized AO procedure.
@@ -19,7 +19,7 @@ generate_random_partition(x, p, min)
 - p:
 
   \[`numeric(1)`\]  
-  The probability to generate a new block.
+  The probability of generating a new block.
 
 - min:
 
