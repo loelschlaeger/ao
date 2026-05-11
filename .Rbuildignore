@@ -1,5 +1,3 @@
-^renv$
-^renv\.lock$
 ^ao\.Rproj$
 ^\.Rproj\.user$
 LICENSE
@@ -13,5 +11,3 @@ LICENSE
 ^_pkgdown\.yml$
 ^docs$
 ^pkgdown$
-^dev_pkgs\.R$
-^development_packages\.R$
