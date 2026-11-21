@@ -20,7 +20,9 @@
 #' * `"random"` for a random partition in each iteration,
 #' * `"none"` for no partition (which is equivalent to joint optimization),
 #' * or a `list` of vectors of parameter indices, specifying a custom
-#'   partition for the AO process.
+#'   partition for the AO process. Parameter indices can be members of any
+#'   number of blocks, where parameters that are not a member of any block
+#'   stay at their initial value.
 #'
 #' @param new_block_probability \[`numeric(1)`\]\cr
 #' Only relevant if `partition = "random"`.
@@ -55,9 +57,10 @@
 #'
 #' Can also be `Inf` for no time limit.
 #'
-#' Note that this stopping criterion is only checked *after* a sub-problem is
-#' solved and not *within* solving a sub-problem, so the actual process
-#' time can exceed this limit.
+#' Note that this stopping criterion refers to the time for solving the
+#' sub-problems and is only checked *after* a sub-problem is solved and not
+#' *within* solving a sub-problem, so the actual process time can exceed this
+#' limit.
 #'
 #' @param tolerance_value \[`numeric(1)`\]\cr
 #' A non-negative tolerance value. The AO process terminates
@@ -133,6 +136,8 @@
 #'
 #' @param add_details \[`logical(1)`\]\cr
 #' Add details about the AO process to the output?
+#'
+#' @keywords internal
 
 Process <- R6::R6Class("Process",
    cloneable = FALSE,
@@ -294,16 +299,21 @@ Process <- R6::R6Class("Process",
        isTRUE
      ))
 
-     ### error occurred?
-     if (isTRUE(error)) {
+     ### error occurred? (only the first one is reported)
+     if (isTRUE(error) && !isTRUE(private$.error)) {
        private$.error <- TRUE
+       if (checkmate::test_string(error_message, min.chars = 1)) {
+         ### remove repeated prefix from the two Objective objects
+         prefix <- "Function evaluation threw an error: "
+         while (startsWith(error_message, paste0(prefix, prefix))) {
+           error_message <- substring(error_message, nchar(prefix) + 1)
+         }
+       } else {
+         error_message <- "unknown reason"
+       }
        private$.error_message <- paste(
          "solving for block [", paste(block, collapse = ","), "] failed:",
-         if (checkmate::test_string(error_message, min.chars = 1)) {
-           error_message
-         } else {
-           "unknown reason"
-         }
+         error_message
        )
      }
 
@@ -479,6 +489,10 @@ Process <- R6::R6Class("Process",
      } else {
        which.max(values)
      }
+     if (length(id_best) == 0) {
+       ### no function value available, then select the initial values
+       id_best <- 1
+     }
      private$.details[id_best, "value"]
    },
 
@@ -562,6 +576,10 @@ Process <- R6::R6Class("Process",
      } else {
        which.max(details[, "value"])
      }
+     if (length(id_best) == 0) {
+       ### no function value available, then select the initial values
+       id_best <- 1
+     }
      parameter_columns <- which(startsWith(colnames(details), "p"))
      best_parameter <- as.numeric(details[id_best, parameter_columns])
 
@@ -632,18 +650,18 @@ Process <- R6::R6Class("Process",
          break
        }
 
-       ### check iteration limit
-       if (self$iteration >= self$iteration_limit) {
-         message <- paste("iteration limit of", self$iteration_limit, "reached")
-         stopping <- TRUE
-         break
-       }
-
        ### check time limit
        if (self$get_seconds_total() >= self$seconds_limit) {
          message <- paste(
            "time limit of", self$seconds_limit, "seconds reached"
          )
+         stopping <- TRUE
+         break
+       }
+
+       ### check iteration limit
+       if (self$iteration >= self$iteration_limit) {
+         message <- paste("iteration limit of", self$iteration_limit, "reached")
          stopping <- TRUE
          break
        }
@@ -655,10 +673,10 @@ Process <- R6::R6Class("Process",
          abs_value_change <- abs(
            self$get_value_latest() - self$get_value(
              which_iteration = self$iteration - self$tolerance_history,
-             which_block = "first"
+             which_block = "last"
            )
          )
-         if (abs_value_change < self$tolerance_value) {
+         if (isTRUE(abs_value_change < self$tolerance_value)) {
            message <- paste(
              "change in function value between", self$tolerance_history,
              ifelse(self$tolerance_history > 1, "iterations", "iteration"),
@@ -671,12 +689,12 @@ Process <- R6::R6Class("Process",
          ### check parameter tolerance
          parameter_change <- self$tolerance_parameter_norm(
            self$get_parameter_latest(),
-           self$get_parameter(
+           as.numeric(self$get_parameter(
              which_iteration = self$iteration - self$tolerance_history,
-             which_block = "first"
-           )
+             which_block = "last"
+           ))
          )
-         if (parameter_change < self$tolerance_parameter) {
+         if (isTRUE(parameter_change < self$tolerance_parameter)) {
            message <- paste(
              "change in function parameters between", self$tolerance_history,
              ifelse(self$tolerance_history > 1, "iterations", "iteration"),
@@ -740,19 +758,22 @@ Process <- R6::R6Class("Process",
          )
        } else if (checkmate::test_list(value)) {
          oeli::input_check_response(
-           check = checkmate::check_list(value),
+           check = checkmate::check_list(value, min.len = 1),
            var_name = "partition"
          )
 
          ### only parameter indices 1,...,'sum(self$npar)' allowed
-         oeli::input_check_response(
-           check = checkmate::check_integerish(
-             unlist(value),
-             lower = 1, upper = sum(self$npar), any.missing = FALSE
-           ),
-           var_name = "partition",
-           prefix = "Elements in {.cls list} {.var partition} are bad:"
-         )
+         for (block in value) {
+           oeli::input_check_response(
+             check = checkmate::check_integerish(
+               block,
+               lower = 1, upper = sum(self$npar), any.missing = FALSE,
+               min.len = 1, unique = TRUE
+             ),
+             var_name = "partition",
+             prefix = "Elements in {.cls list} {.var partition} are bad:"
+           )
+         }
        } else {
          oeli::input_check_response(
            check = "Bad specification",
@@ -861,9 +882,10 @@ Process <- R6::R6Class("Process",
    #'
    #' Can also be `Inf` for no time limit.
    #'
-   #' Note that this stopping criterion is only checked *after* a sub-problem is
-   #' solved and not *within* solving a sub-problem, so the actual process
-   #' time can exceed this limit.
+   #' Note that this stopping criterion refers to the time for solving the
+   #' sub-problems and is only checked *after* a sub-problem is solved and not
+   #' *within* solving a sub-problem, so the actual process time can exceed
+   #' this limit.
 
    seconds_limit = function(value) {
      if (missing(value)) {
@@ -1023,8 +1045,11 @@ Process <- R6::R6Class("Process",
    #' The output of the AO process, which is a \code{list} with the following
    #' elements:
    #'
-   #' * \code{estimate} is the parameter vector at termination.
-   #' * \code{value} is the function value at termination.
+   #' * \code{estimate} is the parameter vector with the best function value
+   #'   in the AO process.
+   #' * \code{estimate_split} is \code{estimate} split by `target` (only when
+   #'   applicable).
+   #' * \code{value} is the function value at \code{estimate}.
    #' * \code{details} is a `data.frame` with full information about the
    #'   AO process.
    #'   For each iteration (column `iteration`) it contains the function value
@@ -1034,7 +1059,8 @@ Process <- R6::R6Class("Process",
    #'   `1` stands for a parameter contained in the active parameter block
    #'   and `0` if not), and computation times in seconds (column `seconds`).
    #'   Only available if `add_details = TRUE`.
-   #' * \code{seconds} is the overall computation time in seconds.
+   #' * \code{seconds} is the total time in seconds for solving the
+   #'   sub-problems.
    #' * \code{stopping_reason} is a message explaining why the AO process
    #'   terminated.
 

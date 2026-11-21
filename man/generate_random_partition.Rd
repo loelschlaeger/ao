@@ -26,3 +26,4 @@ for the randomized AO procedure.
 \author{
 Siddhartha Chib
 }
+\keyword{internal}

@@ -32,3 +32,4 @@ A \code{list}, see section "Output value" on the \code{\link[ao]{ao}} page.
 \description{
 This helper function merges the results of multiple AO processes.
 }
+\keyword{internal}

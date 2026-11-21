@@ -77,7 +77,8 @@ The function signature of \code{hessian} must be identical to \code{f}.
 
 Ignored if \code{base_optimizer} does not support custom Hessian.}
 
-\item{...}{Additional arguments to be passed to \code{f} (and \code{gradient}).}
+\item{...}{Additional arguments to be passed to \code{f} (and \code{gradient} and
+\code{hessian}, if specified).}
 
 \item{partition}{[\code{character(1)} | \code{list()}]\cr
 Defines the parameter partition. It can be
@@ -86,7 +87,9 @@ Defines the parameter partition. It can be
 \item \code{"random"} for a random partition in each iteration,
 \item \code{"none"} for no partition (which is equivalent to joint optimization),
 \item or a \code{list} of vectors of parameter indices, specifying a custom
-partition for the AO process.
+partition for the AO process. Parameter indices can be members of any
+number of blocks, where parameters that are not a member of any block
+stay at their initial value.
 }
 
 This can also be a \code{list} of multiple partition definitions, see details.}
@@ -111,7 +114,11 @@ Minimize during the AO process?
 If \code{FALSE}, maximization is performed.}
 
 \item{lower, upper}{[\code{numeric()} | \code{NULL}]\cr
-Optional lower and upper parameter bounds.
+Optional lower and upper parameter bounds, each of which can be a single
+number (a common bound for all parameters) or a vector of the same length as
+\code{initial}.
+
+The values in \code{initial} must respect the bounds.
 
 Ignored if \code{base_optimizer} does not support parameter bounds.}
 
@@ -126,9 +133,10 @@ The time limit in seconds before the AO process is terminated.
 
 Can also be \code{Inf} for no time limit.
 
-Note that this stopping criterion is only checked \emph{after} a sub-problem is
-solved and not \emph{within} solving a sub-problem, so the actual process
-time can exceed this limit.}
+Note that this stopping criterion refers to the time for solving the
+sub-problems and is only checked \emph{after} a sub-problem is solved and not
+\emph{within} solving a sub-problem, so the actual process time can exceed this
+limit.}
 
 \item{tolerance_value}{[\code{numeric(1)}]\cr
 A non-negative tolerance value. The AO process terminates
@@ -187,9 +195,10 @@ Add details about the AO process to the output?}
 \value{
 A \code{list} with the following elements:
 \itemize{
-\item \code{estimate} is the parameter vector at termination.
+\item \code{estimate} is the parameter vector with the best function value in the AO
+process.
 \item \code{estimate_split} is \code{estimate} split by \code{target} (only when applicable).
-\item \code{value} is the function value at termination.
+\item \code{value} is the function value at \code{estimate}.
 \item \code{details} is a \code{data.frame} with information about the AO process:
 For each iteration (column \code{iteration}) it contains the function value
 (column \code{value}), parameter values (columns starting with \code{p} followed by
@@ -197,7 +206,7 @@ the parameter index), the active parameter block (columns starting with \code{b}
 followed by the parameter index, where \code{1} stands for a parameter contained
 in the active parameter block and \code{0} if not), and computation times in
 seconds (column \code{seconds}). Only available if \code{add_details = TRUE}.
-\item \code{seconds} is the overall computation time in seconds.
+\item \code{seconds} is the total time in seconds for solving the sub-problems.
 \item \code{stopping_reason} is a message explaining why the AO process terminated.
 }
 
@@ -244,8 +253,9 @@ additional column \code{process} with an index for the different processes.
 
 By default, processes run sequentially. However, since they are independent,
 they can be parallelized. To enable parallel computation, use the
-\href{https://future.futureverse.org/}{\code{{future}} framework}. For example, run the
-following \emph{before} the \code{ao()} call:
+\href{https://future.futureverse.org/}{\code{{future}} framework}, which requires the
+\code{{future.apply}} package to be installed. For example, run the following
+\emph{before} the \code{ao()} call:
 \preformatted{
 future::plan(future::multisession, workers = 4)
 }
@@ -255,7 +265,8 @@ future::plan(future::multisession, workers = 4)
 
 When using multiple processes, setting \code{verbose = TRUE} to print tracing
 details during AO is not supported. However, you can still track the progress
-using the \href{https://progressr.futureverse.org/}{\code{{progressr}} framework}.
+using the \href{https://progressr.futureverse.org/}{\code{{progressr}} framework},
+which requires the \code{{progressr}} package to be installed.
 For example, run the following \emph{before} the \code{ao()} call:
 \preformatted{
 progressr::handlers(global = TRUE)
@@ -275,7 +286,7 @@ ao(f = himmelblau, initial = c(0, 0))
 
 # Example 2: Maximization of 2-class Gaussian mixture log-likelihood --------
 
-normal_mixture_loglik_uc = function(mu, logsd, eta, data) {
+normal_mixture_loglik_uc <- function(mu, logsd, eta, data) {
   sd <- exp(logsd)
   e <- exp(eta[1])
   den <- 1 + e
@@ -298,7 +309,7 @@ fit <- ao(
   npar = c(2, 2, 1),
   data = data,
   partition = "random",
-  base_optimizer = optimizeR::Optimizer$new("ucminf::ucminf"),
+  base_optimizer = optimizeR::Optimizer$new("stats::nlm"),
   minimize = FALSE,
   add_details = FALSE
 )

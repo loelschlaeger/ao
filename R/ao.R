@@ -36,8 +36,9 @@
 #' ### Parallel computation
 #' By default, processes run sequentially. However, since they are independent,
 #' they can be parallelized. To enable parallel computation, use the
-#' [`{future}` framework](https://future.futureverse.org/). For example, run the
-#' following *before* the `ao()` call:
+#' [`{future}` framework](https://future.futureverse.org/), which requires the
+#' `{future.apply}` package to be installed. For example, run the following
+#' *before* the `ao()` call:
 #' \preformatted{
 #' future::plan(future::multisession, workers = 4)
 #' }
@@ -45,7 +46,8 @@
 #' ### Progress updates
 #' When using multiple processes, setting `verbose = TRUE` to print tracing
 #' details during AO is not supported. However, you can still track the progress
-#' using the [`{progressr}` framework](https://progressr.futureverse.org/).
+#' using the [`{progressr}` framework](https://progressr.futureverse.org/),
+#' which requires the `{progressr}` package to be installed.
 #' For example, run the following *before* the `ao()` call:
 #' \preformatted{
 #' progressr::handlers(global = TRUE)
@@ -100,7 +102,8 @@
 #' Ignored if `base_optimizer` does not support custom Hessian.
 #'
 #' @param ...
-#' Additional arguments to be passed to \code{f} (and \code{gradient}).
+#' Additional arguments to be passed to \code{f} (and \code{gradient} and
+#' \code{hessian}, if specified).
 #'
 #' @param partition \[`character(1)` | `list()`\]\cr
 #' Defines the parameter partition. It can be
@@ -109,7 +112,9 @@
 #' * `"random"` for a random partition in each iteration,
 #' * `"none"` for no partition (which is equivalent to joint optimization),
 #' * or a `list` of vectors of parameter indices, specifying a custom
-#'   partition for the AO process.
+#'   partition for the AO process. Parameter indices can be members of any
+#'   number of blocks, where parameters that are not a member of any block
+#'   stay at their initial value.
 #'
 #' This can also be a `list` of multiple partition definitions, see details.
 #'
@@ -133,7 +138,11 @@
 #' If \code{FALSE}, maximization is performed.
 #'
 #' @param lower,upper \[`numeric()` | `NULL`\]\cr
-#' Optional lower and upper parameter bounds.
+#' Optional lower and upper parameter bounds, each of which can be a single
+#' number (a common bound for all parameters) or a vector of the same length as
+#' `initial`.
+#'
+#' The values in `initial` must respect the bounds.
 #'
 #' Ignored if `base_optimizer` does not support parameter bounds.
 #'
@@ -148,9 +157,10 @@
 #'
 #' Can also be `Inf` for no time limit.
 #'
-#' Note that this stopping criterion is only checked *after* a sub-problem is
-#' solved and not *within* solving a sub-problem, so the actual process
-#' time can exceed this limit.
+#' Note that this stopping criterion refers to the time for solving the
+#' sub-problems and is only checked *after* a sub-problem is solved and not
+#' *within* solving a sub-problem, so the actual process time can exceed this
+#' limit.
 #'
 #' @param tolerance_value \[`numeric(1)`\]\cr
 #' A non-negative tolerance value. The AO process terminates
@@ -209,9 +219,10 @@
 #' @return
 #' A `list` with the following elements:
 #'
-#' * `estimate` is the parameter vector at termination.
+#' * `estimate` is the parameter vector with the best function value in the AO
+#'   process.
 #' * `estimate_split` is `estimate` split by `target` (only when applicable).
-#' * `value` is the function value at termination.
+#' * `value` is the function value at `estimate`.
 #' * `details` is a `data.frame` with information about the AO process:
 #'   For each iteration (column `iteration`) it contains the function value
 #'   (column `value`), parameter values (columns starting with `p` followed by
@@ -219,7 +230,7 @@
 #'   followed by the parameter index, where `1` stands for a parameter contained
 #'   in the active parameter block and `0` if not), and computation times in
 #'   seconds (column `seconds`). Only available if `add_details = TRUE`.
-#' * `seconds` is the overall computation time in seconds.
+#' * `seconds` is the total time in seconds for solving the sub-problems.
 #' * `stopping_reason` is a message explaining why the AO process terminated.
 #'
 #' In the case of multiple processes, the output changes slightly, see details.
@@ -232,7 +243,7 @@
 #'
 #' # Example 2: Maximization of 2-class Gaussian mixture log-likelihood --------
 #'
-#' normal_mixture_loglik_uc = function(mu, logsd, eta, data) {
+#' normal_mixture_loglik_uc <- function(mu, logsd, eta, data) {
 #'   sd <- exp(logsd)
 #'   e <- exp(eta[1])
 #'   den <- 1 + e
@@ -255,7 +266,7 @@
 #'   npar = c(2, 2, 1),
 #'   data = data,
 #'   partition = "random",
-#'   base_optimizer = optimizeR::Optimizer$new("ucminf::ucminf"),
+#'   base_optimizer = optimizeR::Optimizer$new("stats::nlm"),
 #'   minimize = FALSE,
 #'   add_details = FALSE
 #' )
@@ -351,6 +362,14 @@ ao <- function(
     if (!is.list(base_optimizer)) {
       base_optimizer <- list(base_optimizer)
     }
+    oeli::input_check_response(
+      check = checkmate::check_list(initial, min.len = 1),
+      var_name = "initial"
+    )
+    oeli::input_check_response(
+      check = checkmate::check_list(base_optimizer, min.len = 1),
+      var_name = "base_optimizer"
+    )
     processes <- expand.grid(
       initial = initial, partition = partition, base_optimizer = base_optimizer
     )
@@ -363,50 +382,62 @@ ao <- function(
         cli::cli_warn("Argument {.var verbose} is set to {.code FALSE}")
       }
     }
-    progress_step <- progressr::progressor(steps = nprocesses)
+    if (requireNamespace("progressr", quietly = TRUE)) {
+      progress_step <- progressr::progressor(steps = nprocesses)
+    } else {
+      progress_step <- function(...) NULL
+    }
     progress_step(
       paste("running", nprocesses, "AO processes"),
       amount = 0, class = "sticky"
     )
-    results <- future.apply::future_lapply(
-      seq_len(nprocesses),
-      function(process) {
-        progress_step(
-          paste0("[process ", process, "] started"),
-          amount = 0, class = "sticky"
-        )
-        out <- ao(
-          f = f,
-          initial = processes[process, "initial"][[1]],
-          target = target,
-          npar = npar,
-          gradient = gradient,
-          ...,
-          partition = processes[process, "partition"][[1]],
-          new_block_probability = new_block_probability,
-          minimum_block_number = minimum_block_number,
-          minimize = minimize,
-          lower = lower,
-          upper = upper,
-          iteration_limit = iteration_limit,
-          seconds_limit = seconds_limit,
-          tolerance_value = tolerance_value,
-          tolerance_parameter = tolerance_parameter,
-          tolerance_parameter_norm = tolerance_parameter_norm,
-          tolerance_history = tolerance_history,
-          base_optimizer = processes[process, "base_optimizer"][[1]],
-          verbose = verbose,
-          hide_warnings = hide_warnings,
-          add_details = add_details
-        )
-        progress_step(
-          paste0("[process ", process, "] finished"),
-          class = "sticky"
-        )
-        return(out)
-      },
-      future.seed = TRUE
-    )
+
+    ### build process template (inputs as values, else future masks globals)
+    specify_process <- function(process) {
+      list(
+        "id" = process,
+        "arguments" = c(
+          list(
+            initial = processes[process, "initial"][[1]],
+            partition = processes[process, "partition"][[1]],
+            base_optimizer = processes[process, "base_optimizer"][[1]],
+            f = f,
+            target = target,
+            npar = npar,
+            gradient = gradient,
+            hessian = hessian
+          ),
+          list(...),
+          list(
+            new_block_probability = new_block_probability,
+            minimum_block_number = minimum_block_number,
+            minimize = minimize,
+            lower = lower,
+            upper = upper,
+            iteration_limit = iteration_limit,
+            seconds_limit = seconds_limit,
+            tolerance_value = tolerance_value,
+            tolerance_parameter = tolerance_parameter,
+            tolerance_parameter_norm = tolerance_parameter_norm,
+            tolerance_history = tolerance_history,
+            verbose = verbose,
+            hide_warnings = hide_warnings,
+            add_details = add_details
+          )
+        ),
+        "progress_step" = progress_step
+      )
+    }
+    if (requireNamespace("future.apply", quietly = TRUE)) {
+      results <- future.apply::future_lapply(
+        lapply(seq_len(nprocesses), specify_process), run_process,
+        future.seed = TRUE
+      )
+    } else {
+      results <- lapply(
+        lapply(seq_len(nprocesses), specify_process), run_process
+      )
+    }
 
     ### merge and return results of multiple processes
     return(merge_results(results, minimize, add_details, processes))
@@ -414,14 +445,35 @@ ao <- function(
 
   ### input checks and building of objects
   oeli::input_check_response(
-    check = oeli::check_numeric_vector(initial, any.missing = FALSE),
+    check = oeli::check_numeric_vector(
+      initial, any.missing = FALSE, min.len = 1
+    ),
     var_name = "initial"
   )
   if (is.null(npar)) {
     ### if npar is not defined, set it to length of initial vector
+    oeli::input_check_response(
+      check = if (length(target) > 1) {
+        "Must be specified if there is more than one target argument"
+      } else {
+        TRUE
+      },
+      var_name = "npar"
+    )
     npar <- length(initial)
   }
+  oeli::input_check_response(
+    check = checkmate::check_integerish(
+      npar, lower = 1, any.missing = FALSE, len = max(1, length(target))
+    ),
+    var_name = "npar"
+  )
+  oeli::input_check_response(
+    check = checkmate::check_flag(hide_warnings),
+    var_name = "hide_warnings"
+  )
   objective <- Objective$new(f = f, target = target, npar = npar, ...)
+  objective$hide_warnings <- hide_warnings
   if (!is.null(gradient)) {
     oeli::input_check_response(
       check = checkmate::check_function(gradient),
@@ -454,10 +506,6 @@ ao <- function(
       check = oeli::check_numeric_vector(lower, len = sum(npar)),
       var_name = "lower"
     )
-    oeli::input_check_response(
-      check = if (any(initial < lower)) "Must respect lower limit" else TRUE,
-      var_name = "initial"
-    )
   }
   oeli::input_check_response(
     check = oeli::check_numeric_vector(
@@ -473,6 +521,24 @@ ao <- function(
       check = oeli::check_numeric_vector(upper, len = sum(npar)),
       var_name = "upper"
     )
+  }
+  if (!is.null(lower) && !is.null(upper)) {
+    oeli::input_check_response(
+      check = if (any(lower > upper)) {
+        "Must not be smaller than the lower limit"
+      } else {
+        TRUE
+      },
+      var_name = "upper"
+    )
+  }
+  if (!is.null(lower)) {
+    oeli::input_check_response(
+      check = if (any(initial < lower)) "Must respect lower limit" else TRUE,
+      var_name = "initial"
+    )
+  }
+  if (!is.null(upper)) {
     oeli::input_check_response(
       check = if (any(initial > upper)) "Must respect upper limit" else TRUE,
       var_name = "initial"
@@ -482,6 +548,10 @@ ao <- function(
     check = checkmate::check_class(base_optimizer, "Optimizer"),
     var_name = "base_optimizer"
   )
+  hide_warnings_optimizer <- base_optimizer$hide_warnings
+  on.exit({
+    base_optimizer$hide_warnings <- hide_warnings_optimizer
+  })
   base_optimizer$hide_warnings <- hide_warnings
 
   ### building AO process
@@ -500,6 +570,19 @@ ao <- function(
     tolerance_parameter_norm = tolerance_parameter_norm,
     tolerance_history = tolerance_history,
     add_details = add_details
+  )
+  stopping_possible <- is.finite(iteration_limit) || is.finite(seconds_limit) ||
+    tolerance_value > 0 || tolerance_parameter > 0
+  oeli::input_check_response(
+    check = if (stopping_possible) {
+      TRUE
+    } else {
+      paste(
+        "At least one of the limits must be finite or one of the tolerances",
+        "must be positive, because the process does not terminate otherwise"
+      )
+    },
+    prefix = "Stopping criteria are bad:"
   )
 
   ### build sub-problem template
@@ -551,9 +634,14 @@ ao <- function(
   }
 
   ### start AO
+  initial_value <- objective$evaluate(initial)
+  oeli::input_check_response(
+    check = checkmate::check_number(initial_value, na.ok = TRUE),
+    prefix = "Value of {.var f} at {.var initial} is bad:"
+  )
   process$initialize_details(
     initial_parameter = initial,
-    initial_value = objective$evaluate(initial)
+    initial_value = initial_value
   )
   while (TRUE) {
     ### check stopping criteria
@@ -582,6 +670,11 @@ ao <- function(
         error = sub_problem_out[["error"]],
         error_message = sub_problem_out[["error_message"]]
       )
+
+      ### check time limit
+      if (process$get_seconds_total() >= process$seconds_limit) {
+        break
+      }
 
     }
   }

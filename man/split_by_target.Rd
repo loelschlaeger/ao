@@ -36,3 +36,4 @@ which is used for the output.
 \author{
 Siddhartha Chib
 }
+\keyword{internal}

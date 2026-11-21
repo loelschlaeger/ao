@@ -1,6 +1,6 @@
 Package: ao
 Title: Alternating Optimization
-Version: 1.2.3
+Version: 1.3.0
 Authors@R:
     c(
     person(given = "Lennart",
@@ -24,24 +24,24 @@ License: GPL-3
 Encoding: UTF-8
 Language: en-US
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.3
 Imports:
     checkmate,
     cli,
-    future.apply,
     oeli (>= 0.7.5),
     optimizeR (>= 1.2.1),
-    progressr,
     R6,
     stats,
     utils
 Suggests:
     devtools,
+    future.apply,
     ggplot2,
     knitr,
+    progressr,
     rmarkdown,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 VignetteBuilder: knitr
 Depends:
     R (>= 4.1.0)
+Config/roxygen2/version: 8.1.0

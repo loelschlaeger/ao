@@ -6,13 +6,14 @@
 \description{
 This object specifies an AO process.
 }
+\keyword{internal}
 \section{Active bindings}{
-\if{html}{\out{<div class="r6-active-bindings">}}
-\describe{
-\item{\code{npar}}{[\code{integer()}]\cr
+  \if{html}{\out{<div class="r6-active-bindings">}}
+  \describe{
+    \item{\code{npar}}{[\code{integer()}]\cr
 The length(s) of the target argument(s).}
 
-\item{\code{partition}}{[\code{character(1)} | \code{list()}]\cr
+    \item{\code{partition}}{[\code{character(1)} | \code{list()}]\cr
 Defines the parameter partition. It can be
 \itemize{
 \item \code{"sequential"} for treating each parameter separately,
@@ -22,7 +23,7 @@ Defines the parameter partition. It can be
 partition for the AO process.
 }}
 
-\item{\code{new_block_probability}}{[\code{numeric(1)}]\cr
+    \item{\code{new_block_probability}}{[\code{numeric(1)}]\cr
 Only relevant if \code{partition = "random"}.
 
 The probability of creating a new parameter block when creating a random
@@ -31,35 +32,36 @@ partition.
 Values close to 0 result in larger parameter blocks, values close to 1
 result in smaller parameter blocks.}
 
-\item{\code{minimum_block_number}}{[\code{integer(1)}]\cr
+    \item{\code{minimum_block_number}}{[\code{integer(1)}]\cr
 Only relevant if \code{partition = "random"}.
 
 The minimum number of blocks in random partitions.}
 
-\item{\code{verbose}}{[\code{logical(1)}]\cr
+    \item{\code{verbose}}{[\code{logical(1)}]\cr
 Print tracing details during the AO process?}
 
-\item{\code{minimize}}{[\code{logical(1)}]\cr
+    \item{\code{minimize}}{[\code{logical(1)}]\cr
 Minimize during the AO process?
 
 If \code{FALSE}, maximization is performed.}
 
-\item{\code{iteration_limit}}{[\code{integer(1)} | \code{Inf}]\cr
+    \item{\code{iteration_limit}}{[\code{integer(1)} | \code{Inf}]\cr
 The maximum number of iterations through the parameter partition before
 the AO process is terminated.
 
 Can also be \code{Inf} for no iteration limit.}
 
-\item{\code{seconds_limit}}{[\code{numeric(1)}]\cr
+    \item{\code{seconds_limit}}{[\code{numeric(1)}]\cr
 The time limit in seconds before the AO process is terminated.
 
 Can also be \code{Inf} for no time limit.
 
-Note that this stopping criterion is only checked \emph{after} a sub-problem is
-solved and not \emph{within} solving a sub-problem, so the actual process
-time can exceed this limit.}
+Note that this stopping criterion refers to the time for solving the
+sub-problems and is only checked \emph{after} a sub-problem is solved and not
+\emph{within} solving a sub-problem, so the actual process time can exceed
+this limit.}
 
-\item{\code{tolerance_value}}{[\code{numeric(1)}]\cr
+    \item{\code{tolerance_value}}{[\code{numeric(1)}]\cr
 A non-negative tolerance value. The AO process terminates
 if the absolute difference between the current function value and the
 value from \code{tolerance_history} iterations earlier is smaller than
@@ -67,7 +69,7 @@ value from \code{tolerance_history} iterations earlier is smaller than
 
 Can be \code{0} for no value threshold.}
 
-\item{\code{tolerance_parameter}}{[\code{numeric(1)}]\cr
+    \item{\code{tolerance_parameter}}{[\code{numeric(1)}]\cr
 A non-negative tolerance value. The AO process terminates if
 the distance between the current estimate and the estimate from
 \code{tolerance_history} iterations earlier is smaller than
@@ -78,7 +80,7 @@ Can be \code{0} for no parameter threshold.
 By default, the distance is measured using the Euclidean norm, but another
 norm can be specified via the \code{tolerance_parameter_norm} field.}
 
-\item{\code{tolerance_parameter_norm}}{[\code{function}]\cr
+    \item{\code{tolerance_parameter_norm}}{[\code{function}]\cr
 The norm that measures the distance between two estimates. If the distance
 is smaller than
 \code{tolerance_parameter}, the AO process is terminated.
@@ -88,25 +90,28 @@ It must be of the form \code{function(x, y)} for two vector inputs
 By default, the Euclidean norm \code{function(x, y) sqrt(sum((x - y)^2))}
 is used.}
 
-\item{\code{tolerance_history}}{[\code{integer(1)}]\cr
+    \item{\code{tolerance_history}}{[\code{integer(1)}]\cr
 The number of iterations to look back to determine whether
 \code{tolerance_value} or \code{tolerance_parameter} has been reached.}
 
-\item{\code{add_details}}{[\code{logical(1)}]\cr
+    \item{\code{add_details}}{[\code{logical(1)}]\cr
 Add details about the AO process to the output?}
 
-\item{\code{iteration}}{[\code{integer(1)}]\cr
+    \item{\code{iteration}}{[\code{integer(1)}]\cr
 The current iteration number.}
 
-\item{\code{block}}{[\code{integer()}]\cr
+    \item{\code{block}}{[\code{integer()}]\cr
 The currently active parameter block, represented as parameter indices.}
 
-\item{\code{output}}{[\code{list()}, read-only]\cr
+    \item{\code{output}}{[\code{list()}, read-only]\cr
 The output of the AO process, which is a \code{list} with the following
 elements:
 \itemize{
-\item \code{estimate} is the parameter vector at termination.
-\item \code{value} is the function value at termination.
+\item \code{estimate} is the parameter vector with the best function value
+in the AO process.
+\item \code{estimate_split} is \code{estimate} split by \code{target} (only when
+applicable).
+\item \code{value} is the function value at \code{estimate}.
 \item \code{details} is a \code{data.frame} with full information about the
 AO process.
 For each iteration (column \code{iteration}) it contains the function value
@@ -116,40 +121,42 @@ followed by the parameter index), the active parameter block
 \code{1} stands for a parameter contained in the active parameter block
 and \code{0} if not), and computation times in seconds (column \code{seconds}).
 Only available if \code{add_details = TRUE}.
-\item \code{seconds} is the overall computation time in seconds.
+\item \code{seconds} is the total time in seconds for solving the
+sub-problems.
 \item \code{stopping_reason} is a message explaining why the AO process
 terminated.
 }}
-}
-\if{html}{\out{</div>}}
+  }
+  \if{html}{\out{</div>}}
 }
 \section{Methods}{
 \subsection{Public methods}{
-\itemize{
-\item \href{#method-Process-new}{\code{Process$new()}}
-\item \href{#method-Process-print_status}{\code{Process$print_status()}}
-\item \href{#method-Process-initialize_details}{\code{Process$initialize_details()}}
-\item \href{#method-Process-update_details}{\code{Process$update_details()}}
-\item \href{#method-Process-get_partition}{\code{Process$get_partition()}}
-\item \href{#method-Process-get_details}{\code{Process$get_details()}}
-\item \href{#method-Process-get_value}{\code{Process$get_value()}}
-\item \href{#method-Process-get_value_latest}{\code{Process$get_value_latest()}}
-\item \href{#method-Process-get_value_best}{\code{Process$get_value_best()}}
-\item \href{#method-Process-get_parameter}{\code{Process$get_parameter()}}
-\item \href{#method-Process-get_parameter_latest}{\code{Process$get_parameter_latest()}}
-\item \href{#method-Process-get_parameter_best}{\code{Process$get_parameter_best()}}
-\item \href{#method-Process-get_seconds}{\code{Process$get_seconds()}}
-\item \href{#method-Process-get_seconds_total}{\code{Process$get_seconds_total()}}
-\item \href{#method-Process-check_stopping}{\code{Process$check_stopping()}}
-}
+  \itemize{
+    \item \href{#method-Process-initialize}{\code{Process$new()}}
+    \item \href{#method-Process-print_status}{\code{Process$print_status()}}
+    \item \href{#method-Process-initialize_details}{\code{Process$initialize_details()}}
+    \item \href{#method-Process-update_details}{\code{Process$update_details()}}
+    \item \href{#method-Process-get_partition}{\code{Process$get_partition()}}
+    \item \href{#method-Process-get_details}{\code{Process$get_details()}}
+    \item \href{#method-Process-get_value}{\code{Process$get_value()}}
+    \item \href{#method-Process-get_value_latest}{\code{Process$get_value_latest()}}
+    \item \href{#method-Process-get_value_best}{\code{Process$get_value_best()}}
+    \item \href{#method-Process-get_parameter}{\code{Process$get_parameter()}}
+    \item \href{#method-Process-get_parameter_latest}{\code{Process$get_parameter_latest()}}
+    \item \href{#method-Process-get_parameter_best}{\code{Process$get_parameter_best()}}
+    \item \href{#method-Process-get_seconds}{\code{Process$get_seconds()}}
+    \item \href{#method-Process-get_seconds_total}{\code{Process$get_seconds_total()}}
+    \item \href{#method-Process-check_stopping}{\code{Process$check_stopping()}}
+  }
 }
 \if{html}{\out{<hr>}}
-\if{html}{\out{<a id="method-Process-new"></a>}}
-\if{latex}{\out{\hypertarget{method-Process-new}{}}}
-\subsection{Method \code{new()}}{
-Creates a new object of this \link[R6:R6Class]{R6} class.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Process$new(
+\if{html}{\out{<a id="method-Process-initialize"></a>}}
+\if{latex}{\out{\hypertarget{method-Process-initialize}{}}}
+\subsection{\code{Process$new()}}{
+  Creates a new object of this \link[R6:R6Class]{R6} class.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Process$new(
   target = NULL,
   npar = integer(),
   partition = "sequential",
@@ -164,33 +171,32 @@ Creates a new object of this \link[R6:R6Class]{R6} class.
   tolerance_parameter_norm = function(x, y) sqrt(sum((x - y)^2)),
   tolerance_history = 1,
   add_details = TRUE
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{target}}{[\code{character()} | \code{NULL}]\cr
+)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{target}}{[\code{character()} | \code{NULL}]\cr
 The name(s) of the argument(s) over which \code{f} is optimized.
 
 This can only be \code{numeric} arguments.
 
 If \code{NULL} (default), the first argument of \code{f} is optimized.}
-
-\item{\code{npar}}{[\code{integer()}]\cr
+      \item{\code{npar}}{[\code{integer()}]\cr
 The length(s) of the target argument(s).}
-
-\item{\code{partition}}{[\code{character(1)} | \code{list()}]\cr
+      \item{\code{partition}}{[\code{character(1)} | \code{list()}]\cr
 Defines the parameter partition. It can be
 \itemize{
 \item \code{"sequential"} for treating each parameter separately,
 \item \code{"random"} for a random partition in each iteration,
 \item \code{"none"} for no partition (which is equivalent to joint optimization),
 \item or a \code{list} of vectors of parameter indices, specifying a custom
-partition for the AO process.
+partition for the AO process. Parameter indices can be members of any
+number of blocks, where parameters that are not a member of any block
+stay at their initial value.
 }}
-
-\item{\code{new_block_probability}}{[\code{numeric(1)}]\cr
+      \item{\code{new_block_probability}}{[\code{numeric(1)}]\cr
 Only relevant if \code{partition = "random"}.
 
 The probability of creating a new parameter block when creating a random
@@ -198,44 +204,38 @@ partition.
 
 Values close to 0 result in larger parameter blocks, values close to 1
 result in smaller parameter blocks.}
-
-\item{\code{minimum_block_number}}{[\code{integer(1)}]\cr
+      \item{\code{minimum_block_number}}{[\code{integer(1)}]\cr
 Only relevant if \code{partition = "random"}.
 
 The minimum number of blocks in random partitions.}
-
-\item{\code{verbose}}{[\code{logical(1)}]\cr
+      \item{\code{verbose}}{[\code{logical(1)}]\cr
 Print tracing details during the AO process?}
-
-\item{\code{minimize}}{[\code{logical(1)}]\cr
+      \item{\code{minimize}}{[\code{logical(1)}]\cr
 Minimize during the AO process?
 
 If \code{FALSE}, maximization is performed.}
-
-\item{\code{iteration_limit}}{[\code{integer(1)} | \code{Inf}]\cr
+      \item{\code{iteration_limit}}{[\code{integer(1)} | \code{Inf}]\cr
 The maximum number of iterations through the parameter partition before
 the AO process is terminated.
 
 Can also be \code{Inf} for no iteration limit.}
-
-\item{\code{seconds_limit}}{[\code{numeric(1)}]\cr
+      \item{\code{seconds_limit}}{[\code{numeric(1)}]\cr
 The time limit in seconds before the AO process is terminated.
 
 Can also be \code{Inf} for no time limit.
 
-Note that this stopping criterion is only checked \emph{after} a sub-problem is
-solved and not \emph{within} solving a sub-problem, so the actual process
-time can exceed this limit.}
-
-\item{\code{tolerance_value}}{[\code{numeric(1)}]\cr
+Note that this stopping criterion refers to the time for solving the
+sub-problems and is only checked \emph{after} a sub-problem is solved and not
+\emph{within} solving a sub-problem, so the actual process time can exceed this
+limit.}
+      \item{\code{tolerance_value}}{[\code{numeric(1)}]\cr
 A non-negative tolerance value. The AO process terminates
 if the absolute difference between the current function value and the value
 from \code{tolerance_history} iterations earlier is smaller than
 \code{tolerance_value}.
 
 Can be \code{0} for no value threshold.}
-
-\item{\code{tolerance_parameter}}{[\code{numeric(1)}]\cr
+      \item{\code{tolerance_parameter}}{[\code{numeric(1)}]\cr
 A non-negative tolerance value. The AO process terminates if
 the distance between the current estimate and the estimate from
 \code{tolerance_history} iterations earlier is smaller than
@@ -245,8 +245,7 @@ Can be \code{0} for no parameter threshold.
 
 By default, the distance is measured using the Euclidean norm, but another
 norm can be specified via the \code{tolerance_parameter_norm} field.}
-
-\item{\code{tolerance_parameter_norm}}{[\code{function}]\cr
+      \item{\code{tolerance_parameter_norm}}{[\code{function}]\cr
 The norm that measures the distance between two estimates. If the distance
 is smaller than
 \code{tolerance_parameter}, the AO process is terminated.
@@ -255,33 +254,32 @@ It must be of the form \code{function(x, y)} for two vector inputs
 \code{x} and \code{y}, and return a single \code{numeric} value.
 By default, the Euclidean norm \code{function(x, y) sqrt(sum((x - y)^2))}
 is used.}
-
-\item{\code{tolerance_history}}{[\code{integer(1)}]\cr
+      \item{\code{tolerance_history}}{[\code{integer(1)}]\cr
 The number of iterations to look back to determine whether
 \code{tolerance_value} or \code{tolerance_parameter} has been reached.}
-
-\item{\code{add_details}}{[\code{logical(1)}]\cr
+      \item{\code{add_details}}{[\code{logical(1)}]\cr
 Add details about the AO process to the output?}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
-\if{html}{\out{</div>}}
-}
-}
+
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Process-print_status"></a>}}
 \if{latex}{\out{\hypertarget{method-Process-print_status}{}}}
-\subsection{Method \code{print_status()}}{
-Prints a status message.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Process$print_status(message, message_type = 8, verbose = self$verbose)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{message}}{[\code{character(1)}]\cr
+\subsection{\code{Process$print_status()}}{
+  Prints a status message.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Process$print_status(message, message_type = 8, verbose = self$verbose)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{message}}{[\code{character(1)}]\cr
 A status message.}
-
-\item{\code{message_type}}{[\code{integer(1)}]\cr
+      \item{\code{message_type}}{[\code{integer(1)}]\cr
 The message type, one of the following:
 \itemize{
 \item \code{1} for \code{cli::cli_h1()}
@@ -293,106 +291,106 @@ The message type, one of the following:
 \item \code{7} for \code{cli::cli_alert_danger()}
 \item \code{8} for \code{cli::cat_line()}
 }}
-
-\item{\code{verbose}}{[\code{logical(1)}]\cr
+      \item{\code{verbose}}{[\code{logical(1)}]\cr
 Print tracing details during the AO process?}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
-\if{html}{\out{</div>}}
-}
-}
+
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Process-initialize_details"></a>}}
 \if{latex}{\out{\hypertarget{method-Process-initialize_details}{}}}
-\subsection{Method \code{initialize_details()}}{
-Initializes the \code{details} part of the output.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Process$initialize_details(initial_parameter, initial_value)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{initial_parameter}}{[\code{numeric()}]\cr
+\subsection{\code{Process$initialize_details()}}{
+  Initializes the \code{details} part of the output.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Process$initialize_details(initial_parameter, initial_value)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{initial_parameter}}{[\code{numeric()}]\cr
 The starting parameter values for the AO process.}
-
-\item{\code{initial_value}}{[\code{numeric(1)}]\cr
+      \item{\code{initial_value}}{[\code{numeric(1)}]\cr
 The function value at the initial parameters.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
-\if{html}{\out{</div>}}
-}
-}
+
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Process-update_details"></a>}}
 \if{latex}{\out{\hypertarget{method-Process-update_details}{}}}
-\subsection{Method \code{update_details()}}{
-Updates the \code{details} part of the output.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Process$update_details(
+\subsection{\code{Process$update_details()}}{
+  Updates the \code{details} part of the output.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Process$update_details(
   value,
   parameter_block,
   seconds,
   error,
   error_message,
   block = self$block
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{value}}{[\code{numeric(1)}]\cr
+)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{value}}{[\code{numeric(1)}]\cr
 The updated function value.}
-
-\item{\code{parameter_block}}{[\code{numeric()}]\cr
+      \item{\code{parameter_block}}{[\code{numeric()}]\cr
 The updated parameter values for the active parameter block.}
-
-\item{\code{seconds}}{[\code{numeric(1)}]\cr
+      \item{\code{seconds}}{[\code{numeric(1)}]\cr
 The time in seconds for solving the sub-problem.}
-
-\item{\code{error}}{[\code{logical(1)}]\cr
+      \item{\code{error}}{[\code{logical(1)}]\cr
 Did solving the sub-problem result in an error?}
-
-\item{\code{error_message}}{[\code{character(1)}]\cr
+      \item{\code{error_message}}{[\code{character(1)}]\cr
 An error message if \code{error = TRUE}.}
-
-\item{\code{block}}{[\code{integer()}]\cr
+      \item{\code{block}}{[\code{integer()}]\cr
 The currently active parameter block, represented as parameter indices.}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
-\if{html}{\out{</div>}}
-}
-}
+
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Process-get_partition"></a>}}
 \if{latex}{\out{\hypertarget{method-Process-get_partition}{}}}
-\subsection{Method \code{get_partition()}}{
-Get a parameter partition.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Process$get_partition()}\if{html}{\out{</div>}}
+\subsection{\code{Process$get_partition()}}{
+  Get a parameter partition.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Process$get_partition()}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Process-get_details"></a>}}
 \if{latex}{\out{\hypertarget{method-Process-get_details}{}}}
-\subsection{Method \code{get_details()}}{
-Get the \code{details} part of the output.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Process$get_details(
+\subsection{\code{Process$get_details()}}{
+  Get the \code{details} part of the output.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Process$get_details(
   which_iteration = NULL,
   which_block = NULL,
   which_column = c("iteration", "value", "parameter", "block", "seconds")
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{which_iteration}}{[\code{integer()}]\cr
+)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{which_iteration}}{[\code{integer()}]\cr
 Selects the iteration(s).
 
 Can also be \code{NULL} to select all iterations.}
-
-\item{\code{which_block}}{[\code{character(1)} | \code{integer()}]\cr
+      \item{\code{which_block}}{[\code{character(1)} | \code{integer()}]\cr
 Selects the parameter block in the partition and can be one of
 \itemize{
 \item \code{"first"} for the first parameter block,
@@ -400,8 +398,7 @@ Selects the parameter block in the partition and can be one of
 \item an \code{integer} vector of parameter indices,
 \item or \code{NULL} for all parameter blocks.
 }}
-
-\item{\code{which_column}}{[\code{character()}]\cr
+      \item{\code{which_column}}{[\code{character()}]\cr
 Selects the columns in the \code{details} part of the output and can be one or
 more of
 \itemize{
@@ -411,33 +408,34 @@ more of
 \item \code{"block"},
 \item and \code{"seconds"}.
 }}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
-\if{html}{\out{</div>}}
-}
-}
+
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Process-get_value"></a>}}
 \if{latex}{\out{\hypertarget{method-Process-get_value}{}}}
-\subsection{Method \code{get_value()}}{
-Get the function value in different steps of the AO process.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Process$get_value(
+\subsection{\code{Process$get_value()}}{
+  Get the function value in different steps of the AO process.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Process$get_value(
   which_iteration = NULL,
   which_block = NULL,
   keep_iteration_column = FALSE,
   keep_block_columns = FALSE
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{which_iteration}}{[\code{integer()}]\cr
+)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{which_iteration}}{[\code{integer()}]\cr
 Selects the iteration(s).
 
 Can also be \code{NULL} to select all iterations.}
-
-\item{\code{which_block}}{[\code{character(1)} | \code{integer()}]\cr
+      \item{\code{which_block}}{[\code{character(1)} | \code{integer()}]\cr
 Selects the parameter block in the partition and can be one of
 \itemize{
 \item \code{"first"} for the first parameter block,
@@ -445,60 +443,63 @@ Selects the parameter block in the partition and can be one of
 \item an \code{integer} vector of parameter indices,
 \item or \code{NULL} for all parameter blocks.
 }}
-
-\item{\code{keep_iteration_column}}{[\code{logical(1)}]\cr
+      \item{\code{keep_iteration_column}}{[\code{logical(1)}]\cr
 Keep the column containing the information about the iteration in the output?}
-
-\item{\code{keep_block_columns}}{[\code{logical(1)}]\cr
+      \item{\code{keep_block_columns}}{[\code{logical(1)}]\cr
 Keep the column containing the information about the active parameter block
 in the output?}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
-\if{html}{\out{</div>}}
-}
-}
+
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Process-get_value_latest"></a>}}
 \if{latex}{\out{\hypertarget{method-Process-get_value_latest}{}}}
-\subsection{Method \code{get_value_latest()}}{
-Get the function value in the latest step of the AO process.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Process$get_value_latest()}\if{html}{\out{</div>}}
+\subsection{\code{Process$get_value_latest()}}{
+  Get the function value in the latest step of the AO process.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Process$get_value_latest()}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Process-get_value_best"></a>}}
 \if{latex}{\out{\hypertarget{method-Process-get_value_best}{}}}
-\subsection{Method \code{get_value_best()}}{
-Get the optimum function value in the AO process.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Process$get_value_best()}\if{html}{\out{</div>}}
+\subsection{\code{Process$get_value_best()}}{
+  Get the optimum function value in the AO process.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Process$get_value_best()}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Process-get_parameter"></a>}}
 \if{latex}{\out{\hypertarget{method-Process-get_parameter}{}}}
-\subsection{Method \code{get_parameter()}}{
-Get the parameter values in different steps of the AO process.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Process$get_parameter(
+\subsection{\code{Process$get_parameter()}}{
+  Get the parameter values in different steps of the AO process.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Process$get_parameter(
   which_iteration = self$iteration,
   which_block = NULL,
   keep_iteration_column = FALSE,
   keep_block_columns = FALSE
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{which_iteration}}{[\code{integer()}]\cr
+)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{which_iteration}}{[\code{integer()}]\cr
 Selects the iteration(s).
 
 Can also be \code{NULL} to select all iterations.}
-
-\item{\code{which_block}}{[\code{character(1)} | \code{integer()}]\cr
+      \item{\code{which_block}}{[\code{character(1)} | \code{integer()}]\cr
 Selects the parameter block in the partition and can be one of
 \itemize{
 \item \code{"first"} for the first parameter block,
@@ -506,30 +507,30 @@ Selects the parameter block in the partition and can be one of
 \item an \code{integer} vector of parameter indices,
 \item or \code{NULL} for all parameter blocks.
 }}
-
-\item{\code{keep_iteration_column}}{[\code{logical(1)}]\cr
+      \item{\code{keep_iteration_column}}{[\code{logical(1)}]\cr
 Keep the column containing the information about the iteration in the output?}
-
-\item{\code{keep_block_columns}}{[\code{logical(1)}]\cr
+      \item{\code{keep_block_columns}}{[\code{logical(1)}]\cr
 Keep the column containing the information about the active parameter block
 in the output?}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
-\if{html}{\out{</div>}}
-}
-}
+
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Process-get_parameter_latest"></a>}}
 \if{latex}{\out{\hypertarget{method-Process-get_parameter_latest}{}}}
-\subsection{Method \code{get_parameter_latest()}}{
-Get the parameter value in the latest step of the AO process.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Process$get_parameter_latest(parameter_type = "full")}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{parameter_type}}{[\code{character(1)}]\cr
+\subsection{\code{Process$get_parameter_latest()}}{
+  Get the parameter value in the latest step of the AO process.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Process$get_parameter_latest(parameter_type = "full")}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{parameter_type}}{[\code{character(1)}]\cr
 Selects the parameter type and can be one of
 \itemize{
 \item \code{"full"} (default) to get the full parameter vector,
@@ -538,23 +539,25 @@ i.e., the parameters with the indices \code{self$block}
 \item \code{"fixed"} to get the parameter values which are currently fixed,
 i.e., all except for those with the indices \code{self$block}
 }}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
-\if{html}{\out{</div>}}
-}
-}
+
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Process-get_parameter_best"></a>}}
 \if{latex}{\out{\hypertarget{method-Process-get_parameter_best}{}}}
-\subsection{Method \code{get_parameter_best()}}{
-Get the optimum parameter value in the AO process.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Process$get_parameter_best(parameter_type = "full")}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{parameter_type}}{[\code{character(1)}]\cr
+\subsection{\code{Process$get_parameter_best()}}{
+  Get the optimum parameter value in the AO process.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Process$get_parameter_best(parameter_type = "full")}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{parameter_type}}{[\code{character(1)}]\cr
 Selects the parameter type and can be one of
 \itemize{
 \item \code{"full"} (default) to get the full parameter vector,
@@ -563,33 +566,34 @@ i.e., the parameters with the indices \code{self$block}
 \item \code{"fixed"} to get the parameter values which are currently fixed,
 i.e., all except for those with the indices \code{self$block}
 }}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
-\if{html}{\out{</div>}}
-}
-}
+
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Process-get_seconds"></a>}}
 \if{latex}{\out{\hypertarget{method-Process-get_seconds}{}}}
-\subsection{Method \code{get_seconds()}}{
-Get the optimization time in seconds in different steps of the AO process.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Process$get_seconds(
+\subsection{\code{Process$get_seconds()}}{
+  Get the optimization time in seconds in different steps of the AO process.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Process$get_seconds(
   which_iteration = NULL,
   which_block = NULL,
   keep_iteration_column = FALSE,
   keep_block_columns = FALSE
-)}\if{html}{\out{</div>}}
-}
-
-\subsection{Arguments}{
-\if{html}{\out{<div class="arguments">}}
-\describe{
-\item{\code{which_iteration}}{[\code{integer()}]\cr
+)}
+    \if{html}{\out{</div>}}
+  }
+  \subsection{Arguments}{
+    \if{html}{\out{<div class="arguments">}}
+    \describe{
+      \item{\code{which_iteration}}{[\code{integer()}]\cr
 Selects the iteration(s).
 
 Can also be \code{NULL} to select all iterations.}
-
-\item{\code{which_block}}{[\code{character(1)} | \code{integer()}]\cr
+      \item{\code{which_block}}{[\code{character(1)} | \code{integer()}]\cr
 Selects the parameter block in the partition and can be one of
 \itemize{
 \item \code{"first"} for the first parameter block,
@@ -597,35 +601,38 @@ Selects the parameter block in the partition and can be one of
 \item an \code{integer} vector of parameter indices,
 \item or \code{NULL} for all parameter blocks.
 }}
-
-\item{\code{keep_iteration_column}}{[\code{logical(1)}]\cr
+      \item{\code{keep_iteration_column}}{[\code{logical(1)}]\cr
 Keep the column containing the information about the iteration in the output?}
-
-\item{\code{keep_block_columns}}{[\code{logical(1)}]\cr
+      \item{\code{keep_block_columns}}{[\code{logical(1)}]\cr
 Keep the column containing the information about the active parameter block
 in the output?}
+    }
+    \if{html}{\out{</div>}}
+  }
 }
-\if{html}{\out{</div>}}
-}
-}
+
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Process-get_seconds_total"></a>}}
 \if{latex}{\out{\hypertarget{method-Process-get_seconds_total}{}}}
-\subsection{Method \code{get_seconds_total()}}{
-Get the total optimization time in seconds of the AO process.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Process$get_seconds_total()}\if{html}{\out{</div>}}
+\subsection{\code{Process$get_seconds_total()}}{
+  Get the total optimization time in seconds of the AO process.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Process$get_seconds_total()}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 \if{html}{\out{<hr>}}
 \if{html}{\out{<a id="method-Process-check_stopping"></a>}}
 \if{latex}{\out{\hypertarget{method-Process-check_stopping}{}}}
-\subsection{Method \code{check_stopping()}}{
-Checks if the AO process can be terminated.
-\subsection{Usage}{
-\if{html}{\out{<div class="r">}}\preformatted{Process$check_stopping()}\if{html}{\out{</div>}}
+\subsection{\code{Process$check_stopping()}}{
+  Checks if the AO process can be terminated.
+  \subsection{Usage}{
+    \if{html}{\out{<div class="r">}}
+    \preformatted{Process$check_stopping()}
+    \if{html}{\out{</div>}}
+  }
 }
 
-}
 }

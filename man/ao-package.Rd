@@ -17,7 +17,7 @@ ao(f = himmelblau, initial = c(0, 0))
 
 # Example 2: Maximization of 2-class Gaussian mixture log-likelihood --------
 
-normal_mixture_loglik_uc = function(mu, logsd, eta, data) {
+normal_mixture_loglik_uc <- function(mu, logsd, eta, data) {
   sd <- exp(logsd)
   e <- exp(eta[1])
   den <- 1 + e
@@ -40,7 +40,7 @@ fit <- ao(
   npar = c(2, 2, 1),
   data = data,
   partition = "random",
-  base_optimizer = optimizeR::Optimizer$new("ucminf::ucminf"),
+  base_optimizer = optimizeR::Optimizer$new("stats::nlm"),
   minimize = FALSE,
   add_details = FALSE
 )
@@ -91,6 +91,11 @@ Useful links:
 }
 \author{
 \strong{Maintainer}: Lennart Oelschläger \email{oelschlaeger.lennart@gmail.com} (\href{https://orcid.org/0000-0001-5421-9313}{ORCID})
+
+Authors:
+\itemize{
+  \item Lennart Oelschläger \email{oelschlaeger.lennart@gmail.com} (\href{https://orcid.org/0000-0001-5421-9313}{ORCID})
+}
 
 Other contributors:
 \itemize{

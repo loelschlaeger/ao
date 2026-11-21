@@ -13,6 +13,8 @@
 #'
 #' @return
 #' A (named) \code{list}, a partition of `estimate` according to `npar`.
+#'
+#' @keywords internal
 
 split_by_target <- function(estimate, target = NULL, npar) {
   if (is.null(target)) return(NULL)
@@ -50,6 +52,8 @@ split_by_target <- function(estimate, target = NULL, npar) {
 #'
 #' @return
 #' A \code{list}, a random partition of `x`.
+#'
+#' @keywords internal
 
 generate_random_partition <- function(x, p, min) {
   if (min == length(x)) {
@@ -89,6 +93,8 @@ generate_random_partition <- function(x, p, min) {
 #'
 #' @return
 #' A \code{list}, see section "Output value" on the \code{\link[ao]{ao}} page.
+#'
+#' @keywords internal
 
 merge_results <- function(
     results, minimize = TRUE, add_details = TRUE, processes = data.frame()
@@ -98,6 +104,9 @@ merge_results <- function(
   optimal_process <- ifelse(
     isTRUE(minimize), which.min(values), which.max(values)
   )
+  if (is.na(optimal_process)) {
+    optimal_process <- 1
+  }
   seconds_each <- vapply(results, `[[`, numeric(1), "seconds")
   has_es <- sapply(results, function(x) "estimate_split" %in% names(x)) |> any()
   if (isTRUE(add_details)) {
@@ -152,3 +161,18 @@ merge_results <- function(
   }
 }
 
+#' @keywords internal
+#' @noRd
+
+run_process <- function(process) {
+  process$progress_step(
+    paste0("[process ", process$id, "] started"),
+    amount = 0, class = "sticky"
+  )
+  out <- do.call(ao, process$arguments)
+  process$progress_step(
+    paste0("[process ", process$id, "] finished"),
+    class = "sticky"
+  )
+  return(out)
+}
