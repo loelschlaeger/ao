@@ -69,9 +69,10 @@ This object specifies an AO process.
 
   Can also be `Inf` for no time limit.
 
-  Note that this stopping criterion is only checked *after* a
-  sub-problem is solved and not *within* solving a sub-problem, so the
-  actual process time can exceed this limit.
+  Note that this stopping criterion refers to the time for solving the
+  sub-problems and is only checked *after* a sub-problem is solved and
+  not *within* solving a sub-problem, so the actual process time can
+  exceed this limit.
 
 - `tolerance_value`:
 
@@ -136,9 +137,13 @@ This object specifies an AO process.
   The output of the AO process, which is a `list` with the following
   elements:
 
-  - `estimate` is the parameter vector at termination.
+  - `estimate` is the parameter vector with the best function value in
+    the AO process.
 
-  - `value` is the function value at termination.
+  - `estimate_split` is `estimate` split by `target` (only when
+    applicable).
+
+  - `value` is the function value at `estimate`.
 
   - `details` is a `data.frame` with full information about the AO
     process. For each iteration (column `iteration`) it contains the
@@ -149,7 +154,7 @@ This object specifies an AO process.
     block and `0` if not), and computation times in seconds (column
     `seconds`). Only available if `add_details = TRUE`.
 
-  - `seconds` is the overall computation time in seconds.
+  - `seconds` is the total time in seconds for solving the sub-problems.
 
   - `stopping_reason` is a message explaining why the AO process
     terminated.
@@ -158,7 +163,7 @@ This object specifies an AO process.
 
 ### Public methods
 
-- [`Process$new()`](#method-Process-new)
+- [`Process$new()`](#method-Process-initialize)
 
 - [`Process$print_status()`](#method-Process-print_status)
 
@@ -190,7 +195,7 @@ This object specifies an AO process.
 
 ------------------------------------------------------------------------
 
-### Method `new()`
+### `Process$new()`
 
 Creates a new object of this
 [R6](https://r6.r-lib.org/reference/R6Class.html) class.
@@ -243,7 +248,9 @@ Creates a new object of this
     optimization),
 
   - or a `list` of vectors of parameter indices, specifying a custom
-    partition for the AO process.
+    partition for the AO process. Parameter indices can be members of
+    any number of blocks, where parameters that are not a member of any
+    block stay at their initial value.
 
 - `new_block_probability`:
 
@@ -290,9 +297,10 @@ Creates a new object of this
 
   Can also be `Inf` for no time limit.
 
-  Note that this stopping criterion is only checked *after* a
-  sub-problem is solved and not *within* solving a sub-problem, so the
-  actual process time can exceed this limit.
+  Note that this stopping criterion refers to the time for solving the
+  sub-problems and is only checked *after* a sub-problem is solved and
+  not *within* solving a sub-problem, so the actual process time can
+  exceed this limit.
 
 - `tolerance_value`:
 
@@ -342,7 +350,7 @@ Creates a new object of this
 
 ------------------------------------------------------------------------
 
-### Method `print_status()`
+### `Process$print_status()`
 
 Prints a status message.
 
@@ -393,7 +401,7 @@ Prints a status message.
 
 ------------------------------------------------------------------------
 
-### Method `initialize_details()`
+### `Process$initialize_details()`
 
 Initializes the `details` part of the output.
 
@@ -415,7 +423,7 @@ Initializes the `details` part of the output.
 
 ------------------------------------------------------------------------
 
-### Method `update_details()`
+### `Process$update_details()`
 
 Updates the `details` part of the output.
 
@@ -465,7 +473,7 @@ Updates the `details` part of the output.
 
 ------------------------------------------------------------------------
 
-### Method `get_partition()`
+### `Process$get_partition()`
 
 Get a parameter partition.
 
@@ -475,7 +483,7 @@ Get a parameter partition.
 
 ------------------------------------------------------------------------
 
-### Method `get_details()`
+### `Process$get_details()`
 
 Get the `details` part of the output.
 
@@ -528,7 +536,7 @@ Get the `details` part of the output.
 
 ------------------------------------------------------------------------
 
-### Method `get_value()`
+### `Process$get_value()`
 
 Get the function value in different steps of the AO process.
 
@@ -578,7 +586,7 @@ Get the function value in different steps of the AO process.
 
 ------------------------------------------------------------------------
 
-### Method `get_value_latest()`
+### `Process$get_value_latest()`
 
 Get the function value in the latest step of the AO process.
 
@@ -588,7 +596,7 @@ Get the function value in the latest step of the AO process.
 
 ------------------------------------------------------------------------
 
-### Method `get_value_best()`
+### `Process$get_value_best()`
 
 Get the optimum function value in the AO process.
 
@@ -598,7 +606,7 @@ Get the optimum function value in the AO process.
 
 ------------------------------------------------------------------------
 
-### Method `get_parameter()`
+### `Process$get_parameter()`
 
 Get the parameter values in different steps of the AO process.
 
@@ -648,7 +656,7 @@ Get the parameter values in different steps of the AO process.
 
 ------------------------------------------------------------------------
 
-### Method `get_parameter_latest()`
+### `Process$get_parameter_latest()`
 
 Get the parameter value in the latest step of the AO process.
 
@@ -673,7 +681,7 @@ Get the parameter value in the latest step of the AO process.
 
 ------------------------------------------------------------------------
 
-### Method `get_parameter_best()`
+### `Process$get_parameter_best()`
 
 Get the optimum parameter value in the AO process.
 
@@ -698,7 +706,7 @@ Get the optimum parameter value in the AO process.
 
 ------------------------------------------------------------------------
 
-### Method `get_seconds()`
+### `Process$get_seconds()`
 
 Get the optimization time in seconds in different steps of the AO
 process.
@@ -749,7 +757,7 @@ process.
 
 ------------------------------------------------------------------------
 
-### Method `get_seconds_total()`
+### `Process$get_seconds_total()`
 
 Get the total optimization time in seconds of the AO process.
 
@@ -759,7 +767,7 @@ Get the total optimization time in seconds of the AO process.
 
 ------------------------------------------------------------------------
 
-### Method `check_stopping()`
+### `Process$check_stopping()`
 
 Checks if the AO process can be terminated.
 

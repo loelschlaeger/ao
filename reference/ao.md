@@ -98,7 +98,8 @@ ao(
 
 - ...:
 
-  Additional arguments to be passed to `f` (and `gradient`).
+  Additional arguments to be passed to `f` (and `gradient` and
+  `hessian`, if specified).
 
 - partition:
 
@@ -113,7 +114,9 @@ ao(
     optimization),
 
   - or a `list` of vectors of parameter indices, specifying a custom
-    partition for the AO process.
+    partition for the AO process. Parameter indices can be members of
+    any number of blocks, where parameters that are not a member of any
+    block stay at their initial value.
 
   This can also be a `list` of multiple partition definitions, see
   details.
@@ -146,7 +149,11 @@ ao(
 - lower, upper:
 
   \[[`numeric()`](https://rdrr.io/r/base/numeric.html) \| `NULL`\]  
-  Optional lower and upper parameter bounds.
+  Optional lower and upper parameter bounds, each of which can be a
+  single number (a common bound for all parameters) or a vector of the
+  same length as `initial`.
+
+  The values in `initial` must respect the bounds.
 
   Ignored if `base_optimizer` does not support parameter bounds.
 
@@ -165,9 +172,10 @@ ao(
 
   Can also be `Inf` for no time limit.
 
-  Note that this stopping criterion is only checked *after* a
-  sub-problem is solved and not *within* solving a sub-problem, so the
-  actual process time can exceed this limit.
+  Note that this stopping criterion refers to the time for solving the
+  sub-problems and is only checked *after* a sub-problem is solved and
+  not *within* solving a sub-problem, so the actual process time can
+  exceed this limit.
 
 - tolerance_value:
 
@@ -244,12 +252,13 @@ ao(
 
 A `list` with the following elements:
 
-- `estimate` is the parameter vector at termination.
+- `estimate` is the parameter vector with the best function value in the
+  AO process.
 
 - `estimate_split` is `estimate` split by `target` (only when
   applicable).
 
-- `value` is the function value at termination.
+- `value` is the function value at `estimate`.
 
 - `details` is a `data.frame` with information about the AO process: For
   each iteration (column `iteration`) it contains the function value
@@ -260,7 +269,7 @@ A `list` with the following elements:
   computation times in seconds (column `seconds`). Only available if
   `add_details = TRUE`.
 
-- `seconds` is the overall computation time in seconds.
+- `seconds` is the total time in seconds for solving the sub-problems.
 
 - `stopping_reason` is a message explaining why the AO process
   terminated.
@@ -310,8 +319,9 @@ If `add_details = TRUE`, the following elements are added:
 
 By default, processes run sequentially. However, since they are
 independent, they can be parallelized. To enable parallel computation,
-use the [`{future}` framework](https://future.futureverse.org/). For
-example, run the following *before* the `ao()` call:
+use the [`{future}` framework](https://future.futureverse.org/), which
+requires the `{future.apply}` package to be installed. For example, run
+the following *before* the `ao()` call:
 
 
     future::plan(future::multisession, workers = 4)
@@ -321,8 +331,9 @@ example, run the following *before* the `ao()` call:
 When using multiple processes, setting `verbose = TRUE` to print tracing
 details during AO is not supported. However, you can still track the
 progress using the [`{progressr}`
-framework](https://progressr.futureverse.org/). For example, run the
-following *before* the `ao()` call:
+framework](https://progressr.futureverse.org/), which requires the
+`{progressr}` package to be installed. For example, run the following
+*before* the `ao()` call:
 
 
     progressr::handlers(global = TRUE)
@@ -338,27 +349,25 @@ following *before* the `ao()` call:
 himmelblau <- function(x) (x[1]^2 + x[2] - 11)^2 + (x[1] + x[2]^2 - 7)^2
 ao(f = himmelblau, initial = c(0, 0))
 #> $estimate
-#> [1]  3.584428 -1.848126
+#> [1]  3.584427 -1.848124
 #> 
 #> $value
-#> [1] 9.606386e-12
+#> [1] 9.15386e-11
 #> 
 #> $details
-#>    iteration        value       p1        p2 b1 b2     seconds
-#> 1          0 1.700000e+02 0.000000  0.000000  0  0 0.000000000
-#> 2          1 1.327270e+01 3.395691  0.000000  1  0 0.016861677
-#> 3          1 1.743664e+00 3.395691 -1.803183  0  1 0.009083748
-#> 4          2 2.847290e-02 3.581412 -1.803183  1  0 0.007250786
-#> 5          2 4.687468e-04 3.581412 -1.847412  0  1 0.006183863
-#> 6          3 7.368057e-06 3.584381 -1.847412  1  0 0.005147696
-#> 7          3 1.164202e-07 3.584381 -1.848115  0  1 0.047585011
-#> 8          4 1.893311e-09 3.584427 -1.848115  1  0 0.004751444
-#> 9          4 9.153860e-11 3.584427 -1.848124  0  1 0.003207207
-#> 10         5 6.347425e-11 3.584428 -1.848124  1  0 0.003254414
-#> 11         5 9.606386e-12 3.584428 -1.848126  0  1 0.003271103
+#>   iteration        value       p1        p2 b1 b2     seconds
+#> 1         0 1.700000e+02 0.000000  0.000000  0  0 0.000000000
+#> 2         1 1.327270e+01 3.395691  0.000000  1  0 0.013435841
+#> 3         1 1.743664e+00 3.395691 -1.803183  0  1 0.007117748
+#> 4         2 2.847290e-02 3.581412 -1.803183  1  0 0.005548954
+#> 5         2 4.687468e-04 3.581412 -1.847412  0  1 0.004824877
+#> 6         3 7.368057e-06 3.584381 -1.847412  1  0 0.004136562
+#> 7         3 1.164202e-07 3.584381 -1.848115  0  1 0.033662796
+#> 8         4 1.893311e-09 3.584427 -1.848115  1  0 0.003223896
+#> 9         4 9.153860e-11 3.584427 -1.848124  0  1 0.002447367
 #> 
 #> $seconds
-#> [1] 0.1065969
+#> [1] 0.07439804
 #> 
 #> $stopping_reason
 #> [1] "change in function value between 1 iteration is < 1e-06"
@@ -366,7 +375,7 @@ ao(f = himmelblau, initial = c(0, 0))
 
 # Example 2: Maximization of 2-class Gaussian mixture log-likelihood --------
 
-normal_mixture_loglik_uc = function(mu, logsd, eta, data) {
+normal_mixture_loglik_uc <- function(mu, logsd, eta, data) {
   sd <- exp(logsd)
   e <- exp(eta[1])
   den <- 1 + e
@@ -389,7 +398,7 @@ fit <- ao(
   npar = c(2, 2, 1),
   data = data,
   partition = "random",
-  base_optimizer = optimizeR::Optimizer$new("ucminf::ucminf"),
+  base_optimizer = optimizeR::Optimizer$new("stats::nlm"),
   minimize = FALSE,
   add_details = FALSE
 )
@@ -401,7 +410,7 @@ fit <- ao(
 e <- exp(fit$estimate_split$eta)
 den <- 1 + e
 (qhat <- c(e / den, 1 / den))
-#> [1] 0.3484044 0.6515956
+#> [1] 0.3484045 0.6515955
 
 # Example 3: Constrained Optimization in the Setting of Example 2 -----------
 
@@ -448,7 +457,7 @@ ao(
 #> [1] -276.36
 #> 
 #> $seconds
-#> [1] 0.6228373
+#> [1] 0.47948
 #> 
 #> $stopping_reason
 #> [1] "change in function value between 1 iteration is < 1e-06"

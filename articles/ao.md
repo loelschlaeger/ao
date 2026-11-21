@@ -100,7 +100,7 @@ ao(
   tolerance_parameter_norm = function(x, y) sqrt(sum((x - y)^2)),
   tolerance_history = 1,
   base_optimizer = optimizeR::Optimizer$new(
-    "stats::optim", method = "L-BFGS-B"
+    "stats::optim", method = "L-BFGS-B", control = list("maxit" = 10)
   ),
   verbose = FALSE,
   hide_warnings = TRUE,
@@ -119,13 +119,14 @@ The arguments have the following meaning:
 - `initial`: Initial values for the parameters used in the AO process.
 
 - `gradient` and `hessian`: Optional arguments to specify the analytic
-  gradient and/or Hessian of `f`.
+  gradient and/or Hessian of `f` (they are ignored if the base optimizer
+  does not support them).
 
 - `partition`: Specifies how parameters are partitioned for
   optimization. Can be one of the following:
 
-  - `"sequential"`: Optimizes each parameter block sequentially. This is
-    similar to [coordinate
+  - `"sequential"`: Treats each parameter separately. This is similar to
+    [coordinate
     descent](https://en.wikipedia.org/wiki/Coordinate_descent).
 
   - `"random"`: Randomly partitions parameters in each iteration.
@@ -145,15 +146,16 @@ The arguments have the following meaning:
   maximization.
 
 - `lower` and `upper`: Lower and upper limits for constrained
-  optimization.
+  optimization, [see below](#parameter-bounds).
 
 - `iteration_limit` is the maximum number of AO iterations before
   termination, while `seconds_limit` is the time limit in seconds.
   `tolerance_value` and `tolerance_parameter` (in combination with
   `tolerance_parameter_norm`) specify two other stopping criteria: the
-  current function value or parameter vector must differ from its value
-  `tolerance_history` iterations earlier by less than the corresponding
-  threshold.
+  process terminates if the function value or the parameter vector at
+  the end of an iteration differs from its value `tolerance_history`
+  iterations earlier by less than the corresponding threshold, [see
+  below](#stopping-criteria).
 
 - `base_optimizer`: Numerical optimizer used for solving sub-problems,
   [see below](#base-optimizer).
@@ -164,7 +166,7 @@ The arguments have the following meaning:
 
 ### A simple first example
 
-The following is an implementation of the [Himmelblau’s
+The following is an implementation of [Himmelblau’s
 function](https://en.wikipedia.org/wiki/Himmelblau%27s_function)
 ``` math
 f(x, y) = (x^2 + y - 11)^2 + (x + y^2 - 7)^2:
@@ -195,27 +197,25 @@ follows:
 
 ao(f = himmelblau, initial = c(0, 0))
 #> $estimate
-#> [1]  3.584428 -1.848126
+#> [1]  3.584427 -1.848124
 #> 
 #> $value
-#> [1] 9.606386e-12
+#> [1] 9.15386e-11
 #> 
 #> $details
-#>    iteration        value       p1        p2 b1 b2     seconds
-#> 1          0 1.700000e+02 0.000000  0.000000  0  0 0.000000000
-#> 2          1 1.327270e+01 3.395691  0.000000  1  0 0.041499138
-#> 3          1 1.743664e+00 3.395691 -1.803183  0  1 0.009001493
-#> 4          2 2.847290e-02 3.581412 -1.803183  1  0 0.006982088
-#> 5          2 4.687468e-04 3.581412 -1.847412  0  1 0.006034851
-#> 6          3 7.368057e-06 3.584381 -1.847412  1  0 0.005048513
-#> 7          3 1.164202e-07 3.584381 -1.848115  0  1 0.049827576
-#> 8          4 1.893311e-09 3.584427 -1.848115  1  0 0.004145384
-#> 9          4 9.153860e-11 3.584427 -1.848124  0  1 0.003338099
-#> 10         5 6.347425e-11 3.584428 -1.848124  1  0 0.003342152
-#> 11         5 9.606386e-12 3.584428 -1.848126  0  1 0.003147602
+#>   iteration        value       p1        p2 b1 b2     seconds
+#> 1         0 1.700000e+02 0.000000  0.000000  0  0 0.000000000
+#> 2         1 1.327270e+01 3.395691  0.000000  1  0 0.037754536
+#> 3         1 1.743664e+00 3.395691 -1.803183  0  1 0.007652044
+#> 4         2 2.847290e-02 3.581412 -1.803183  1  0 0.005721331
+#> 5         2 4.687468e-04 3.581412 -1.847412  0  1 0.004841805
+#> 6         3 7.368057e-06 3.584381 -1.847412  1  0 0.004100323
+#> 7         3 1.164202e-07 3.584381 -1.848115  0  1 0.034634352
+#> 8         4 1.893311e-09 3.584427 -1.848115  1  0 0.003383875
+#> 9         4 9.153860e-11 3.584427 -1.848124  0  1 0.002576828
 #> 
 #> $seconds
-#> [1] 0.1323669
+#> [1] 0.1006651
 #> 
 #> $stopping_reason
 #> [1] "change in function value between 1 iteration is < 1e-06"
@@ -224,9 +224,10 @@ ao(f = himmelblau, initial = c(0, 0))
 Here, we see the output of the AO process, which is a `list` that
 contains the following elements:
 
-- `estimate` is the parameter vector at termination.
+- `estimate` is the parameter vector with the best function value in the
+  process.
 
-- `value` is the function value at termination.
+- `value` is the function value at `estimate`.
 
 - `details` is a `data.frame` with full information about the process:
   For each iteration (column `iteration`) it contains the function value
@@ -236,7 +237,7 @@ contains the following elements:
   parameter contained in the active parameter block and `0` if not), and
   computation times in seconds (column `seconds`).
 
-- `seconds` is the overall computation time in seconds.
+- `seconds` is the total time in seconds for solving the sub-problems.
 
 - `stopping_reason` is a message explaining why the process terminated.
 
@@ -262,13 +263,13 @@ the `gradient` argument as follows:
 
 ao(f = himmelblau, initial = c(0, 0), gradient = gradient, add_details = FALSE)
 #> $estimate
-#> [1]  3.584428 -1.848126
+#> [1]  3.584428 -1.848125
 #> 
 #> $value
-#> [1] 2.659691e-12
+#> [1] 6.62828e-11
 #> 
 #> $seconds
-#> [1] 0.05126333
+#> [1] 0.09428763
 #> 
 #> $stopping_reason
 #> [1] "change in function value between 1 iteration is < 1e-06"
@@ -276,7 +277,9 @@ ao(f = himmelblau, initial = c(0, 0), gradient = gradient, add_details = FALSE)
 
 In higher-dimensional problems, using the analytic gradient can improve
 both the speed and stability of the process. An analytic Hessian can be
-supplied in the same way.
+supplied in the same way via the `hessian` argument, where it is only
+used if the base optimizer supports it (which is not the case for the
+default base optimizer).
 
 ### Random parameter partitions
 
@@ -287,8 +290,9 @@ process from getting stuck in local optima. It is activated by setting
 parameters:
 
 - `new_block_probability` determines the probability of creating a new
-  block when building a new partition. Its value ranges from `0` (no
-  blocks are created) to `1` (each parameter is a single block).
+  block when building a new partition. Its value ranges from `0` (all
+  parameters form a single block, unless `minimum_block_number` requires
+  more blocks) to `1` (each parameter is a single block).
 
 - `minimum_block_number` sets the minimum number of parameter blocks for
   random partitions. Here, it is configured as `2` to avoid generating
@@ -399,17 +403,14 @@ round(out$details, 2)
 #> 3          1 -512.65 0.94 3.81  0.66 -0.30  0.50  0  0  1  1  0    0.02
 #> 4          1 -447.85 3.08 3.81  0.66 -0.30  0.50  1  0  0  0  0    0.01
 #> 5          1 -445.29 3.08 3.81  0.66 -0.30 -0.04  0  0  0  0  1    0.01
-#> 6          2 -277.37 2.02 4.27 -1.55 -0.83 -0.55  1  1  1  1  1    0.07
-#> 7          3 -276.36 2.02 4.27 -1.45 -0.83 -0.63  1  1  1  1  1    0.06
+#> 6          2 -277.37 2.02 4.27 -1.55 -0.83 -0.55  1  1  1  1  1    0.06
+#> 7          3 -276.36 2.02 4.27 -1.45 -0.83 -0.63  1  1  1  1  1    0.05
 #> 8          4 -276.36 2.02 4.27 -1.45 -0.83 -0.63  0  1  0  0  0    0.00
 #> 9          4 -276.36 2.02 4.27 -1.45 -0.83 -0.63  0  0  1  0  1    0.01
 #> 10         4 -276.36 2.02 4.27 -1.45 -0.83 -0.63  1  0  0  1  0    0.01
 #> 11         5 -276.36 2.02 4.27 -1.45 -0.83 -0.63  1  0  0  1  1    0.01
 #> 12         5 -276.36 2.02 4.27 -1.45 -0.83 -0.63  0  0  1  0  0    0.00
-#> 13         5 -276.36 2.02 4.27 -1.45 -0.83 -0.63  0  1  0  0  0    0.00
-#> 14         6 -276.36 2.02 4.27 -1.45 -0.83 -0.63  1  1  0  1  0    0.01
-#> 15         6 -276.36 2.02 4.27 -1.45 -0.83 -0.63  0  0  0  0  1    0.00
-#> 16         6 -276.36 2.02 4.27 -1.45 -0.83 -0.63  0  0  1  0  0    0.00
+#> 13         5 -276.36 2.02 4.27 -1.45 -0.83 -0.63  0  1  0  0  0    0.01
 ```
 
 ### More flexibility
@@ -487,6 +488,63 @@ ao(
 )
 ```
 
+Note that the initial values must respect the bounds, and that the
+bounds are only used if the base optimizer supports them (which is the
+case for the default base optimizer).
+
+AO is a local method, hence the result depends on the initial values. In
+particular, if no parameter block can be improved from the initial
+values, the process stops after the first iteration and returns them. In
+the case of parameter bounds, this also happens for initial values on
+the bounds from which the function value gets worse in every direction
+that the bounds allow. As an example, consider Himmelblau’s function on
+the region $`[-5, 0]^2`$, where both partial derivatives are negative in
+the corner $`(0, 0)`$, such that the function increases into the region
+and the corner is a local minimum of the bounded problem:
+
+``` r
+
+ao(
+  f = himmelblau, initial = c(0, 0), lower = -5, upper = 0, add_details = FALSE
+)
+#> $estimate
+#> [1] 0 0
+#> 
+#> $value
+#> [1] 170
+#> 
+#> $seconds
+#> [1] 0.002004862
+#> 
+#> $stopping_reason
+#> [1] "change in function value between 1 iteration is < 1e-06"
+```
+
+In contrast, from the initial values $`(-1, -1)`$ in the same region,
+the process finds the minimum at about $`(-3.78, -3.28)`$. To reduce the
+dependence on a single initial value, [multiple
+processes](#multiple-processes) with different initial values can be
+used:
+
+``` r
+
+ao(
+  f = himmelblau, initial = list(c(0, 0), c(-1, -1)), lower = -5, upper = 0,
+  add_details = FALSE
+)
+#> $estimate
+#> [1] -3.779309 -3.283185
+#> 
+#> $value
+#> [1] 1.561349e-10
+#> 
+#> $seconds
+#> [1] 0.07551122
+#> 
+#> $stopping_reason
+#> [1] "change in function value between 1 iteration is < 1e-06"
+```
+
 #### Custom parameter partition
 
 Say the parameters of the Gaussian mixture model are supposed to be
@@ -501,18 +559,20 @@ parameter partitions can be specified by setting
 `partition = list(1:2, 3:4, 5)`, i.e. by defining a `list` where each
 element corresponds to a parameter block, containing a vector of
 parameter indices. Parameter indices can be members of any number of
-blocks.
+blocks, where a parameter that is not a member of any block stays at its
+initial value.
 
 #### Stopping criteria
 
 Currently, four different stopping criteria for the AO process are
 implemented:
 
-1.  a predefined iteration limit is exceeded (via the `iteration_limit`
+1.  a predefined iteration limit is reached (via the `iteration_limit`
     argument)
 
-2.  a predefined time limit is exceeded (via the `seconds_limit`
-    argument)
+2.  a predefined time limit for solving the sub-problems is reached (via
+    the `seconds_limit` argument), which is checked after each
+    sub-problem
 
 3.  the absolute change in the function value in comparison to the last
     iteration falls below a predefined threshold (via the
@@ -530,9 +590,10 @@ the final output identifies the criterion that caused termination.
 
 By default, the L-BFGS-B algorithm ([Byrd et al. 1995](#ref-byrd:1995))
 implemented in [`stats::optim`](https://rdrr.io/r/stats/optim.html) is
-used to solve the sub-problems numerically. Any other optimizer can be
-selected with the `base_optimizer` argument. Such an optimizer must be
-defined through the framework provided by the
+used to solve the sub-problems numerically, with at most 10 iterations
+per sub-problem. Any other optimizer can be selected with the
+`base_optimizer` argument. Such an optimizer must be defined through the
+framework provided by the
 [optimizeR](https://loelschlaeger.de/optimizeR/) package; see [its
 documentation](https://loelschlaeger.de/optimizeR/) for details. For
 example, the [`stats::nlm`](https://rdrr.io/r/stats/nlm.html) optimizer
@@ -562,6 +623,7 @@ normal_mixture_llk <- function(mu, sd, lambda, data) {
   c2 <- (1 - lambda) * dnorm(data, mu[2], sd[2])
   sum(log(c1 + c2))
 }
+set.seed(1)
 out <- ao(
   f = normal_mixture_llk,
   initial = list(runif(5), runif(5)),
@@ -579,22 +641,22 @@ names(out)
 #>  [9] "stopping_reason"  "stopping_reasons" "processes"
 out$values
 #> [[1]]
-#> [1] -421.417
+#> [1] -593.3523
 #> 
 #> [[2]]
-#> [1] -421.417
+#> [1] -276.36
 #> 
 #> [[3]]
-#> [1] -585.2514
+#> [1] -276.36
 #> 
 #> [[4]]
 #> [1] -276.36
 #> 
 #> [[5]]
-#> [1] -395.9705
+#> [1] -421.417
 #> 
 #> [[6]]
-#> [1] -421.417
+#> [1] -276.36
 ```
 
 In the case of multiple processes, the output provides information for
@@ -604,8 +666,9 @@ information for each process.
 By default, processes run sequentially. However, since they are
 independent of each other, they can be parallelized. For parallel
 computation, [ao](https://loelschlaeger.de/ao/) supports the [`{future}`
-framework](https://future.futureverse.org/). For example, run the
-following *before* the
+framework](https://future.futureverse.org/), which requires the
+[future.apply](https://future.apply.futureverse.org) package to be
+installed. For example, run the following *before* the
 [`ao()`](https://loelschlaeger.de/ao/reference/ao.md) call:
 
 ``` r
@@ -616,8 +679,9 @@ future::plan(future::multisession, workers = 4)
 When using multiple processes, setting `verbose = TRUE` to print tracing
 details during AO is not supported. However, process progress can still
 be tracked using the [`{progressr}`
-framework](https://progressr.futureverse.org/). For example, run the
-following *before* the
+framework](https://progressr.futureverse.org/), which requires the
+[progressr](https://progressr.futureverse.org) package to be installed.
+For example, run the following *before* the
 [`ao()`](https://loelschlaeger.de/ao/reference/ao.md) call:
 
 ``` r

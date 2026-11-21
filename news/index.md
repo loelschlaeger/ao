@@ -1,6 +1,17 @@
 # Changelog
 
+## ao 1.3.0
+
+- [`ao()`](https://loelschlaeger.de/ao/reference/ao.md) now fails with
+  an error if no stopping criterion is active.
+
+- Improved input checks.
+
+- Improved documentation.
+
 ## ao 1.2.3
+
+CRAN release: 2026-05-11
 
 - Added value `estimate_split` to the output, which is `estimate` split
   by `target` (only when applicable).
