@@ -2,6 +2,8 @@
 
 ## ao 1.3.0
 
+CRAN release: 2026-11-21
+
 - [`ao()`](https://loelschlaeger.de/ao/reference/ao.md) now fails with
   an error if no stopping criterion is active.
 

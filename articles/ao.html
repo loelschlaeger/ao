@@ -276,17 +276,17 @@ can be accomplished as follows:</p>
 <span><span class="co">#&gt; $details</span></span>
 <span><span class="co">#&gt;   iteration        value       p1        p2 b1 b2     seconds</span></span>
 <span><span class="co">#&gt; 1         0 1.700000e+02 0.000000  0.000000  0  0 0.000000000</span></span>
-<span><span class="co">#&gt; 2         1 1.327270e+01 3.395691  0.000000  1  0 0.036993980</span></span>
-<span><span class="co">#&gt; 3         1 1.743664e+00 3.395691 -1.803183  0  1 0.007561445</span></span>
-<span><span class="co">#&gt; 4         2 2.847290e-02 3.581412 -1.803183  1  0 0.005665541</span></span>
-<span><span class="co">#&gt; 5         2 4.687468e-04 3.581412 -1.847412  0  1 0.004871130</span></span>
-<span><span class="co">#&gt; 6         3 7.368057e-06 3.584381 -1.847412  1  0 0.004101753</span></span>
-<span><span class="co">#&gt; 7         3 1.164202e-07 3.584381 -1.848115  0  1 0.034074068</span></span>
-<span><span class="co">#&gt; 8         4 1.893311e-09 3.584427 -1.848115  1  0 0.003318548</span></span>
-<span><span class="co">#&gt; 9         4 9.153860e-11 3.584427 -1.848124  0  1 0.002488375</span></span>
+<span><span class="co">#&gt; 2         1 1.327270e+01 3.395691  0.000000  1  0 0.053515911</span></span>
+<span><span class="co">#&gt; 3         1 1.743664e+00 3.395691 -1.803183  0  1 0.010360718</span></span>
+<span><span class="co">#&gt; 4         2 2.847290e-02 3.581412 -1.803183  1  0 0.008147478</span></span>
+<span><span class="co">#&gt; 5         2 4.687468e-04 3.581412 -1.847412  0  1 0.006873846</span></span>
+<span><span class="co">#&gt; 6         3 7.368057e-06 3.584381 -1.847412  1  0 0.005993366</span></span>
+<span><span class="co">#&gt; 7         3 1.164202e-07 3.584381 -1.848115  0  1 0.048594952</span></span>
+<span><span class="co">#&gt; 8         4 1.893311e-09 3.584427 -1.848115  1  0 0.004858255</span></span>
+<span><span class="co">#&gt; 9         4 9.153860e-11 3.584427 -1.848124  0  1 0.003584862</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $seconds</span></span>
-<span><span class="co">#&gt; [1] 0.09907484</span></span>
+<span><span class="co">#&gt; [1] 0.1419294</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $stopping_reason</span></span>
 <span><span class="co">#&gt; [1] "change in function value between 1 iteration is &lt; 1e-06"</span></span></code></pre></div>
@@ -334,7 +334,7 @@ the <code>gradient</code> argument as follows:</p>
 <span><span class="co">#&gt; [1] 6.62828e-11</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $seconds</span></span>
-<span><span class="co">#&gt; [1] 0.09758234</span></span>
+<span><span class="co">#&gt; [1] 0.1006827</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $stopping_reason</span></span>
 <span><span class="co">#&gt; [1] "change in function value between 1 iteration is &lt; 1e-06"</span></span></code></pre></div>
@@ -464,14 +464,14 @@ simplified the output for brevity:</p>
 <span><span class="co">#&gt; 3          1 -512.65 0.94 3.81  0.66 -0.30  0.50  0  0  1  1  0    0.02</span></span>
 <span><span class="co">#&gt; 4          1 -447.85 3.08 3.81  0.66 -0.30  0.50  1  0  0  0  0    0.01</span></span>
 <span><span class="co">#&gt; 5          1 -445.29 3.08 3.81  0.66 -0.30 -0.04  0  0  0  0  1    0.01</span></span>
-<span><span class="co">#&gt; 6          2 -277.37 2.02 4.27 -1.55 -0.83 -0.55  1  1  1  1  1    0.06</span></span>
-<span><span class="co">#&gt; 7          3 -276.36 2.02 4.27 -1.45 -0.83 -0.63  1  1  1  1  1    0.05</span></span>
+<span><span class="co">#&gt; 6          2 -277.37 2.02 4.27 -1.55 -0.83 -0.55  1  1  1  1  1    0.08</span></span>
+<span><span class="co">#&gt; 7          3 -276.36 2.02 4.27 -1.45 -0.83 -0.63  1  1  1  1  1    0.06</span></span>
 <span><span class="co">#&gt; 8          4 -276.36 2.02 4.27 -1.45 -0.83 -0.63  0  1  0  0  0    0.00</span></span>
 <span><span class="co">#&gt; 9          4 -276.36 2.02 4.27 -1.45 -0.83 -0.63  0  0  1  0  1    0.01</span></span>
 <span><span class="co">#&gt; 10         4 -276.36 2.02 4.27 -1.45 -0.83 -0.63  1  0  0  1  0    0.01</span></span>
 <span><span class="co">#&gt; 11         5 -276.36 2.02 4.27 -1.45 -0.83 -0.63  1  0  0  1  1    0.01</span></span>
 <span><span class="co">#&gt; 12         5 -276.36 2.02 4.27 -1.45 -0.83 -0.63  0  0  1  0  0    0.00</span></span>
-<span><span class="co">#&gt; 13         5 -276.36 2.02 4.27 -1.45 -0.83 -0.63  0  1  0  0  0    0.01</span></span></code></pre></div>
+<span><span class="co">#&gt; 13         5 -276.36 2.02 4.27 -1.45 -0.83 -0.63  0  1  0  0  0    0.00</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="more-flexibility">More flexibility<a class="anchor" aria-label="anchor" href="#more-flexibility"></a>
@@ -567,7 +567,7 @@ local minimum of the bounded problem:</p>
 <span><span class="co">#&gt; [1] 170</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $seconds</span></span>
-<span><span class="co">#&gt; [1] 0.001994133</span></span>
+<span><span class="co">#&gt; [1] 0.00276494</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $stopping_reason</span></span>
 <span><span class="co">#&gt; [1] "change in function value between 1 iteration is &lt; 1e-06"</span></span></code></pre></div>
@@ -589,7 +589,7 @@ values can be used:</p>
 <span><span class="co">#&gt; [1] 1.561349e-10</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $seconds</span></span>
-<span><span class="co">#&gt; [1] 0.07354164</span></span>
+<span><span class="co">#&gt; [1] 0.1057165</span></span>
 <span><span class="co">#&gt; </span></span>
 <span><span class="co">#&gt; $stopping_reason</span></span>
 <span><span class="co">#&gt; [1] "change in function value between 1 iteration is &lt; 1e-06"</span></span></code></pre></div>
