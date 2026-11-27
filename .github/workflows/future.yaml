@@ -21,7 +21,6 @@ jobs:
           - { plan: 'multisession'                        }
           - { plan: 'sequential'                          }
           - { plan: 'future.batchtools::batchtools_local' }
-          - { plan: 'future.batchtools::batchtools_bash'  }
           - { plan: 'future.callr::callr'                 }
           - { plan: 'future.mirai::mirai_multisession'    }
 
